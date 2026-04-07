@@ -30,8 +30,11 @@ jobs:
       - name: Check Nx sync
         run: npm exec nx -- sync:check
 
-      - name: Lint and build all projects
-        run: npm exec nx -- run-many -t lint build --all --parallel=3
+      - name: Lint all projects
+        run: npm exec nx -- run-many -t lint --all --parallel=3 -- --max-warnings=0
 
-      - name: Typecheck API
-        run: npm exec nx -- run @org/api:typecheck
+      - name: Build all projects
+        run: npm exec nx -- run-many -t build --all --parallel=3
+
+      - name: Typecheck all projects
+        run: npm exec nx -- run-many -t typecheck --all --parallel=3
