@@ -1,0 +1,61 @@
+name: CD
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["CI"]
+    branches:
+      - main
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Package Artifacts
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build deployable projects
+        run: |
+          npm exec nx -- run @org/api:build
+          npm exec nx -- run @org/api:prune
+          npm exec nx -- run @org/web:build
+
+      - name: Create artifact bundles
+        run: |
+          mkdir -p artifacts
+          tar -czf artifacts/api-dist.tar.gz -C apps/api dist
+          tar -czf artifacts/web-next.tar.gz -C apps/web .next public package.json next.config.js
+
+      - name: Upload API artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-dist
+          path: artifacts/api-dist.tar.gz
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload Web artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-next
+          path: artifacts/web-next.tar.gz
+          if-no-files-found: error
+          retention-days: 14
