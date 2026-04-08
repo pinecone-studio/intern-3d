@@ -1,10 +1,18 @@
-module.exports = {
+const nextJest = require('next/jest.js');
+
+const createJestConfig = nextJest({
+  dir: './',
+});
+
+const config = {
   displayName: 'something-project',
   preset: '../../jest.preset.js',
-  testEnvironment: 'node',
   transform: {
-    '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
+    '^(?!.*\\.(js|jsx|ts|tsx|css|json)$)': '@nx/react/plugins/jest',
   },
-  moduleFileExtensions: ['ts', 'js', 'html'],
-  coverageDirectory: 'test-output/jest/coverage',
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
+  coverageDirectory: '../../coverage/apps/Team2-something-project',
+  testEnvironment: 'jsdom',
 };
+
+module.exports = createJestConfig(config);

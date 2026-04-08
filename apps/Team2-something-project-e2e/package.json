@@ -1,27 +1,5 @@
 {
-  "name": "@org/something-project-e2e",
+  "name": "something-project-e2e",
   "version": "0.0.1",
-  "private": true,
-  "nx": {
-    "name": "something-project-e2e",
-    "implicitDependencies": [
-      "something-project"
-    ],
-    "targets": {
-      "e2e": {
-        "executor": "@nx/jest:jest",
-        "outputs": [
-          "{projectRoot}/test-output/jest/coverage"
-        ],
-        "options": {
-          "jestConfig": "apps/Team2-something-project-e2e/jest.config.cts",
-          "passWithNoTests": true
-        },
-        "dependsOn": [
-          "something-project:build",
-          "something-project:serve"
-        ]
-      }
-    }
-  }
+  "private": true
 }

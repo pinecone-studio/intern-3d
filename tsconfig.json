@@ -13,16 +13,12 @@
       "path": "./apps/api"
     },
     {
-      "path": "./apps/team2-somthing-project-e2e"
-    },
-    {
-      "path": "./apps/team2-somthing-project"
-    },
-    {
       "path": "./apps/Team2-something-project-e2e"
     },
     {
       "path": "./apps/Team2-something-project"
+    },
+    {
       "path": "./apps/six7-e2e"
     },
     {
