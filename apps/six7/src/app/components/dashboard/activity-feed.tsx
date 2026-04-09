@@ -8,7 +8,7 @@ type ActivityFeedProps = {
 }
 
 function formatTime(dateStr: string): string {
-  return new Date(dateStr).toLocaleString('en-US', {
+  return new Date(dateStr).toLocaleString('mn-MN', {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
@@ -20,7 +20,7 @@ export function ActivityFeed({ logs }: ActivityFeedProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Recent Activity</CardTitle>
+        <CardTitle className="text-base">Сүүлийн үйл ажиллагаа</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {logs.map((log) => (
@@ -32,7 +32,7 @@ export function ActivityFeed({ logs }: ActivityFeedProps) {
                 <StatusBadge status={log.status} />
               </div>
               <p className="text-xs text-muted-foreground">
-                {actionLabels[log.action]} - {log.documentsCount} documents
+                {actionLabels[log.action]} - {log.documentsCount} баримт
               </p>
               <p className="text-xs text-muted-foreground">
                 {formatTime(log.timestamp)}

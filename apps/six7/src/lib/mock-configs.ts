@@ -6,44 +6,102 @@ export const mockActionConfigs: ActionConfig[] = [
     phase: 'onboarding',
     triggerFields: ['status', 'hireDate'],
     recipientRoles: ['hr_team', 'department_chief', 'branch_manager'],
-    documents: ['Employment Contract', 'Probation Order', 'Job Description', 'NDA'],
-    triggerCondition: 'When status changes to "active" and hireDate is set',
+    documents: [
+      'Хөдөлмөрийн гэрээ',
+      'Туршилтын хугацааны тушаал',
+      'Ажлын байрны тодорхойлолт',
+      'Нууцлалын гэрээ',
+    ],
+    triggerCondition: 'Төлөв "идэвхтэй" болж, ажилд орсон огноо бүртгэгдэхэд ажиллана',
   },
   {
     action: 'promote_employee',
     phase: 'working',
     triggerFields: ['level', 'position'],
     recipientRoles: ['hr_team', 'department_chief', 'ceo'],
-    documents: ['Promotion Letter'],
-    triggerCondition: 'When level or position is upgraded',
+    documents: ['Дэвшүүлсэн тухай албан бичиг'],
+    triggerCondition: 'Түвшин эсвэл албан тушаал ахих үед ажиллана',
   },
   {
     action: 'change_position',
     phase: 'working',
     triggerFields: ['department', 'branch', 'position'],
     recipientRoles: ['hr_team', 'department_chief'],
-    documents: ['Position Change Notice', 'Updated Job Description', 'Department Transfer Form'],
-    triggerCondition: 'When department, branch, or position changes',
+    documents: [
+      'Албан тушаал өөрчлөх мэдэгдэл',
+      'Шинэчилсэн ажлын байрны тодорхойлолт',
+      'Хэлтэс шилжүүлэх маягт',
+    ],
+    triggerCondition: 'Хэлтэс, салбар эсвэл албан тушаал өөрчлөгдөхөд ажиллана',
   },
   {
     action: 'offboard_employee',
     phase: 'offboarding',
     triggerFields: ['status', 'terminationDate'],
     recipientRoles: ['hr_team', 'department_chief', 'branch_manager', 'ceo'],
-    documents: ['Termination Letter', 'Exit Clearance Form'],
-    triggerCondition: 'When status changes to "inactive" and terminationDate is set',
+    documents: ['Ажлаас чөлөөлөх албан бичиг', 'Ажлаас гарах хүлээлцэх хуудас'],
+    triggerCondition:
+      'Төлөв "идэвхгүй" болж, чөлөөлсөн огноо бүртгэгдэхэд ажиллана',
   },
 ]
 
 export const mockProcessingSteps: ProcessingStep[] = [
-  { id: 'step-1', name: 'Event Received', state: 'completed', timestamp: '09:28:00', details: 'Webhook payload validated' },
-  { id: 'step-2', name: 'Action Resolved', state: 'completed', timestamp: '09:28:05', details: 'Matched: add_employee' },
-  { id: 'step-3', name: 'Employee Fetched', state: 'completed', timestamp: '09:28:10', details: 'EMP-2024-001' },
-  { id: 'step-4', name: 'Templates Loaded', state: 'completed', timestamp: '09:28:15', details: '4 templates' },
-  { id: 'step-5', name: 'PDFs Generated', state: 'completed', timestamp: '09:30:00', details: '4 documents' },
-  { id: 'step-6', name: 'Uploaded to Storage', state: 'completed', timestamp: '09:32:00', details: 'Cloud storage' },
-  { id: 'step-7', name: 'Emails Dispatched', state: 'completed', timestamp: '09:33:00', details: '3 recipients' },
-  { id: 'step-8', name: 'Audit Record Saved', state: 'completed', timestamp: '09:35:00', details: 'audit-001' },
+  {
+    id: 'step-1',
+    name: 'Үйл явдлыг хүлээн авсан',
+    state: 'completed',
+    timestamp: '09:28:00',
+    details: 'Ирсэн өгөгдлийг шалгасан',
+  },
+  {
+    id: 'step-2',
+    name: 'Үйлдлийг тодорхойлсон',
+    state: 'completed',
+    timestamp: '09:28:05',
+    details: 'Таарсан үйлдэл: ажилтан нэмэх',
+  },
+  {
+    id: 'step-3',
+    name: 'Ажилтны мэдээллийг татсан',
+    state: 'completed',
+    timestamp: '09:28:10',
+    details: 'EMP-2024-001',
+  },
+  {
+    id: 'step-4',
+    name: 'Загваруудыг ачаалсан',
+    state: 'completed',
+    timestamp: '09:28:15',
+    details: '4 загвар',
+  },
+  {
+    id: 'step-5',
+    name: 'PDF баримтуудыг үүсгэсэн',
+    state: 'completed',
+    timestamp: '09:30:00',
+    details: '4 баримт',
+  },
+  {
+    id: 'step-6',
+    name: 'Хадгалалтад байршуулсан',
+    state: 'completed',
+    timestamp: '09:32:00',
+    details: 'Үүлэн хадгалалт',
+  },
+  {
+    id: 'step-7',
+    name: 'Мэдэгдлүүдийг илгээсэн',
+    state: 'completed',
+    timestamp: '09:33:00',
+    details: '3 хүлээн авагч',
+  },
+  {
+    id: 'step-8',
+    name: 'Аудитын бүртгэлийг хадгалсан',
+    state: 'completed',
+    timestamp: '09:35:00',
+    details: 'audit-001',
+  },
 ]
 
 export const mockDashboardStats: DashboardStats = {
@@ -52,25 +110,41 @@ export const mockDashboardStats: DashboardStats = {
   successRate: 98.2,
   failedJobs: 8,
   pendingJobs: 3,
-  avgProcessingTime: '2m 15s',
+  avgProcessingTime: '2 мин 15 сек',
 }
 
 export const actionLabels: Record<string, string> = {
-  add_employee: 'Add Employee',
-  promote_employee: 'Promote Employee',
-  change_position: 'Change Position',
-  offboard_employee: 'Offboard Employee',
+  add_employee: 'Ажилтан нэмэх',
+  promote_employee: 'Албан тушаал дэвшүүлэх',
+  change_position: 'Албан тушаал өөрчлөх',
+  offboard_employee: 'Ажилтныг чөлөөлөх',
 }
 
 export const phaseLabels: Record<string, string> = {
-  onboarding: 'Onboarding',
-  working: 'Working',
-  offboarding: 'Offboarding',
+  onboarding: 'Ажилд авах',
+  working: 'Ажиллаж буй',
+  offboarding: 'Ажлаас гарах',
 }
 
 export const roleLabels: Record<string, string> = {
-  hr_team: 'HR Team',
-  department_chief: 'Department Chief',
-  branch_manager: 'Branch Manager',
-  ceo: 'CEO',
+  hr_team: 'Хүний нөөцийн баг',
+  department_chief: 'Хэлтсийн дарга',
+  branch_manager: 'Салбарын менежер',
+  ceo: 'Гүйцэтгэх захирал',
+}
+
+export const fieldLabels: Record<string, string> = {
+  status: 'Төлөв',
+  hireDate: 'Ажилд орсон огноо',
+  level: 'Түвшин',
+  position: 'Албан тушаал',
+  department: 'Хэлтэс',
+  branch: 'Салбар',
+  terminationDate: 'Чөлөөлсөн огноо',
+}
+
+export const triggerSourceLabels: Record<string, string> = {
+  webhook: 'Вэбхук',
+  manual: 'Гараар',
+  scheduled: 'Хуваарьт',
 }

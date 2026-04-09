@@ -12,8 +12,8 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-1 flex-col">
       <AppHeader
-        title="Dashboard"
-        description="Employee Paperwork Automation System"
+        title="Хяналтын самбар"
+        description="Ажилтны баримт бичгийн автоматжуулалтын систем"
       />
       <main className="flex-1 space-y-6 p-6">
         <DemoFlow />

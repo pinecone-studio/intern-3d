@@ -23,16 +23,16 @@ export function TriggerForm({ onSubmit, isSubmitting }: TriggerFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Trigger Action</CardTitle>
+        <CardTitle>Үйлдэл эхлүүлэх</CardTitle>
         <CardDescription>
-          Manually trigger a document generation action for an employee
+          Ажилтанд зориулсан баримт үүсгэх үйлдлийг гараар эхлүүлэх
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <FieldGroup>
             <Field>
-              <FieldLabel>Employee</FieldLabel>
+              <FieldLabel>Ажилтан</FieldLabel>
               <Select
                 defaultValue={mockEmployees[0].id}
               >
@@ -44,7 +44,7 @@ export function TriggerForm({ onSubmit, isSubmitting }: TriggerFormProps) {
               </Select>
             </Field>
             <Field>
-              <FieldLabel>Action</FieldLabel>
+              <FieldLabel>Үйлдэл</FieldLabel>
               <Select
                 defaultValue="add_employee"
               >
@@ -56,10 +56,10 @@ export function TriggerForm({ onSubmit, isSubmitting }: TriggerFormProps) {
               </Select>
             </Field>
             <Field>
-              <FieldLabel>Override Recipients</FieldLabel>
-              <FieldHint>Leave empty to use the default workflow recipients.</FieldHint>
+              <FieldLabel>Хүлээн авагчийг өөрчлөх</FieldLabel>
+              <FieldHint>Хоосон үлдээвэл урсгалын анхдагч хүлээн авагчийг ашиглана.</FieldHint>
               <Select defaultValue="">
-                <option value="">Use default recipients</option>
+                <option value="">Анхдагч хүлээн авагчдыг ашиглах</option>
                 {Object.entries(roleLabels).map(([key, label]) => (
                   <option key={key} value={key}>
                     {label}
@@ -69,14 +69,14 @@ export function TriggerForm({ onSubmit, isSubmitting }: TriggerFormProps) {
             </Field>
             <div className="flex items-center justify-between rounded-xl border border-border bg-secondary/40 px-4 py-3">
               <div>
-                <Label htmlFor="dry-run">Dry Run</Label>
-                <FieldHint>Preview the workflow without generating documents.</FieldHint>
+                <Label htmlFor="dry-run">Туршилтын горим</Label>
+                <FieldHint>Баримт үүсгэхгүйгээр урсгалыг урьдчилан харах.</FieldHint>
               </div>
               <Switch id="dry-run" />
             </div>
           </FieldGroup>
           <Button type="submit" disabled={isSubmitting} className="w-full">
-            {isSubmitting ? 'Triggering...' : 'Trigger Action'}
+            {isSubmitting ? 'Эхлүүлж байна...' : 'Үйлдэл эхлүүлэх'}
           </Button>
         </form>
       </CardContent>

@@ -15,32 +15,32 @@ type StatsCardsProps = {
 
 const statsConfig = [
   {
-    label: 'Total Documents',
+    label: 'Нийт баримт',
     icon: FileText,
-    getValue: (stats: DashboardStats) => stats.totalDocuments.toLocaleString(),
+    getValue: (stats: DashboardStats) => stats.totalDocuments.toLocaleString('mn-MN'),
   },
   {
-    label: 'Total Actions',
+    label: 'Нийт үйлдэл',
     icon: Zap,
-    getValue: (stats: DashboardStats) => stats.totalActions.toLocaleString(),
+    getValue: (stats: DashboardStats) => stats.totalActions.toLocaleString('mn-MN'),
   },
   {
-    label: 'Success Rate',
+    label: 'Амжилтын хувь',
     icon: CheckCircle2,
     getValue: (stats: DashboardStats) => `${stats.successRate}%`,
   },
   {
-    label: 'Failed Jobs',
+    label: 'Алдаатай ажил',
     icon: XCircle,
     getValue: (stats: DashboardStats) => stats.failedJobs.toString(),
   },
   {
-    label: 'Pending Jobs',
+    label: 'Хүлээгдэж буй ажил',
     icon: Clock3,
     getValue: (stats: DashboardStats) => stats.pendingJobs.toString(),
   },
   {
-    label: 'Avg Processing',
+    label: 'Дундаж хугацаа',
     icon: TimerReset,
     getValue: (stats: DashboardStats) => stats.avgProcessingTime,
   },

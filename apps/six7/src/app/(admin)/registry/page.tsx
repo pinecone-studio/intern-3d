@@ -6,8 +6,8 @@ export default function RegistryPage() {
   return (
     <div className="flex flex-1 flex-col">
       <AppHeader
-        title="Action Registry"
-        description="Configure document generation actions"
+        title="Үйлдлийн бүртгэл"
+        description="Баримт үүсгэх үйлдлүүдийг тохируулах"
       />
       <main className="flex-1 p-6">
         <div className="grid gap-6 md:grid-cols-2">

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/status-badge'
 import type { AuditLogEntry } from '@/lib/types'
-import { actionLabels, roleLabels } from '@/lib/mock-configs'
+import { actionLabels, roleLabels, triggerSourceLabels } from '@/lib/mock-configs'
 
 type AuditTableProps = {
   logs: AuditLogEntry[]
@@ -11,7 +11,7 @@ type AuditTableProps = {
 }
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleString('en-US', {
+  return new Date(dateStr).toLocaleString('mn-MN', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -26,16 +26,16 @@ export function AuditTable({ logs, onViewDetails }: AuditTableProps) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Timestamp</TableHead>
-          <TableHead>Employee ID</TableHead>
-          <TableHead>Employee</TableHead>
-          <TableHead>Action</TableHead>
-          <TableHead>Documents</TableHead>
-          <TableHead>Recipients</TableHead>
-          <TableHead>Source</TableHead>
-          <TableHead>Retries</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead className="text-right">Details</TableHead>
+          <TableHead>Огноо</TableHead>
+          <TableHead>Ажилтны ID</TableHead>
+          <TableHead>Ажилтан</TableHead>
+          <TableHead>Үйлдэл</TableHead>
+          <TableHead>Баримт</TableHead>
+          <TableHead>Хүлээн авагч</TableHead>
+          <TableHead>Эх сурвалж</TableHead>
+          <TableHead>Давталт</TableHead>
+          <TableHead>Төлөв</TableHead>
+          <TableHead className="text-right">Дэлгэрэнгүй</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -66,7 +66,7 @@ export function AuditTable({ logs, onViewDetails }: AuditTableProps) {
             </TableCell>
             <TableCell>
               <Badge variant="outline" className="capitalize">
-                {log.triggerSource}
+                {triggerSourceLabels[log.triggerSource]}
               </Badge>
             </TableCell>
             <TableCell>{log.retryCount}</TableCell>
@@ -80,7 +80,7 @@ export function AuditTable({ logs, onViewDetails }: AuditTableProps) {
                 className="h-8 px-3"
                 onClick={() => onViewDetails(log)}
               >
-                Open
+                Нээх
               </Button>
             </TableCell>
           </TableRow>

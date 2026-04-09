@@ -3,17 +3,17 @@ import { ClipboardList, FileText, PlayCircle, Settings2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 const actions = [
-  { label: 'Trigger Action', href: '/trigger', icon: PlayCircle },
-  { label: 'View Audit Log', href: '/audit', icon: ClipboardList },
-  { label: 'Browse Documents', href: '/documents', icon: FileText },
-  { label: 'Manage Registry', href: '/registry', icon: Settings2 },
+  { label: 'Үйлдэл эхлүүлэх', href: '/trigger', icon: PlayCircle },
+  { label: 'Аудит харах', href: '/audit', icon: ClipboardList },
+  { label: 'Баримт үзэх', href: '/documents', icon: FileText },
+  { label: 'Бүртгэл удирдах', href: '/registry', icon: Settings2 },
 ]
 
 export function QuickActions() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Quick Actions</CardTitle>
+        <CardTitle className="text-base">Түргэн үйлдлүүд</CardTitle>
       </CardHeader>
       <CardContent className="grid grid-cols-2 gap-2">
         {actions.map((action) => {

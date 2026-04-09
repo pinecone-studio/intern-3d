@@ -11,7 +11,7 @@ type DocumentTableProps = {
 }
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
+  return new Date(dateStr).toLocaleString('mn-MN', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -25,9 +25,9 @@ export function DocumentTable({ documents }: DocumentTableProps) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <FileText className="mb-4 h-12 w-12 text-muted-foreground" strokeWidth={1.6} />
-        <h3 className="text-lg font-medium">No documents found</h3>
+        <h3 className="text-lg font-medium">Баримт олдсонгүй</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Try adjusting your search or filter criteria.
+          Хайлтын эсвэл шүүлтийн нөхцлөө өөрчлөөд үзнэ үү.
         </p>
       </div>
     )
@@ -37,13 +37,13 @@ export function DocumentTable({ documents }: DocumentTableProps) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Filename</TableHead>
-          <TableHead>Employee</TableHead>
-          <TableHead>Action</TableHead>
-          <TableHead>Phase</TableHead>
-          <TableHead>Generated</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
+          <TableHead>Файлын нэр</TableHead>
+          <TableHead>Ажилтан</TableHead>
+          <TableHead>Үйлдэл</TableHead>
+          <TableHead>Үе шат</TableHead>
+          <TableHead>Үүсгэсэн огноо</TableHead>
+          <TableHead>Төлөв</TableHead>
+          <TableHead className="text-right">Үйлдэл</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -71,10 +71,20 @@ export function DocumentTable({ documents }: DocumentTableProps) {
             </TableCell>
             <TableCell className="text-right">
               <div className="flex items-center justify-end gap-1">
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  aria-label="Харах"
+                >
                   <Eye className="h-4 w-4" strokeWidth={1.8} />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  aria-label="Татах"
+                >
                   <Download className="h-4 w-4" strokeWidth={1.8} />
                 </Button>
               </div>

@@ -20,8 +20,8 @@ export default function AuditPage() {
   return (
     <div className="flex flex-1 flex-col">
       <AppHeader
-        title="Audit Log"
-        description="Track all system events and changes"
+        title="Аудитын бүртгэл"
+        description="Системийн бүх үйл явдал, өөрчлөлтийг хянах"
       />
       <main className="flex-1 space-y-6 p-6">
         <Card>

@@ -25,11 +25,11 @@ import {
 } from '@/components/ui/sidebar'
 
 const navItems = [
-  { label: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { label: 'Documents', href: '/documents', icon: FileText },
-  { label: 'Audit Log', href: '/audit', icon: ClipboardList },
-  { label: 'Action Registry', href: '/registry', icon: Settings2 },
-  { label: 'Manual Trigger', href: '/trigger', icon: PlayCircle },
+  { label: 'Хяналтын самбар', href: '/', icon: LayoutDashboard },
+  { label: 'Баримтууд', href: '/documents', icon: FileText },
+  { label: 'Аудитын бүртгэл', href: '/audit', icon: ClipboardList },
+  { label: 'Үйлдлийн бүртгэл', href: '/registry', icon: Settings2 },
+  { label: 'Гараар эхлүүлэх', href: '/trigger', icon: PlayCircle },
 ]
 
 export function AppSidebar() {
@@ -48,14 +48,14 @@ export function AppSidebar() {
           <div className="flex flex-col">
             <span className="text-sm font-semibold">EPAS</span>
             <span className="text-xs text-muted-foreground">
-              Paperwork Automation
+              Баримт бичгийн автоматжуулалт
             </span>
           </div>
         </Link>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>Цэс</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => {
@@ -82,7 +82,7 @@ export function AppSidebar() {
             <Link href="/settings" onClick={closeMobile}>
               <SidebarMenuButton isActive={pathname === '/settings'}>
                 <Settings className="h-4 w-4" strokeWidth={1.8} />
-                <span>Settings</span>
+                <span>Тохиргоо</span>
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
