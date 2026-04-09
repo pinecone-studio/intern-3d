@@ -3,7 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { ActionConfig } from '@/lib/types'
-import { actionLabels, phaseLabels, roleLabels } from '@/lib/mock-configs'
+import {
+  actionLabels,
+  fieldLabels,
+  phaseLabels,
+  roleLabels,
+} from '@/lib/mock-configs'
 
 type ActionCardProps = {
   config: ActionConfig
@@ -19,7 +24,7 @@ export function ActionCard({ config }: ActionCardProps) {
           <div className="flex items-center gap-2">
             <CardTitle className="text-lg">{actionLabels[config.action]}</CardTitle>
             {isHighlighted && (
-              <Badge className="bg-primary text-primary-foreground">Demo</Badge>
+              <Badge className="bg-primary text-primary-foreground">Жишээ</Badge>
             )}
           </div>
           <Badge variant="outline">{phaseLabels[config.phase]}</Badge>
@@ -32,7 +37,7 @@ export function ActionCard({ config }: ActionCardProps) {
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <FileText className="h-4 w-4" strokeWidth={1.8} />
-            <span>Documents ({config.documents.length})</span>
+            <span>Баримтууд ({config.documents.length})</span>
           </div>
           <div className="flex flex-wrap gap-1">
             {config.documents.map((doc) => (
@@ -45,7 +50,7 @@ export function ActionCard({ config }: ActionCardProps) {
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Users className="h-4 w-4" strokeWidth={1.8} />
-            <span>Recipients ({config.recipientRoles.length})</span>
+            <span>Хүлээн авагчид ({config.recipientRoles.length})</span>
           </div>
           <div className="flex flex-wrap gap-1">
             {config.recipientRoles.map((role) => (
@@ -56,11 +61,11 @@ export function ActionCard({ config }: ActionCardProps) {
           </div>
         </div>
         <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">Trigger Fields</p>
+          <p className="text-sm text-muted-foreground">Өдөөгч талбарууд</p>
           <div className="flex flex-wrap gap-1">
             {config.triggerFields.map((field) => (
               <Badge key={field} variant="secondary" className="text-xs font-mono">
-                {field}
+                {fieldLabels[field] ?? field}
               </Badge>
             ))}
           </div>

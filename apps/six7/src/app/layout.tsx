@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'EPAS - Employee Paperwork Automation System',
-  description: 'HR paperwork automation admin dashboard',
+  title: 'EPAS - Ажилтны баримт бичгийн автоматжуулалтын систем',
+  description: 'Хүний нөөцийн баримт бичгийн автоматжуулалтын удирдлагын самбар',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -30,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="mn">
       <body className="font-sans antialiased">{children}</body>
     </html>
   )

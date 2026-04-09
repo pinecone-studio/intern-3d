@@ -9,11 +9,11 @@ type JobTimelineProps = {
 }
 
 const stateIcons: Record<StepState, React.ReactNode> = {
-  completed: 'OK',
-  running: '...',
-  failed: 'ERR',
-  skipped: 'SKIP',
-  pending: 'WAIT',
+  completed: 'БОЛ',
+  running: 'ЯВ',
+  failed: 'АЛД',
+  skipped: 'АЛГ',
+  pending: 'ХҮЛ',
 }
 
 const stateColors: Record<StepState, string> = {
@@ -28,9 +28,9 @@ export function JobTimeline({ jobId, steps, docsCount }: JobTimelineProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Job Progress</CardTitle>
+        <CardTitle>Ажлын явц</CardTitle>
         <CardDescription>
-          Job ID: {jobId} | {docsCount} documents queued
+          Ажлын ID: {jobId} | {docsCount} баримт дараалалд орсон
         </CardDescription>
       </CardHeader>
       <CardContent>

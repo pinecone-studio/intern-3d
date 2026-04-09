@@ -21,8 +21,8 @@ export default function TriggerPage() {
   return (
     <div className="flex flex-1 flex-col">
       <AppHeader
-        title="Manual Trigger"
-        description="Manually trigger document generation"
+        title="Гараар эхлүүлэх"
+        description="Баримт үүсгэх процессыг гараар эхлүүлэх"
       />
       <main className="flex-1 p-6">
         <div className="grid gap-6 lg:grid-cols-2">

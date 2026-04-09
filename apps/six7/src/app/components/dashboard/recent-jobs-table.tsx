@@ -11,7 +11,7 @@ type RecentJobsTableProps = {
 }
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleString('en-US', {
+  return new Date(dateStr).toLocaleString('mn-MN', {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
@@ -23,9 +23,9 @@ export function RecentJobsTable({ jobs }: RecentJobsTableProps) {
   return (
     <Card className="col-span-2">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base">Recent Jobs</CardTitle>
+        <CardTitle className="text-base">Сүүлийн ажлууд</CardTitle>
         <Link href="/audit" className="inline-flex items-center gap-1 text-sm font-medium text-foreground hover:text-primary">
-          View All
+          Бүгдийг харах
           <ExternalLink className="h-3.5 w-3.5" strokeWidth={1.8} />
         </Link>
       </CardHeader>
@@ -33,12 +33,12 @@ export function RecentJobsTable({ jobs }: RecentJobsTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Job ID</TableHead>
-              <TableHead>Employee</TableHead>
-              <TableHead>Action</TableHead>
-              <TableHead>Documents</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Created</TableHead>
+              <TableHead>Ажлын ID</TableHead>
+              <TableHead>Ажилтан</TableHead>
+              <TableHead>Үйлдэл</TableHead>
+              <TableHead>Баримт</TableHead>
+              <TableHead>Төлөв</TableHead>
+              <TableHead>Үүсгэсэн</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

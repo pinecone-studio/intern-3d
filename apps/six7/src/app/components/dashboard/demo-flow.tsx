@@ -16,12 +16,42 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
 const demoSteps = [
-  { id: 1, icon: Play, label: 'New Employee Created', detail: 'Somchai Jaidee joined Engineering' },
-  { id: 2, icon: FileText, label: 'Action Resolved', detail: 'add_employee action triggered' },
-  { id: 3, icon: FileText, label: '4 Documents Generated', detail: 'Employment Contract, Probation Order, Job Description, NDA' },
-  { id: 4, icon: Upload, label: 'Documents Uploaded', detail: 'Stored in /employees/emp-001/onboarding/' },
-  { id: 5, icon: Mail, label: 'Notifications Sent', detail: 'HR Team, Department Chief, Branch Manager' },
-  { id: 6, icon: Database, label: 'Audit Record Saved', detail: 'Logged in audit trail' },
+  {
+    id: 1,
+    icon: Play,
+    label: 'Шинэ ажилтан бүртгэгдсэн',
+    detail: 'Бат Тэмүүлэн Инженерчлэлийн хэлтэст орсон',
+  },
+  {
+    id: 2,
+    icon: FileText,
+    label: 'Үйлдлийг тодорхойлсон',
+    detail: 'Ажилтан нэмэх үйлдэл идэвхжив',
+  },
+  {
+    id: 3,
+    icon: FileText,
+    label: '4 баримт үүсгэсэн',
+    detail: 'Хөдөлмөрийн гэрээ, туршилтын хугацааны тушаал, ажлын байрны тодорхойлолт, нууцлалын гэрээ',
+  },
+  {
+    id: 4,
+    icon: Upload,
+    label: 'Баримтуудыг байршуулсан',
+    detail: '/ажилтан/emp-001/ажилд-авах/ замд хадгалсан',
+  },
+  {
+    id: 5,
+    icon: Mail,
+    label: 'Мэдэгдлүүдийг илгээсэн',
+    detail: 'Хүний нөөцийн баг, хэлтсийн дарга, салбарын менежер',
+  },
+  {
+    id: 6,
+    icon: Database,
+    label: 'Аудитын бүртгэл хадгалагдсан',
+    detail: 'Аудитын мөр үүсгэсэн',
+  },
 ]
 
 export function DemoFlow() {
@@ -48,23 +78,23 @@ export function DemoFlow() {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              Add Employee Demo
-              <Badge className="bg-primary text-primary-foreground">Featured</Badge>
+              Ажилтан нэмэх жишээ
+              <Badge className="bg-primary text-primary-foreground">Онцлох</Badge>
             </CardTitle>
             <CardDescription>
-              Watch the complete add_employee workflow
+              Ажилтан нэмэх бүрэн урсгалыг ажиглана уу
             </CardDescription>
           </div>
           <Button onClick={runDemo} disabled={isRunning} size="sm">
             {isRunning ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Running...
+                Ажиллаж байна...
               </>
             ) : (
               <>
                 <Play className="h-4 w-4" strokeWidth={1.8} />
-                Run Demo
+                Жишээ ажиллуулах
               </>
             )}
           </Button>

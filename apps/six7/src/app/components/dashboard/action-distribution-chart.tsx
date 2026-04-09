@@ -3,10 +3,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 const data = [
-  { action: 'Add', count: 245, tone: 'bg-cyan-400' },
-  { action: 'Promote', count: 89, tone: 'bg-emerald-400' },
-  { action: 'Position', count: 156, tone: 'bg-amber-400' },
-  { action: 'Offboard', count: 67, tone: 'bg-orange-400' },
+  { action: 'Нэмэх', count: 245, tone: 'bg-cyan-400' },
+  { action: 'Дэвшүүлэх', count: 89, tone: 'bg-emerald-400' },
+  { action: 'Өөрчлөх', count: 156, tone: 'bg-amber-400' },
+  { action: 'Чөлөөлөх', count: 67, tone: 'bg-orange-400' },
 ]
 
 export function ActionDistributionChart() {
@@ -15,7 +15,7 @@ export function ActionDistributionChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Action Distribution</CardTitle>
+        <CardTitle className="text-base">Үйлдлийн хуваарилалт</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {data.map((item) => (

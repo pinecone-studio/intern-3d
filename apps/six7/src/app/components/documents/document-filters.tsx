@@ -24,7 +24,7 @@ export function DocumentFilters({
     <div className="flex flex-wrap items-center gap-4">
       <div className="min-w-64 flex-1">
         <Input
-          placeholder="Search by employee name or code..."
+          placeholder="Ажилтны нэр эсвэл кодоор хайх..."
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
         />
@@ -34,21 +34,21 @@ export function DocumentFilters({
         onChange={(e) => onPhaseChange(e.target.value)}
         className="w-40"
       >
-        <option value="all">All Phases</option>
-        <option value="onboarding">Onboarding</option>
-        <option value="working">Working</option>
-        <option value="offboarding">Offboarding</option>
+        <option value="all">Бүх үе шат</option>
+        <option value="onboarding">Ажилд авах</option>
+        <option value="working">Ажиллаж буй</option>
+        <option value="offboarding">Ажлаас гарах</option>
       </Select>
       <Select
         value={action}
         onChange={(e) => onActionChange(e.target.value)}
         className="w-48"
       >
-        <option value="all">All Actions</option>
-        <option value="add_employee">Add Employee</option>
-        <option value="promote_employee">Promote Employee</option>
-        <option value="change_position">Change Position</option>
-        <option value="offboard_employee">Offboard Employee</option>
+        <option value="all">Бүх үйлдэл</option>
+        <option value="add_employee">Ажилтан нэмэх</option>
+        <option value="promote_employee">Албан тушаал дэвшүүлэх</option>
+        <option value="change_position">Албан тушаал өөрчлөх</option>
+        <option value="offboard_employee">Ажилтныг чөлөөлөх</option>
       </Select>
     </div>
   )

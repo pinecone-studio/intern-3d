@@ -27,8 +27,8 @@ export default function DocumentsPage() {
   return (
     <div className="flex flex-1 flex-col">
       <AppHeader
-        title="Documents"
-        description="Browse and manage generated documents"
+        title="Баримтууд"
+        description="Үүсгэсэн баримтуудыг харах, удирдах"
       />
       <main className="flex-1 space-y-6 p-6">
         <DocumentFilters

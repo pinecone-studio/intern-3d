@@ -10,29 +10,29 @@ export default function SettingsPage() {
   return (
     <div className="flex flex-1 flex-col">
       <AppHeader
-        title="Settings"
-        description="Configure system preferences"
+        title="Тохиргоо"
+        description="Системийн тохиргоог удирдах"
       />
       <main className="flex-1 p-6">
         <div className="max-w-2xl space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Notifications</CardTitle>
-              <CardDescription>Configure email notification settings</CardDescription>
+              <CardTitle>Мэдэгдэл</CardTitle>
+              <CardDescription>Имэйл мэдэгдлийн тохиргоо хийх</CardDescription>
             </CardHeader>
             <CardContent>
               <FieldGroup>
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label>Email Notifications</Label>
+                    <Label>Имэйл мэдэгдэл</Label>
                     <FieldHint>
-                      Receive email alerts for failed jobs
+                      Алдаатай ажлын талаар имэйлээр мэдэгдэл авах
                     </FieldHint>
                   </div>
                   <Switch defaultChecked />
                 </div>
                 <Field>
-                  <FieldLabel>Admin Email</FieldLabel>
+                  <FieldLabel>Админ имэйл</FieldLabel>
                   <Input type="email" defaultValue="admin@company.com" />
                 </Field>
               </FieldGroup>
@@ -40,24 +40,24 @@ export default function SettingsPage() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Storage</CardTitle>
-              <CardDescription>Cloud storage configuration</CardDescription>
+              <CardTitle>Хадгалалт</CardTitle>
+              <CardDescription>Үүлэн хадгалалтын тохиргоо</CardDescription>
             </CardHeader>
             <CardContent>
               <FieldGroup>
                 <Field>
-                  <FieldLabel>Storage Bucket</FieldLabel>
+                  <FieldLabel>Хадгалалтын сав</FieldLabel>
                   <Input defaultValue="epas-documents-prod" disabled />
                 </Field>
                 <Field>
-                  <FieldLabel>Signed URL Expiry (hours)</FieldLabel>
+                  <FieldLabel>Гарын үсэгтэй URL хүчинтэй хугацаа (цаг)</FieldLabel>
                   <Input type="number" defaultValue="24" />
                 </Field>
               </FieldGroup>
             </CardContent>
           </Card>
           <div className="flex justify-end">
-            <Button>Save Changes</Button>
+            <Button>Өөрчлөлт хадгалах</Button>
           </div>
         </div>
       </main>

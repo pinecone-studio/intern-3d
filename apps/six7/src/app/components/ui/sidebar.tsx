@@ -65,7 +65,7 @@ function Sidebar({ className, children }: React.ComponentProps<'aside'>) {
         <div className="fixed inset-0 z-50 bg-black/60 lg:hidden">
           <button
             type="button"
-            aria-label="Close navigation"
+            aria-label="Цэс хаах"
             className="absolute inset-0"
             onClick={() => setOpenMobile(false)}
           />
@@ -170,7 +170,7 @@ function SidebarTrigger({
   return (
     <button
       type="button"
-      aria-label="Open navigation"
+      aria-label="Цэс нээх"
       className={cn(
         'inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground lg:hidden',
         className,
