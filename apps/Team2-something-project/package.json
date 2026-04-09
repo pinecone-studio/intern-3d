@@ -10,6 +10,30 @@
   "nx": {
     "name": "something-project",
     "targets": {
+      "build": {
+        "options": {
+          "cwd": "apps/Team2-something-project",
+          "command": "env -u NO_COLOR NEXT_IGNORE_INCORRECT_LOCKFILE=1 next build"
+        }
+      },
+      "dev": {
+        "options": {
+          "cwd": "apps/Team2-something-project",
+          "command": "env -u NO_COLOR NEXT_IGNORE_INCORRECT_LOCKFILE=1 next dev -p 3001"
+        }
+      },
+      "start": {
+        "options": {
+          "cwd": "apps/Team2-something-project",
+          "command": "env -u NO_COLOR NEXT_IGNORE_INCORRECT_LOCKFILE=1 next start -p 3001"
+        }
+      },
+      "serve-static": {
+        "options": {
+          "cwd": "apps/Team2-something-project",
+          "command": "env -u NO_COLOR NEXT_IGNORE_INCORRECT_LOCKFILE=1 next start -p 3001"
+        }
+      },
       "test": {
         "options": {
           "passWithNoTests": true

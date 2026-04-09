@@ -20,7 +20,6 @@ export default function Page() {
         <p className="eyebrow">Team 2</p>
         <h1>something-project</h1>
         <p className="lede">
-          This app now follows the same Next.js Nx setup pattern as six7.
         </p>
         <div className="command-row">
           <code>npm exec nx -- dev something-project</code>
