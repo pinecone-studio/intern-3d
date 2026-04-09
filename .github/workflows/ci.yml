@@ -35,7 +35,7 @@ jobs:
       - name: Validate team scope
         run: node scripts/validate-team-scope.mjs
 
-      - run: npm ci
+      - run: npm install
 
       - name: Check Nx sync
         run: npm exec nx -- sync:check
