@@ -3,8 +3,12 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
+    "lucide-react": "^1.7.0",
     "next": "~16.0.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.3"
   }
 }

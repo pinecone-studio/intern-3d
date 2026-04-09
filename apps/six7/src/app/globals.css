@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 3%;
+  --foreground: 0 0% 96%;
+  --card: 0 0% 6%;
+  --card-foreground: 0 0% 96%;
+  --popover: 0 0% 6%;
+  --popover-foreground: 0 0% 96%;
+  --primary: 0 0% 96%;
+  --primary-foreground: 0 0% 7%;
+  --secondary: 0 0% 9%;
+  --secondary-foreground: 0 0% 96%;
+  --muted: 0 0% 9%;
+  --muted-foreground: 0 0% 63%;
+  --accent: 0 0% 12%;
+  --accent-foreground: 0 0% 96%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 0 0% 18%;
+  --input: 0 0% 14%;
+  --ring: 0 0% 84%;
+  --chart-1: 183 100% 74%;
+  --chart-2: 210 100% 69%;
+  --chart-3: 145 63% 49%;
+  --chart-4: 34 100% 61%;
+  --radius: 0.5rem;
+  --sidebar: 0 0% 2%;
+  --sidebar-foreground: 0 0% 92%;
+  --sidebar-primary: 0 0% 96%;
+  --sidebar-primary-foreground: 0 0% 7%;
+  --sidebar-accent: 0 0% 10%;
+  --sidebar-accent-foreground: 0 0% 98%;
+  --sidebar-border: 0 0% 13%;
+  --sidebar-ring: 0 0% 84%;
+  --success: 145 63% 49%;
+  --success-foreground: 0 0% 7%;
+  --warning: 34 100% 61%;
+  --warning-foreground: 0 0% 7%;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background font-sans text-foreground;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+}
