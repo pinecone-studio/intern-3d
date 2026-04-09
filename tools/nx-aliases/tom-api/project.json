@@ -1,0 +1,14 @@
+{
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "name": "TOM-api",
+  "projectType": "application",
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "command": "nx run @org/api:serve"
+      }
+    }
+  }
+}

@@ -4,13 +4,7 @@
   "files": [],
   "references": [
     {
-      "path": "./apps/web"
-    },
-    {
       "path": "./apps/api-e2e"
-    },
-    {
-      "path": "./apps/api"
     },
     {
       "path": "./apps/Team2-something-project-e2e"
@@ -23,6 +17,12 @@
     },
     {
       "path": "./apps/six7"
+    },
+    {
+      "path": "./apps/TOM-api"
+    },
+    {
+      "path": "./apps/TOM-web"
     }
   ]
 }
