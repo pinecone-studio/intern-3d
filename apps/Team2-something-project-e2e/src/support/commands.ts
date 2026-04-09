@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 
-declare module 'cypress' {
-  interface Chainable {
+declare namespace Cypress {
+  interface Chainable<Subject> {
     login(email: string, password: string): void;
   }
 }
