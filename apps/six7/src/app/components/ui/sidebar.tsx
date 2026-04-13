@@ -62,7 +62,7 @@ function Sidebar({ className, children }: React.ComponentProps<'aside'>) {
         {children}
       </aside>
       {openMobile && (
-        <div className="fixed inset-0 z-50 bg-black/60 lg:hidden">
+        <div className="fixed inset-0 z-50 bg-sidebar/35 backdrop-blur-sm lg:hidden">
           <button
             type="button"
             aria-label="Цэс хаах"
@@ -85,7 +85,10 @@ function Sidebar({ className, children }: React.ComponentProps<'aside'>) {
 
 function SidebarHeader({ className, ...props }: React.ComponentProps<'div'>) {
   return (
-    <div className={cn('border-b border-sidebar-border', className)} {...props} />
+    <div
+      className={cn('border-b border-sidebar-border bg-sidebar', className)}
+      {...props}
+    />
   )
 }
 
@@ -97,7 +100,10 @@ function SidebarContent({ className, ...props }: React.ComponentProps<'div'>) {
 
 function SidebarFooter({ className, ...props }: React.ComponentProps<'div'>) {
   return (
-    <div className={cn('mt-auto border-t border-sidebar-border', className)} {...props} />
+    <div
+      className={cn('mt-auto border-t border-sidebar-border bg-sidebar', className)}
+      {...props}
+    />
   )
 }
 
@@ -113,7 +119,10 @@ function SidebarGroupLabel({
 }: React.ComponentProps<'p'>) {
   return (
     <p
-      className={cn('px-3 pb-3 text-xs uppercase tracking-[0.22em] text-muted-foreground', className)}
+      className={cn(
+        'px-3 pb-3 text-xs uppercase tracking-[0.22em] text-sidebar-foreground/50',
+        className,
+      )}
       {...props}
     />
   )
@@ -152,7 +161,7 @@ function SidebarMenuButton({
     <div
       data-active={isActive ? 'true' : 'false'}
       className={cn(
-        'flex w-full items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 text-left text-sm text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground',
+        'flex w-full items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 text-left text-sm text-sidebar-foreground/78 transition-all hover:border-sidebar-border hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:border-sidebar-border data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground',
         className,
       )}
       {...props}
@@ -172,7 +181,7 @@ function SidebarTrigger({
       type="button"
       aria-label="Цэс нээх"
       className={cn(
-        'inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground lg:hidden',
+        'inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:border-accent hover:bg-accent/15 hover:text-foreground lg:hidden',
         className,
       )}
       onClick={(event) => {

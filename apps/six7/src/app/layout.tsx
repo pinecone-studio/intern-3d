@@ -9,11 +9,6 @@ export const metadata: Metadata = {
     icon: [
       {
         url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
       },
       {
         url: '/icon.svg',
@@ -31,7 +26,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="mn">
-      <body className="font-sans antialiased">{children}</body>
+      <body className="bg-background font-sans text-foreground antialiased">
+        {children}
+      </body>
     </html>
   )
 }

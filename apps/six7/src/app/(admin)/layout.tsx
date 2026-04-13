@@ -1,4 +1,3 @@
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/app-sidebar'
 
 export default function AdminLayout({
@@ -7,9 +6,9 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   return (
-    <SidebarProvider>
+    <div className="min-h-screen bg-background">
       <AppSidebar />
-      <SidebarInset>{children}</SidebarInset>
-    </SidebarProvider>
+      <div>{children}</div>
+    </div>
   )
 }
