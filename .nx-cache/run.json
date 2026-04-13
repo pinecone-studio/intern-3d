@@ -1,0 +1,21 @@
+{
+  "run": {
+    "command": "nx build @org/web",
+    "startTime": "2026-04-13T03:44:42.897Z",
+    "endTime": "2026-04-13T03:45:14.092Z",
+    "inner": false
+  },
+  "tasks": [
+    {
+      "taskId": "@org/web:build",
+      "target": "build",
+      "projectName": "@org/web",
+      "hash": "10839339321226941536",
+      "startTime": "2026-04-13T03:44:42.912Z",
+      "endTime": "2026-04-13T03:45:05.210Z",
+      "params": "",
+      "cacheStatus": "cache-miss",
+      "status": 0
+    }
+  ]
+}

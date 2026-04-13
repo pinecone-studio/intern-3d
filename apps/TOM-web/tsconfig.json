@@ -30,8 +30,11 @@
     "src/**/*.tsx",
     "src/**/*.js",
     "src/**/*.jsx",
-    "../../apps/web/.next/types/**/*.ts",
-    "../../dist/apps/web/.next/types/**/*.ts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "../../dist/apps/TOM-web/.next/types/**/*.ts",
+    "../../dist/apps/TOM-web/.next/dev/types/**/*.ts",
+    "index.d.ts",
     "next-env.d.ts"
   ],
   "exclude": [

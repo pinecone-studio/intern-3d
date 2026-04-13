@@ -1,0 +1,22 @@
+[2m> [22mnext build
+
+[1m[38;2;173;127;168m▲ Next.js 16.1.7[39m[22m (Turbopack)
+
+[37m[1m [22m[39m Creating an optimized production build ...
+[32m[1m✓[22m[39m Compiled successfully in 4.6s
+[37m[1m [22m[39m Running TypeScript ...
+[33m[1m⚠[22m[39m TypeScript project references are not fully supported. Attempting to build in incremental mode.
+[37m[1m [22m[39m Collecting page data using 11 workers ...
+[37m[1m [22m[39m Generating static pages using 11 workers (0/3) ...
+[32m[1m✓[22m[39m Generating static pages using 11 workers (3/3) in 488.7ms
+[37m[1m [22m[39m Finalizing page optimization ...
+
+[4mRoute (app)[24m
+┌ ƒ /
+├ ○ /_not-found
+└ ƒ /api/hello
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

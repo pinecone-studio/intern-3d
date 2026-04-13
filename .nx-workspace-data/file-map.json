@@ -1,0 +1,1210 @@
+{
+  "version": "6.0",
+  "nxVersion": "22.6.2",
+  "pathMappings": {},
+  "nxJsonPlugins": [
+    {
+      "name": "@nx/js/typescript",
+      "options": {
+        "typecheck": {
+          "targetName": "typecheck"
+        },
+        "build": {
+          "targetName": "build",
+          "configName": "tsconfig.lib.json",
+          "buildDepsName": "build-deps",
+          "watchDepsName": "watch-deps"
+        }
+      }
+    },
+    {
+      "name": "@nx/next/plugin",
+      "options": {
+        "startTargetName": "start",
+        "buildTargetName": "build",
+        "devTargetName": "dev",
+        "serveStaticTargetName": "serve-static",
+        "buildDepsTargetName": "build-deps",
+        "watchDepsTargetName": "watch-deps"
+      }
+    },
+    {
+      "name": "@nx/eslint/plugin",
+      "options": {
+        "targetName": "lint"
+      }
+    },
+    {
+      "name": "@nx/webpack/plugin",
+      "options": {
+        "buildTargetName": "build",
+        "serveTargetName": "serve",
+        "previewTargetName": "preview",
+        "buildDepsTargetName": "build-deps",
+        "watchDepsTargetName": "watch-deps",
+        "serveStaticTargetName": "serve-static"
+      }
+    },
+    {
+      "name": "@nx/jest/plugin",
+      "options": {
+        "targetName": "test"
+      }
+    }
+  ],
+  "fileMap": {
+    "projectFileMap": {
+      "TOM-web": [
+        {
+          "file": "tools/nx-aliases/tom-web/project.json",
+          "hash": "16672381734221154052"
+        }
+      ],
+      "something-project": [
+        {
+          "file": "apps/Team2-something-project/.swcrc",
+          "hash": "12069132719648077729"
+        },
+        {
+          "file": "apps/Team2-something-project/eslint.config.mjs",
+          "hash": "825007401213781954"
+        },
+        {
+          "file": "apps/Team2-something-project/index.d.ts",
+          "hash": "17021007320214501298"
+        },
+        {
+          "file": "apps/Team2-something-project/jest.config.cts",
+          "hash": "18222595353892897322",
+          "deps": [
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/Team2-something-project/next-env.d.ts",
+          "hash": "10934712840805312151"
+        },
+        {
+          "file": "apps/Team2-something-project/next.config.js",
+          "hash": "13371823771401471881",
+          "deps": [
+            "npm:@nx/next"
+          ]
+        },
+        {
+          "file": "apps/Team2-something-project/package.json",
+          "hash": "10250154978112712286",
+          "deps": [
+            "npm:next",
+            "npm:react",
+            "npm:react-dom"
+          ]
+        },
+        {
+          "file": "apps/Team2-something-project/postcss.config.js",
+          "hash": "4080954692028639031"
+        },
+        {
+          "file": "apps/Team2-something-project/project.json",
+          "hash": "17011167993795613283"
+        },
+        {
+          "file": "apps/Team2-something-project/public/.gitkeep",
+          "hash": "15036214574332298676"
+        },
+        {
+          "file": "apps/Team2-something-project/public/favicon.ico",
+          "hash": "9303420814833116677"
+        },
+        {
+          "file": "apps/Team2-something-project/specs/index.spec.tsx",
+          "hash": "10504349828076870530",
+          "deps": [
+            "npm:react",
+            "npm:@testing-library/react"
+          ]
+        },
+        {
+          "file": "apps/Team2-something-project/src/app/api/hello/route.ts",
+          "hash": "18244437765430171986"
+        },
+        {
+          "file": "apps/Team2-something-project/src/app/global.css",
+          "hash": "8048010374768501078"
+        },
+        {
+          "file": "apps/Team2-something-project/src/app/layout.tsx",
+          "hash": "13143672828282750646"
+        },
+        {
+          "file": "apps/Team2-something-project/src/app/page.tsx",
+          "hash": "5010352792059021208"
+        },
+        {
+          "file": "apps/Team2-something-project/src/assets/.gitkeep",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "apps/Team2-something-project/tailwind.config.js",
+          "hash": "16909056210452442282"
+        },
+        {
+          "file": "apps/Team2-something-project/tsconfig.json",
+          "hash": "15568328275044761375"
+        },
+        {
+          "file": "apps/Team2-something-project/tsconfig.spec.json",
+          "hash": "3544105517587723566"
+        }
+      ],
+      "@org/api-e2e": [
+        {
+          "file": "apps/api-e2e/.spec.swcrc",
+          "hash": "768746774357467911"
+        },
+        {
+          "file": "apps/api-e2e/eslint.config.mjs",
+          "hash": "825007401213781954"
+        },
+        {
+          "file": "apps/api-e2e/jest.config.cts",
+          "hash": "2368772771140408357"
+        },
+        {
+          "file": "apps/api-e2e/package.json",
+          "hash": "14027761112088794324"
+        },
+        {
+          "file": "apps/api-e2e/src/api/api.spec.ts",
+          "hash": "3026045886657059088",
+          "deps": [
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "apps/api-e2e/src/support/global-setup.ts",
+          "hash": "16834055068596475974",
+          "deps": [
+            "npm:@nx/node"
+          ]
+        },
+        {
+          "file": "apps/api-e2e/src/support/global-teardown.ts",
+          "hash": "2871886327683970459",
+          "deps": [
+            "npm:@nx/node"
+          ]
+        },
+        {
+          "file": "apps/api-e2e/src/support/test-setup.ts",
+          "hash": "3131268884761417701",
+          "deps": [
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "apps/api-e2e/tsconfig.json",
+          "hash": "4334277301159915999"
+        }
+      ],
+      "TOM-api": [
+        {
+          "file": "tools/nx-aliases/tom-api/project.json",
+          "hash": "11768602584949234352"
+        }
+      ],
+      "@org/web": [
+        {
+          "file": "apps/TOM-web/.gitignore",
+          "hash": "4992891433223405819"
+        },
+        {
+          "file": "apps/TOM-web/.swcrc",
+          "hash": "12069132719648077729"
+        },
+        {
+          "file": "apps/TOM-web/eslint.config.mjs",
+          "hash": "15505187008754187591",
+          "deps": [
+            "npm:@next/eslint-plugin-next",
+            "npm:@nx/eslint-plugin"
+          ]
+        },
+        {
+          "file": "apps/TOM-web/index.d.ts",
+          "hash": "11294811534623520493"
+        },
+        {
+          "file": "apps/TOM-web/next-env.d.ts",
+          "hash": "6484222814074087555"
+        },
+        {
+          "file": "apps/TOM-web/next.config.js",
+          "hash": "14603169257730168001",
+          "deps": [
+            "npm:@nx/next"
+          ]
+        },
+        {
+          "file": "apps/TOM-web/package.json",
+          "hash": "14526727636690158456",
+          "deps": [
+            "npm:next",
+            "npm:react",
+            "npm:react-dom"
+          ]
+        },
+        {
+          "file": "apps/TOM-web/postcss.config.js",
+          "hash": "15486281244187232437"
+        },
+        {
+          "file": "apps/TOM-web/public/.gitkeep",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "apps/TOM-web/public/favicon.ico",
+          "hash": "9303420814833116677"
+        },
+        {
+          "file": "apps/TOM-web/src/app/api/hello/route.ts",
+          "hash": "12159998604013879547"
+        },
+        {
+          "file": "apps/TOM-web/src/app/components/dashboard/dashboard-content.tsx",
+          "hash": "17736902319756342890",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/TOM-web/src/app/components/dashboard/dashboard-knowledge-panels.tsx",
+          "hash": "2444467790398917113"
+        },
+        {
+          "file": "apps/TOM-web/src/app/components/dashboard/dashboard-overview.tsx",
+          "hash": "14069613925707775922"
+        },
+        {
+          "file": "apps/TOM-web/src/app/components/dashboard/dashboard-page.tsx",
+          "hash": "16759112225787328465",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/TOM-web/src/app/components/dashboard/dashboard-sections.ts",
+          "hash": "18153702225236983744"
+        },
+        {
+          "file": "apps/TOM-web/src/app/components/dashboard/dashboard-sidebar.tsx",
+          "hash": "1402509467601531351"
+        },
+        {
+          "file": "apps/TOM-web/src/app/components/dashboard/dashboard-topbar.tsx",
+          "hash": "6320488210900547557",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/TOM-web/src/app/components/dashboard/dashboard-ui.tsx",
+          "hash": "10509393115136407811",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/TOM-web/src/app/components/dashboard/dashboard-work-panels.tsx",
+          "hash": "976432537257105059"
+        },
+        {
+          "file": "apps/TOM-web/src/app/components/dashboard/index.ts",
+          "hash": "12224390260049560207"
+        },
+        {
+          "file": "apps/TOM-web/src/app/components/header.jsx",
+          "hash": "15101087651358071733",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/TOM-web/src/app/components/sidebar.jsx",
+          "hash": "15751308292249371966",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/TOM-web/src/app/global.css",
+          "hash": "8550829931926614544"
+        },
+        {
+          "file": "apps/TOM-web/src/app/layout.tsx",
+          "hash": "14042518363144740781"
+        },
+        {
+          "file": "apps/TOM-web/src/app/page.tsx",
+          "hash": "15407076477217078412"
+        },
+        {
+          "file": "apps/TOM-web/tailwind.config.js",
+          "hash": "2640595146937007306"
+        },
+        {
+          "file": "apps/TOM-web/tsconfig.json",
+          "hash": "6987688005759810907"
+        }
+      ],
+      "@org/api": [
+        {
+          "file": "apps/TOM-api/.gitignore",
+          "hash": "4992891433223405819"
+        },
+        {
+          "file": "apps/TOM-api/eslint.config.mjs",
+          "hash": "825007401213781954"
+        },
+        {
+          "file": "apps/TOM-api/package.json",
+          "hash": "10850240037656152277",
+          "deps": [
+            "npm:@supabase/supabase-js",
+            "npm:dotenv",
+            "npm:express"
+          ]
+        },
+        {
+          "file": "apps/TOM-api/src/assets/.gitkeep",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "apps/TOM-api/src/main.ts",
+          "hash": "7081655583027242422",
+          "deps": [
+            "npm:dotenv",
+            "npm:express",
+            "npm:@supabase/supabase-js"
+          ]
+        },
+        {
+          "file": "apps/TOM-api/tsconfig.app.json",
+          "hash": "16202210979526579248"
+        },
+        {
+          "file": "apps/TOM-api/tsconfig.json",
+          "hash": "14572479171357150719"
+        },
+        {
+          "file": "apps/TOM-api/webpack.config.js",
+          "hash": "9262031190101007881",
+          "deps": [
+            "npm:@nx/webpack"
+          ]
+        }
+      ],
+      "six7": [
+        {
+          "file": "apps/six7/.swcrc",
+          "hash": "12069132719648077729"
+        },
+        {
+          "file": "apps/six7/components.json",
+          "hash": "13573191095602546391"
+        },
+        {
+          "file": "apps/six7/eslint.config.mjs",
+          "hash": "8791215012740833962",
+          "deps": [
+            "npm:@next/eslint-plugin-next",
+            "npm:@nx/eslint-plugin"
+          ]
+        },
+        {
+          "file": "apps/six7/index.d.ts",
+          "hash": "17021007320214501298"
+        },
+        {
+          "file": "apps/six7/jest.config.cts",
+          "hash": "8427923488350801376",
+          "deps": [
+            "npm:next@16.0.11"
+          ]
+        },
+        {
+          "file": "apps/six7/next-env.d.ts",
+          "hash": "6484222814074087555"
+        },
+        {
+          "file": "apps/six7/next.config.js",
+          "hash": "7869542326923865401",
+          "deps": [
+            "npm:@nx/next"
+          ]
+        },
+        {
+          "file": "apps/six7/package.json",
+          "hash": "13319098641745741845",
+          "deps": [
+            "npm:tailwindcss",
+            "npm:lucide-react",
+            "npm:next@16.0.11",
+            "npm:react",
+            "npm:react-dom"
+          ]
+        },
+        {
+          "file": "apps/six7/postcss.config.js",
+          "hash": "3026948049143515272"
+        },
+        {
+          "file": "apps/six7/project.json",
+          "hash": "13605411319950595169"
+        },
+        {
+          "file": "apps/six7/public/apple-icon.png",
+          "hash": "13835920650391744415"
+        },
+        {
+          "file": "apps/six7/public/icon-dark-32x32.png",
+          "hash": "13589140278774312634"
+        },
+        {
+          "file": "apps/six7/public/icon-light-32x32.png",
+          "hash": "5039890013555802910"
+        },
+        {
+          "file": "apps/six7/public/icon.svg",
+          "hash": "16574245017290722913"
+        },
+        {
+          "file": "apps/six7/public/placeholder-logo.png",
+          "hash": "11980608477649404665"
+        },
+        {
+          "file": "apps/six7/public/placeholder-logo.svg",
+          "hash": "16087407587954228261"
+        },
+        {
+          "file": "apps/six7/public/placeholder-user.jpg",
+          "hash": "1791361555052276298"
+        },
+        {
+          "file": "apps/six7/public/placeholder.jpg",
+          "hash": "17969422676179785816"
+        },
+        {
+          "file": "apps/six7/public/placeholder.svg",
+          "hash": "8334994000532407949"
+        },
+        {
+          "file": "apps/six7/specs/index.spec.tsx",
+          "hash": "10504349828076870530",
+          "deps": [
+            "npm:react",
+            "npm:@testing-library/react"
+          ]
+        },
+        {
+          "file": "apps/six7/src/.gitignore",
+          "hash": "14110011414290072733"
+        },
+        {
+          "file": "apps/six7/src/app/(admin)/audit/page.tsx",
+          "hash": "17227006004962301030",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/six7/src/app/(admin)/documents/page.tsx",
+          "hash": "17419287881304345013",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/six7/src/app/(admin)/layout.tsx",
+          "hash": "3970711874469516295"
+        },
+        {
+          "file": "apps/six7/src/app/(admin)/page.tsx",
+          "hash": "2630777709625269208"
+        },
+        {
+          "file": "apps/six7/src/app/(admin)/registry/page.tsx",
+          "hash": "13063914506842817037"
+        },
+        {
+          "file": "apps/six7/src/app/(admin)/settings/page.tsx",
+          "hash": "15146496207935951529"
+        },
+        {
+          "file": "apps/six7/src/app/(admin)/trigger/page.tsx",
+          "hash": "588101149774518485",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/six7/src/app/components/app-header.tsx",
+          "hash": "4016658818636355843",
+          "deps": [
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/six7/src/app/components/app-sidebar.tsx",
+          "hash": "522338508278920904",
+          "deps": [
+            "npm:next@16.0.11",
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/six7/src/app/components/audit/audit-detail-drawer.tsx",
+          "hash": "9520317234906043927"
+        },
+        {
+          "file": "apps/six7/src/app/components/audit/audit-table.tsx",
+          "hash": "2413408670546143331"
+        },
+        {
+          "file": "apps/six7/src/app/components/dashboard/action-distribution-chart.tsx",
+          "hash": "14669196059683715380"
+        },
+        {
+          "file": "apps/six7/src/app/components/dashboard/activity-feed.tsx",
+          "hash": "14997872319814826766"
+        },
+        {
+          "file": "apps/six7/src/app/components/dashboard/demo-flow.tsx",
+          "hash": "2136106758146110251",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/six7/src/app/components/dashboard/quick-actions.tsx",
+          "hash": "3336356706833581313",
+          "deps": [
+            "npm:next@16.0.11",
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/six7/src/app/components/dashboard/recent-jobs-table.tsx",
+          "hash": "9430294201246685180",
+          "deps": [
+            "npm:next@16.0.11",
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/six7/src/app/components/dashboard/stats-cards.tsx",
+          "hash": "15195503872779100447",
+          "deps": [
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/six7/src/app/components/documents/document-filters.tsx",
+          "hash": "5615277195124693842"
+        },
+        {
+          "file": "apps/six7/src/app/components/documents/document-table.tsx",
+          "hash": "13964611395634707417",
+          "deps": [
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/six7/src/app/components/registry/action-card.tsx",
+          "hash": "7151561211179263214",
+          "deps": [
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/six7/src/app/components/status-badge.tsx",
+          "hash": "4641393014495105020"
+        },
+        {
+          "file": "apps/six7/src/app/components/trigger/job-timeline.tsx",
+          "hash": "877675435720609590"
+        },
+        {
+          "file": "apps/six7/src/app/components/trigger/trigger-form.tsx",
+          "hash": "9593013570486892012"
+        },
+        {
+          "file": "apps/six7/src/app/components/ui/badge.tsx",
+          "hash": "12594272105246851371",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/six7/src/app/components/ui/button.tsx",
+          "hash": "17362797286284049553",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/six7/src/app/components/ui/card.tsx",
+          "hash": "12676426645281888623",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/six7/src/app/components/ui/field.tsx",
+          "hash": "5049058003709688943",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/six7/src/app/components/ui/input.tsx",
+          "hash": "5943178030613591021",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/six7/src/app/components/ui/label.tsx",
+          "hash": "1643792936698791443",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/six7/src/app/components/ui/select.tsx",
+          "hash": "3422166949501920946",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/six7/src/app/components/ui/sidebar.tsx",
+          "hash": "16009272162627135473",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/six7/src/app/components/ui/switch.tsx",
+          "hash": "17155661512791297017",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/six7/src/app/components/ui/table.tsx",
+          "hash": "1957391610482744267",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/six7/src/app/globals.css",
+          "hash": "14342722394159650603"
+        },
+        {
+          "file": "apps/six7/src/app/layout.tsx",
+          "hash": "6699138873361965861",
+          "deps": [
+            "npm:next@16.0.11"
+          ]
+        },
+        {
+          "file": "apps/six7/src/lib/mock-configs.ts",
+          "hash": "4117041238551250917"
+        },
+        {
+          "file": "apps/six7/src/lib/mock-data.ts",
+          "hash": "13559228895561027464"
+        },
+        {
+          "file": "apps/six7/src/lib/types.ts",
+          "hash": "17384190337157115354"
+        },
+        {
+          "file": "apps/six7/src/lib/utils.ts",
+          "hash": "2706369000335034260"
+        },
+        {
+          "file": "apps/six7/tailwind.config.js",
+          "hash": "17878396745316078794"
+        },
+        {
+          "file": "apps/six7/tsconfig.json",
+          "hash": "912904879625709030"
+        },
+        {
+          "file": "apps/six7/tsconfig.spec.json",
+          "hash": "4490258700647344440"
+        }
+      ],
+      "something-project-e2e": [
+        {
+          "file": "apps/Team2-something-project-e2e/cypress.config.ts",
+          "hash": "8247505957692055517",
+          "deps": [
+            "npm:@nx/cypress",
+            "npm:cypress"
+          ]
+        },
+        {
+          "file": "apps/Team2-something-project-e2e/eslint.config.mjs",
+          "hash": "15244080759011249674",
+          "deps": [
+            "npm:eslint-plugin-cypress"
+          ]
+        },
+        {
+          "file": "apps/Team2-something-project-e2e/package.json",
+          "hash": "2062194969447442184"
+        },
+        {
+          "file": "apps/Team2-something-project-e2e/project.json",
+          "hash": "2166508557820961002"
+        },
+        {
+          "file": "apps/Team2-something-project-e2e/src/e2e/app.cy.ts",
+          "hash": "469115075072041657"
+        },
+        {
+          "file": "apps/Team2-something-project-e2e/src/fixtures/example.json",
+          "hash": "12668064902834313840"
+        },
+        {
+          "file": "apps/Team2-something-project-e2e/src/support/app.po.ts",
+          "hash": "5364106453863571025"
+        },
+        {
+          "file": "apps/Team2-something-project-e2e/src/support/commands.ts",
+          "hash": "9568851493037506681"
+        },
+        {
+          "file": "apps/Team2-something-project-e2e/src/support/e2e.ts",
+          "hash": "16720691089665755628"
+        },
+        {
+          "file": "apps/Team2-something-project-e2e/tsconfig.json",
+          "hash": "168887157171126392"
+        }
+      ],
+      "six7-e2e": [
+        {
+          "file": "apps/six7-e2e/cypress.config.ts",
+          "hash": "12344511457354963222",
+          "deps": [
+            "npm:@nx/cypress",
+            "npm:cypress"
+          ]
+        },
+        {
+          "file": "apps/six7-e2e/eslint.config.mjs",
+          "hash": "3599541132905828811",
+          "deps": [
+            "npm:eslint-plugin-cypress"
+          ]
+        },
+        {
+          "file": "apps/six7-e2e/package.json",
+          "hash": "8524357823430714636"
+        },
+        {
+          "file": "apps/six7-e2e/project.json",
+          "hash": "14668769767973318668"
+        },
+        {
+          "file": "apps/six7-e2e/src/e2e/app.cy.ts",
+          "hash": "10555014921507870398"
+        },
+        {
+          "file": "apps/six7-e2e/src/fixtures/example.json",
+          "hash": "13882982864087580737"
+        },
+        {
+          "file": "apps/six7-e2e/src/support/app.po.ts",
+          "hash": "5364106453863571025"
+        },
+        {
+          "file": "apps/six7-e2e/src/support/commands.ts",
+          "hash": "7570864621153670540"
+        },
+        {
+          "file": "apps/six7-e2e/src/support/e2e.ts",
+          "hash": "14369563060992369541"
+        },
+        {
+          "file": "apps/six7-e2e/tsconfig.json",
+          "hash": "168887157171126392"
+        }
+      ]
+    },
+    "nonProjectFiles": [
+      {
+        "file": ".agents/skills/link-workspace-packages/SKILL.md",
+        "hash": "15436383388001770446"
+      },
+      {
+        "file": ".agents/skills/monitor-ci/SKILL.md",
+        "hash": "17097519773779096773"
+      },
+      {
+        "file": ".agents/skills/monitor-ci/references/fix-flows.md",
+        "hash": "10043923144049437139"
+      },
+      {
+        "file": ".agents/skills/monitor-ci/scripts/ci-poll-decide.mjs",
+        "hash": "8571922304515286463"
+      },
+      {
+        "file": ".agents/skills/monitor-ci/scripts/ci-state-update.mjs",
+        "hash": "1300418153997961792"
+      },
+      {
+        "file": ".agents/skills/nx-generate/SKILL.md",
+        "hash": "9325031674722245942"
+      },
+      {
+        "file": ".agents/skills/nx-import/SKILL.md",
+        "hash": "5320545115991037698"
+      },
+      {
+        "file": ".agents/skills/nx-import/references/ESLINT.md",
+        "hash": "13530282936503679323"
+      },
+      {
+        "file": ".agents/skills/nx-import/references/GRADLE.md",
+        "hash": "3571850575232446918"
+      },
+      {
+        "file": ".agents/skills/nx-import/references/JEST.md",
+        "hash": "17388362190464741914"
+      },
+      {
+        "file": ".agents/skills/nx-import/references/NEXT.md",
+        "hash": "10590097548337933652"
+      },
+      {
+        "file": ".agents/skills/nx-import/references/TURBOREPO.md",
+        "hash": "16683618674426785182"
+      },
+      {
+        "file": ".agents/skills/nx-import/references/VITE.md",
+        "hash": "18159188461087437582"
+      },
+      {
+        "file": ".agents/skills/nx-plugins/SKILL.md",
+        "hash": "17761452540263218782"
+      },
+      {
+        "file": ".agents/skills/nx-run-tasks/SKILL.md",
+        "hash": "6310165843200780094"
+      },
+      {
+        "file": ".agents/skills/nx-workspace/SKILL.md",
+        "hash": "12877893594506374684"
+      },
+      {
+        "file": ".agents/skills/nx-workspace/references/AFFECTED.md",
+        "hash": "5689225252238354455"
+      },
+      {
+        "file": ".claude/settings.json",
+        "hash": "18303455419173892241"
+      },
+      {
+        "file": ".codex/config.toml",
+        "hash": "14824829763614501486"
+      },
+      {
+        "file": ".github/agents/ci-monitor-subagent.agent.md",
+        "hash": "9330328125511211617"
+      },
+      {
+        "file": ".github/prompts/monitor-ci.prompt.md",
+        "hash": "3375988900519478519"
+      },
+      {
+        "file": ".github/skills/link-workspace-packages/SKILL.md",
+        "hash": "15436383388001770446"
+      },
+      {
+        "file": ".github/skills/monitor-ci/SKILL.md",
+        "hash": "17097519773779096773"
+      },
+      {
+        "file": ".github/skills/monitor-ci/references/fix-flows.md",
+        "hash": "10043923144049437139"
+      },
+      {
+        "file": ".github/skills/monitor-ci/scripts/ci-poll-decide.mjs",
+        "hash": "8571922304515286463"
+      },
+      {
+        "file": ".github/skills/monitor-ci/scripts/ci-state-update.mjs",
+        "hash": "1300418153997961792"
+      },
+      {
+        "file": ".github/skills/nx-generate/SKILL.md",
+        "hash": "9325031674722245942"
+      },
+      {
+        "file": ".github/skills/nx-import/SKILL.md",
+        "hash": "5320545115991037698"
+      },
+      {
+        "file": ".github/skills/nx-import/references/ESLINT.md",
+        "hash": "13530282936503679323"
+      },
+      {
+        "file": ".github/skills/nx-import/references/GRADLE.md",
+        "hash": "3571850575232446918"
+      },
+      {
+        "file": ".github/skills/nx-import/references/JEST.md",
+        "hash": "17388362190464741914"
+      },
+      {
+        "file": ".github/skills/nx-import/references/NEXT.md",
+        "hash": "10590097548337933652"
+      },
+      {
+        "file": ".github/skills/nx-import/references/TURBOREPO.md",
+        "hash": "16683618674426785182"
+      },
+      {
+        "file": ".github/skills/nx-import/references/VITE.md",
+        "hash": "18159188461087437582"
+      },
+      {
+        "file": ".github/skills/nx-plugins/SKILL.md",
+        "hash": "17761452540263218782"
+      },
+      {
+        "file": ".github/skills/nx-run-tasks/SKILL.md",
+        "hash": "6310165843200780094"
+      },
+      {
+        "file": ".github/skills/nx-workspace/SKILL.md",
+        "hash": "12877893594506374684"
+      },
+      {
+        "file": ".github/skills/nx-workspace/references/AFFECTED.md",
+        "hash": "5689225252238354455"
+      },
+      {
+        "file": ".github/workflows/cd.yml",
+        "hash": "5396968123412997080"
+      },
+      {
+        "file": ".github/workflows/ci.yml",
+        "hash": "9542074713986031944"
+      },
+      {
+        "file": ".github/workflows/intern-metrics.yml",
+        "hash": "6053630072022650958"
+      },
+      {
+        "file": ".gitignore",
+        "hash": "2917582240511966709"
+      },
+      {
+        "file": ".nx-cache/run.json",
+        "hash": "13368517538230384157"
+      },
+      {
+        "file": ".nx-cache/terminalOutputs/11634356476086000275",
+        "hash": "15467117975880751626"
+      },
+      {
+        "file": ".nx-cache/terminalOutputs/11740108105452368261",
+        "hash": "12705124250163571497"
+      },
+      {
+        "file": ".nx-cache/terminalOutputs/14794462457370321377",
+        "hash": "8477288863400588612"
+      },
+      {
+        "file": ".nx-cache/terminalOutputs/16150264498328230857",
+        "hash": "5615816176378840455"
+      },
+      {
+        "file": ".nx-cache/terminalOutputs/16673130955398089989",
+        "hash": "2059632442773861822"
+      },
+      {
+        "file": ".nx-cache/terminalOutputs/17991600409697610850",
+        "hash": "12417852433306968492"
+      },
+      {
+        "file": ".nx-cache/terminalOutputs/3722557819531316127",
+        "hash": "6414922505441625684"
+      },
+      {
+        "file": ".nx-cache/terminalOutputs/7072146404342484568",
+        "hash": "9455102661102586924"
+      },
+      {
+        "file": ".nx-workspace-data/1af0707d-66db-4e27-8443-d34ba8440ac4.db",
+        "hash": "14660584110812549181"
+      },
+      {
+        "file": ".nx-workspace-data/1af0707d-66db-4e27-8443-d34ba8440ac4.db-shm",
+        "hash": "15233962137350295431"
+      },
+      {
+        "file": ".nx-workspace-data/1af0707d-66db-4e27-8443-d34ba8440ac4.db-wal",
+        "hash": "5152920336494232991"
+      },
+      {
+        "file": ".nx-workspace-data/1af0707d-66db-4e27-8443-d34ba8440ac4.lock",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": ".nx-workspace-data/eslint-2654242865465226088.hash",
+        "hash": "17042273650643950285"
+      },
+      {
+        "file": ".nx-workspace-data/file-map.json",
+        "hash": "13784806979750786148"
+      },
+      {
+        "file": ".nx-workspace-data/jest-7930610538513362720.hash",
+        "hash": "10563336484117144776"
+      },
+      {
+        "file": ".nx-workspace-data/lockfile-dependencies.hash",
+        "hash": "6303626769069170599"
+      },
+      {
+        "file": ".nx-workspace-data/lockfile-nodes.hash",
+        "hash": "6303626769069170599"
+      },
+      {
+        "file": ".nx-workspace-data/next-17064054913098911197.json",
+        "hash": "12319995088137540302"
+      },
+      {
+        "file": ".nx-workspace-data/nx_files.nxt",
+        "hash": "13471323946666170145"
+      },
+      {
+        "file": ".nx-workspace-data/parsed-lock-file.dependencies.json",
+        "hash": "7026423308432837709"
+      },
+      {
+        "file": ".nx-workspace-data/parsed-lock-file.nodes.json",
+        "hash": "14061482850437179516"
+      },
+      {
+        "file": ".nx-workspace-data/project-graph.json",
+        "hash": "4203682619900249887"
+      },
+      {
+        "file": ".nx-workspace-data/project-graph.lock",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": ".nx-workspace-data/source-maps.json",
+        "hash": "12733455177789712120"
+      },
+      {
+        "file": ".nx-workspace-data/tsc-2568428459166798129.hash",
+        "hash": "9795616984714051767"
+      },
+      {
+        "file": ".nx-workspace-data/tsconfig-files.hash",
+        "hash": "11206091649864257318"
+      },
+      {
+        "file": ".nx-workspace-data/webpack-7566275343909617285.hash",
+        "hash": "6998662676988619535"
+      },
+      {
+        "file": ".prettierignore",
+        "hash": "17085498363870782104"
+      },
+      {
+        "file": ".prettierrc",
+        "hash": "6820402234827505055"
+      },
+      {
+        "file": ".vscode/extensions.json",
+        "hash": "5271629927757201771"
+      },
+      {
+        "file": ".vscode/launch.json",
+        "hash": "5291176837647693363"
+      },
+      {
+        "file": "AGENTS.md",
+        "hash": "5250347750826082732"
+      },
+      {
+        "file": "CLAUDE.md",
+        "hash": "5250347750826082732"
+      },
+      {
+        "file": "README.md",
+        "hash": "10389363356309339480"
+      },
+      {
+        "file": "eslint.config.mjs",
+        "hash": "1750064783103198479"
+      },
+      {
+        "file": "jest.config.ts",
+        "hash": "9882362695153092473"
+      },
+      {
+        "file": "jest.preset.js",
+        "hash": "7473220183190921152"
+      },
+      {
+        "file": "nx.json",
+        "hash": "18035354002406484256"
+      },
+      {
+        "file": "package-lock.json",
+        "hash": "10643614337143286145"
+      },
+      {
+        "file": "package.json",
+        "hash": "7594318778819296403"
+      },
+      {
+        "file": "packages/.gitkeep",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": "scripts/resolve-ci-scope.mjs",
+        "hash": "15516972083791292092"
+      },
+      {
+        "file": "scripts/validate-team-scope.mjs",
+        "hash": "9748793059936127007"
+      },
+      {
+        "file": "tsconfig.base.json",
+        "hash": "4315321399922957604"
+      },
+      {
+        "file": "tsconfig.json",
+        "hash": "56616128162655489"
+      }
+    ]
+  },
+  "externalNodesHash": "810572461794311070"
+}
