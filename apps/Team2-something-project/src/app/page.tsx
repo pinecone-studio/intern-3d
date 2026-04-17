@@ -1,7 +1,7 @@
 const cards = [
   {
     title: 'App Router Ready',
-    text: 'This project now uses the same Next.js app structure as six7.',
+    text: 'This project now uses the shared Next.js app structure from the workspace.',
   },
   {
     title: 'Nx Targets',

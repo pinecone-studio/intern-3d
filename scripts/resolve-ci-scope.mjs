@@ -3,7 +3,6 @@
 import { appendFileSync, existsSync, readFileSync } from 'node:fs';
 
 const TEAM_PROJECTS = {
-  six7: ['six7', 'six7-e2e'],
   TOM: ['@org/web', '@org/api', '@org/api-e2e'],
   team2: ['something-project', 'something-project-e2e'],
 };
@@ -22,6 +21,10 @@ function getTeamLabel(event) {
   const labels = event.pull_request.labels
     .map((label) => label.name)
     .filter((label) => Object.hasOwn(TEAM_PROJECTS, label));
+
+  if (labels.length === 0) {
+    return null;
+  }
 
   if (labels.length !== 1) {
     throw new Error(
@@ -54,6 +57,15 @@ function main() {
   }
 
   const team = getTeamLabel(event);
+
+  if (!team) {
+    setOutput('is_pr', 'true');
+    setOutput('team', '');
+    setOutput('projects', '');
+    console.log('No team label detected; CI should use full workspace scope.');
+    return;
+  }
+
   const projects = TEAM_PROJECTS[team].join(',');
 
   setOutput('is_pr', 'true');

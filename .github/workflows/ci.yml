@@ -44,14 +44,14 @@ jobs:
       - name: Check Nx sync
         run: npm exec nx -- sync:check
 
-      - name: Lint and build team projects (PR)
-        if: ${{ github.event_name == 'pull_request' }}
+      - name: Lint and build team projects (labeled PR)
+        if: ${{ github.event_name == 'pull_request' && steps.ci_scope.outputs.projects != '' }}
         run: npm exec nx -- run-many -t lint build --projects="${{ steps.ci_scope.outputs.projects }}" --parallel=3
 
-      - name: Lint and build all projects (main)
-        if: ${{ github.event_name != 'pull_request' }}
+      - name: Lint and build all projects (main or unlabeled PR)
+        if: ${{ github.event_name != 'pull_request' || steps.ci_scope.outputs.projects == '' }}
         run: npm exec nx -- run-many -t lint build --all --parallel=3
 
-      - name: Typecheck API (TOM PR or main)
-        if: ${{ github.event_name != 'pull_request' || steps.ci_scope.outputs.team == 'TOM' }}
+      - name: Typecheck API (TOM PR, unlabeled PR, or main)
+        if: ${{ github.event_name != 'pull_request' || steps.ci_scope.outputs.team == 'TOM' || steps.ci_scope.outputs.team == '' }}
         run: npm exec nx -- run @org/api:typecheck

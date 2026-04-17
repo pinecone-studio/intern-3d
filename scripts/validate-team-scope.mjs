@@ -4,9 +4,6 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 
 const TEAM_RULES = {
-  six7: {
-    allowedPrefixes: ['apps/six7/', 'apps/six7-e2e/'],
-  },
   TOM: {
     allowedPrefixes: ['apps/TOM-web/', 'apps/TOM-api/', 'apps/api-e2e/'],
   },
@@ -53,6 +50,10 @@ function getTeamLabel(event) {
     .map((label) => label.name)
     .filter((label) => Object.hasOwn(TEAM_RULES, label));
 
+  if (labels.length === 0) {
+    return null;
+  }
+
   if (labels.length !== 1) {
     fail(
       `Expected exactly one team label on the pull request. Found: ${
@@ -98,6 +99,12 @@ function main() {
   }
 
   const team = getTeamLabel(event);
+
+  if (!team) {
+    console.log('No team label detected; skipping team scope validation.');
+    return;
+  }
+
   const baseSha = event.pull_request.base.sha;
   const headSha = event.pull_request.head.sha;
   const changedFiles = getChangedFiles(baseSha, headSha);
