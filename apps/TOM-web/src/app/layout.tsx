@@ -14,8 +14,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="mn">
-      <Header/>
-      <body className="min-h-screen">{children}</body>
+      <body className="min-h-screen">
+        <Header />
+        {children}
+      </body>
     </html>
   );
 }
