@@ -22,6 +22,10 @@ function getTeamLabel(event) {
     .map((label) => label.name)
     .filter((label) => Object.hasOwn(TEAM_PROJECTS, label));
 
+  if (labels.length === 0) {
+    return null;
+  }
+
   if (labels.length !== 1) {
     throw new Error(
       `Expected exactly one team label. Found: ${
@@ -53,6 +57,15 @@ function main() {
   }
 
   const team = getTeamLabel(event);
+
+  if (!team) {
+    setOutput('is_pr', 'true');
+    setOutput('team', '');
+    setOutput('projects', '');
+    console.log('No team label detected; CI should use full workspace scope.');
+    return;
+  }
+
   const projects = TEAM_PROJECTS[team].join(',');
 
   setOutput('is_pr', 'true');
