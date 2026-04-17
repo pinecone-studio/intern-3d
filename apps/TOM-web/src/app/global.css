@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 :root {
-  --background: #d7e9e3;
-  --surface: #fbf8f3;
+  --background: #eef5ff;
+  --surface: #f7fbff;
   --surface-strong: #ffffff;
-  --text: #29423e;
-  --muted: #7c9188;
-  --line: rgba(55, 88, 74, 0.08);
+  --text: #1b365d;
+  --muted: #7086a6;
+  --line: rgba(47, 83, 135, 0.1);
 }
 
 *,
@@ -47,8 +47,8 @@ svg {
 }
 
 ::selection {
-  background: rgba(88, 159, 133, 0.25);
-  color: #17302c;
+  background: rgba(143, 185, 245, 0.32);
+  color: #112a48;
 }
 
 .dashboard-shell {
@@ -63,10 +63,10 @@ svg {
   z-index: -1;
   pointer-events: none;
   background-image:
-    radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.72), transparent 22%),
-    radial-gradient(circle at 82% 10%, rgba(117, 187, 166, 0.22), transparent 20%),
-    linear-gradient(rgba(72, 104, 90, 0.055) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(72, 104, 90, 0.055) 1px, transparent 1px);
+    radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.92), transparent 22%),
+    radial-gradient(circle at 82% 10%, rgba(159, 196, 244, 0.32), transparent 20%),
+    linear-gradient(rgba(77, 117, 181, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(77, 117, 181, 0.06) 1px, transparent 1px);
   background-size: auto, auto, 92px 92px, 92px 92px;
   opacity: 1;
   -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 88%);
