@@ -51,27 +51,6 @@ svg {
   color: #112a48;
 }
 
-.dashboard-shell {
-  isolation: isolate;
-  position: relative;
-}
-
-.dashboard-shell::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-image:
-    radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.92), transparent 22%),
-    radial-gradient(circle at 82% 10%, rgba(159, 196, 244, 0.32), transparent 20%),
-    linear-gradient(rgba(77, 117, 181, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(77, 117, 181, 0.06) 1px, transparent 1px);
-  background-size: auto, auto, 92px 92px, 92px 92px;
-  opacity: 1;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 88%);
-  mask-image: linear-gradient(to bottom, #000 0%, transparent 88%);
-}
 
 .dashboard-entrance {
   animation: dashboardEntrance 720ms cubic-bezier(0.22, 1, 0.36, 1) both;

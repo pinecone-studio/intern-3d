@@ -1,178 +1,258 @@
+'use client';
+
+import { useState } from 'react';
+
+const teacherOptions = [
+  'Ms. Sarah Kim',
+  'Mr. Bat-Erdene',
+  'Ms. Naraa',
+  'Mr. Temuulen',
+];
+
+const dayOptions = [
+  'Mon, Wed, Fri',
+  'Tue, Thu',
+  'Wed, Sat',
+  'Mon, Tue, Thu',
+];
+
+const gradeOptions = [
+  'Grade 6A - 7B',
+  'Grade 6A - 6C',
+  'Grade 7A - 8B',
+  'Grade 9A - 10B',
+];
+
 const adminCards = [
   {
+    title: 'Approval flow',
+    description: 'Admins can override teacher decisions when needed.',
+  },
+  {
     title: 'Club setup',
-    value: 'Create clubs',
-    description:
-      'Add name, teacher, start and end dates, weekly days, class target, and student limit.',
+    description: 'Teacher, dates, schedule, grade range, and student cap.',
   },
   {
-    title: 'Oversight',
-    value: 'Approve flow',
-    description:
-      'Decide whether admins approve directly or let teachers manage requests under supervision.',
-  },
-  {
-    title: 'Capacity',
-    value: 'Limit control',
-    description:
-      'Stop new requests automatically when the club limit has been reached.',
+    title: 'Capacity control',
+    description: 'Requests auto-close when the student limit is reached.',
   },
 ];
 
-const clubFields = [
-  'Club name',
-  'Teacher',
-  'Date range',
-  'Allowed days',
-  'Class / grade',
-  'Student limit',
-];
+const initialForm = {
+  clubName: '',
+  teacher: teacherOptions[0],
+  startDate: '2025-09-01',
+  endDate: '2025-12-20',
+  allowedDays: dayOptions[0],
+  gradeRange: gradeOptions[0],
+  studentLimit: '12',
+};
 
-const futureIdeas = [
-  'Teacher assignment per club',
-  'Approval override history',
-  'Attendance dashboard and reports',
-];
+export default function AdminDashboard() {
+  const [form, setForm] = useState(initialForm);
+  const [savedState, setSavedState] = useState<'idle' | 'draft' | 'created'>(
+    'idle'
+  );
 
-export default function AdminPage() {
+  const updateField = (field: keyof typeof initialForm, value: string) => {
+    setForm((current) => ({
+      ...current,
+      [field]: value,
+    }));
+    setSavedState('idle');
+  };
+
+  const handleCreate = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSavedState('created');
+  };
+
+  const handleSaveDraft = () => {
+    setSavedState('draft');
+  };
+
   return (
-    <main className="dashboard-shell min-h-screen px-4 py-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <section className="dashboard-entrance overflow-hidden rounded-[36px] border border-[#d6e4fb] bg-white/90 shadow-[0_28px_80px_rgba(15,39,87,0.12)] backdrop-blur">
-          <div className="grid gap-6 px-6 py-7 lg:grid-cols-[1.4fr_0.85fr] lg:px-8">
-            <div className="space-y-4">
-              <span className="inline-flex rounded-full bg-[#183a72] px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#eff5ff]">
-                Admin dashboard
-              </span>
-              <div className="space-y-3">
-                <h1 className="max-w-3xl text-3xl font-semibold tracking-tight text-[#142f52] sm:text-5xl">
-                  Create clubs and control the whole system
-                </h1>
-                <p className="max-w-2xl text-sm text-[#5d7696] sm:text-base">
-                  The admin layout works like the command center: club creation
-                  at the top, overview cards in the middle, and approvals or
-                  policy controls on the side.
-                </p>
-              </div>
-            </div>
+    <main className="mx-auto max-w-6xl p-4 sm:p-6">
+      <header className="mb-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+        <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-indigo-600">
+          Admin dashboard
+        </span>
+        <h1 className="text-2xl font-semibold text-slate-900 sm:text-3xl">
+          Create clubs and control the whole system
+        </h1>
+        <p className="mt-2 max-w-3xl text-sm text-slate-500 sm:text-base">
+          Set up clubs, assign teachers, configure schedules, and manage
+          capacity limits.
+        </p>
+      </header>
 
-            <div className="rounded-[30px] bg-[#173765] p-5 text-[#edf4ff] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-              <p className="text-xs uppercase tracking-[0.28em] text-[#b9cff0]">
-                First design pass
-              </p>
-              <h2 className="mt-2 text-2xl font-semibold">
-                Everything starts here
-              </h2>
-              <p className="mt-2 text-sm text-[#d6e5fb]">Admin control</p>
-              <div className="mt-6 grid grid-cols-2 gap-3">
-                <div className="rounded-3xl border border-white/10 bg-white/8 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-[#b8cff0]">
-                    Theme
-                  </p>
-                  <p className="mt-2 text-lg font-semibold">White</p>
-                </div>
-                <div className="rounded-3xl border border-white/10 bg-white/8 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-[#b8cff0]">
-                    Accent
-                  </p>
-                  <p className="mt-2 text-lg font-semibold">Pastel Blue</p>
-                </div>
-                <div className="rounded-3xl border border-white/10 bg-white/8 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-[#b8cff0]">
-                    Primary
-                  </p>
-                  <p className="mt-2 text-lg font-semibold">Navy</p>
-                </div>
-                <div className="rounded-3xl border border-white/10 bg-white/8 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-[#b8cff0]">
-                    Stage
-                  </p>
-                  <p className="mt-2 text-lg font-semibold">Skeleton</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-          <section className="dashboard-entrance rounded-[28px] border border-[#dce7f8] bg-white/92 p-5 shadow-[0_18px_60px_rgba(19,45,96,0.08)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.26em] text-[#6e86a7]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <div className="mb-5">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-400">
               Club creation form
             </p>
-            <h2 className="mt-2 text-2xl font-semibold text-[#183153]">
-              Admin adds and controls clubs
+            <h2 className="mt-2 text-xl font-semibold text-slate-900 sm:text-2xl">
+              Add a new club
             </h2>
+          </div>
 
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
-              {clubFields.map((field) => (
-                <label key={field} className="grid gap-2 text-sm text-[#4e6788]">
-                  <span className="font-medium text-[#28456d]">{field}</span>
-                  <div className="rounded-2xl border border-[#d8e4f7] bg-[#f8fbff] px-4 py-3 text-[#9ab0cc]">
-                    {field} goes here
-                  </div>
-                </label>
-              ))}
+          <form className="space-y-5" onSubmit={handleCreate}>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-slate-700">
+                  Club name
+                </span>
+                <input
+                  type="text"
+                  value={form.clubName}
+                  onChange={(event) =>
+                    updateField('clubName', event.target.value)
+                  }
+                  placeholder="e.g. English Club"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:bg-white"
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-slate-700">
+                  Teacher
+                </span>
+                <select
+                  value={form.teacher}
+                  onChange={(event) => updateField('teacher', event.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:bg-white"
+                >
+                  {teacherOptions.map((teacher) => (
+                    <option key={teacher} value={teacher}>
+                      {teacher}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-slate-700">
+                  Start date
+                </span>
+                <input
+                  type="date"
+                  value={form.startDate}
+                  onChange={(event) =>
+                    updateField('startDate', event.target.value)
+                  }
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:bg-white"
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-slate-700">
+                  End date
+                </span>
+                <input
+                  type="date"
+                  value={form.endDate}
+                  onChange={(event) => updateField('endDate', event.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:bg-white"
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-slate-700">
+                  Allowed days
+                </span>
+                <select
+                  value={form.allowedDays}
+                  onChange={(event) =>
+                    updateField('allowedDays', event.target.value)
+                  }
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:bg-white"
+                >
+                  {dayOptions.map((days) => (
+                    <option key={days} value={days}>
+                      {days}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-slate-700">
+                  Class / grade
+                </span>
+                <select
+                  value={form.gradeRange}
+                  onChange={(event) =>
+                    updateField('gradeRange', event.target.value)
+                  }
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:bg-white"
+                >
+                  {gradeOptions.map((grade) => (
+                    <option key={grade} value={grade}>
+                      {grade}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="block md:max-w-[180px]">
+                <span className="mb-2 block text-sm font-semibold text-slate-700">
+                  Student limit
+                </span>
+                <input
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={form.studentLimit}
+                  onChange={(event) =>
+                    updateField('studentLimit', event.target.value)
+                  }
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500 focus:bg-white"
+                />
+              </label>
             </div>
 
-            <div className="mt-5 flex flex-wrap gap-3">
+            <div className="flex flex-wrap items-center gap-3 pt-1">
               <button
-                type="button"
-                className="rounded-full bg-[#193a70] px-5 py-3 text-sm font-semibold text-white"
+                type="submit"
+                className="rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
               >
                 Create club
               </button>
               <button
                 type="button"
-                className="rounded-full bg-[#eaf1fb] px-5 py-3 text-sm font-semibold text-[#355987]"
+                onClick={handleSaveDraft}
+                className="rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 Save as draft
               </button>
+              <span className="text-sm text-slate-500">
+                {savedState === 'created'
+                  ? `Club ready: ${form.clubName || 'Untitled club'}`
+                  : savedState === 'draft'
+                  ? 'Draft saved locally'
+                  : 'Fill the form and choose the setup you want'}
+              </span>
             </div>
-          </section>
-
-          <div className="space-y-4">
-            <div className="grid gap-4">
-              {adminCards.map((item, index) => (
-                <article
-                  key={item.title}
-                  className={`dashboard-entrance rounded-[28px] border border-[#dce7f8] bg-white/92 p-5 shadow-[0_18px_60px_rgba(19,45,96,0.08)] ${
-                    index === 1
-                      ? 'dashboard-entrance-delay-1'
-                      : index === 2
-                      ? 'dashboard-entrance-delay-2'
-                      : ''
-                  }`}
-                >
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#6e86a7]">
-                    {item.title}
-                  </p>
-                  <h3 className="mt-2 text-xl font-semibold text-[#183153]">
-                    {item.value}
-                  </h3>
-                  <p className="mt-2 text-sm text-[#57708f]">
-                    {item.description}
-                  </p>
-                </article>
-              ))}
-            </div>
-
-            <section className="dashboard-entrance dashboard-entrance-delay-2 rounded-[28px] border border-[#dce7f8] bg-[#f6faff]/95 p-5 shadow-[0_18px_60px_rgba(19,45,96,0.05)]">
-              <h3 className="text-xl font-semibold text-[#183153]">
-                Future admin panel ideas
-              </h3>
-              <div className="mt-4 space-y-2">
-                {futureIdeas.map((item) => (
-                  <div
-                    key={item}
-                    className="rounded-2xl bg-white px-4 py-3 text-sm text-[#557091] ring-1 ring-[#e1eafb]"
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </section>
-          </div>
+          </form>
         </section>
+
+        <aside className="space-y-4">
+          {adminCards.map((card) => (
+            <section
+              key={card.title}
+              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+            >
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">
+                System control
+              </p>
+              <h3 className="mt-2 text-lg font-semibold text-slate-900">
+                {card.title}
+              </h3>
+              <p className="mt-2 text-sm text-slate-500">{card.description}</p>
+            </section>
+          ))}
+        </aside>
       </div>
     </main>
   );

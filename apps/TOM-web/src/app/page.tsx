@@ -20,23 +20,17 @@ const roleLinks = [
 
 export default function HomePage() {
   return (
-    <main className="dashboard-shell min-h-screen px-4 py-6 sm:px-6 lg:px-8">
+    <main className=" min-h-screen px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl space-y-6">
-        <section className="overflow-hidden rounded-[36px] border border-[#d6e4fb] bg-white/90 ">
+        <section className="overflow-hidden rounded-[36px] border border-[#d6e4fb] bg-white ">
           <div className="grid gap-6 px-6 py-8 lg:grid-cols-[1.35fr_0.85fr] lg:px-8">
             <div className="space-y-4">
-              <span className="inline-flex rounded-full bg-[#183a72] px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#eff5ff]">
-                Club Manager
-              </span>
+            
               <div className="space-y-3">
                 <h1 className="max-w-3xl text-3xl font-semibold tracking-tight text-[#142f52] sm:text-5xl">
-                  Choose a dashboard and start with the right role.
+                 ene dr bol log in hiih heregte, ehnii eeljind inged harchi
                 </h1>
-                <p className="max-w-2xl text-sm text-[#5d7696] sm:text-base">
-                  This home screen is now just a clean entry point. Pick the
-                  student, teacher, or admin view to continue into the skeleton
-                  designs.
-                </p>
+               
               </div>
             </div>
 
@@ -58,7 +52,7 @@ export default function HomePage() {
             <Link
               key={role.href}
               href={role.href}
-              className={`dashboard-entrance rounded-[28px] border border-[#dce7f8] bg-white/92 p-6 shadow-[0_18px_60px_rgba(19,45,96,0.08)] transition hover:-translate-y-1 hover:shadow-[0_22px_70px_rgba(19,45,96,0.12)] ${
+              className={`dashboard-entrance rounded-[28px] border border-[#dce7f8] bg-white p-6 shadow-[0_18px_60px_rgba(19,45,96,0.08)] transition hover:-translate-y-1 hover:shadow-[0_22px_70px_rgba(19,45,96,0.12)] ${
                 index === 1
                   ? 'dashboard-entrance-delay-1'
                   : index === 2

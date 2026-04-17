@@ -1,176 +1,77 @@
-const teacherRequests = [
-  {
-    student: 'Anu Erdene',
-    club: 'English Club',
-    detail: 'Grade 6A • Wants speaking practice',
-    state: 'Pending',
-  },
-  {
-    student: 'Temuulen Gan',
-    club: 'English Club',
-    detail: 'Grade 6B • Requested by homeroom teacher',
-    state: 'Pending',
-  },
-  {
-    student: 'Naraa Otgon',
-    club: 'Reading Circle',
-    detail: 'Grade 6A • Quiet learner, strong reading habit',
-    state: 'Review',
-  },
-];
+import { StatusBadge } from '@/app/_components';
 
-const teacherActions = [
-  'Review incoming requests',
-  'Approve or reject students',
-  'Monitor attendance later',
-];
-
-export default function TeacherPage() {
+export default function TeacherDashboard() {
   return (
-    <main className="dashboard-shell min-h-screen px-4 py-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <section className="dashboard-entrance overflow-hidden rounded-[36px] border border-[#d6e4fb] bg-white/90 shadow-[0_28px_80px_rgba(15,39,87,0.12)] backdrop-blur">
-          <div className="grid gap-6 px-6 py-7 lg:grid-cols-[1.4fr_0.85fr] lg:px-8">
-            <div className="space-y-4">
-              <span className="inline-flex rounded-full bg-[#183a72] px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#eff5ff]">
-                Teacher dashboard
-              </span>
-              <div className="space-y-3">
-                <h1 className="max-w-3xl text-3xl font-semibold tracking-tight text-[#142f52] sm:text-5xl">
-                  Manage clubs and review student requests
-                </h1>
-                <p className="max-w-2xl text-sm text-[#5d7696] sm:text-base">
-                  The teacher screen is built around decision-making: which club
-                  they manage, who requested to join, and how quickly they can
-                  approve or reject.
-                </p>
-              </div>
-            </div>
+    <main className="max-w-6xl mx-auto p-6">
+      <header className="bg-white border border-slate-200 rounded-2xl p-8 mb-6">
+         <span className="inline-flex items-center gap-2 text-[11px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase mb-4">
+          
+          Teacher Dashboard
+        </span>
+        <h1 className="text-2xl font-semibold">Manage Requests</h1>
+        <p className="text-slate-500 text-sm">Review who wants to join your clubs.</p>
+      </header>
 
-            <div className="rounded-[30px] bg-[#173765] p-5 text-[#edf4ff] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-              <p className="text-xs uppercase tracking-[0.28em] text-[#b9cff0]">
-                First design pass
-              </p>
-              <h2 className="mt-2 text-2xl font-semibold">3 requests waiting</h2>
-              <p className="mt-2 text-sm text-[#d6e5fb]">Teacher view</p>
-              <div className="mt-6 grid grid-cols-2 gap-3">
-                <div className="rounded-3xl border border-white/10 bg-white/8 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-[#b8cff0]">
-                    Theme
-                  </p>
-                  <p className="mt-2 text-lg font-semibold">White</p>
-                </div>
-                <div className="rounded-3xl border border-white/10 bg-white/8 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-[#b8cff0]">
-                    Accent
-                  </p>
-                  <p className="mt-2 text-lg font-semibold">Pastel Blue</p>
-                </div>
-                <div className="rounded-3xl border border-white/10 bg-white/8 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-[#b8cff0]">
-                    Primary
-                  </p>
-                  <p className="mt-2 text-lg font-semibold">Navy</p>
-                </div>
-                <div className="rounded-3xl border border-white/10 bg-white/8 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-[#b8cff0]">
-                    Stage
-                  </p>
-                  <p className="mt-2 text-lg font-semibold">Skeleton</p>
-                </div>
+      <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-6">
+        <aside className='space-y-6'>
+        <div className="bg-white border border-slate-200 rounded-xl p-6 h-fit">
+          <p className="text-[11px] font-bold text-slate-400 uppercase">Your Club</p>
+          <div className="flex justify-between items-center mt-2">
+            <span className="font-semibold text-lg">English Club</span>
+            <StatusBadge type="open" text="Active" />
+          </div>
+          <p className="text-xs text-slate-400 mt-1">8/12 seats filled</p>
+        </div>
+          <div className="bg-white border border-slate-200 rounded-xl p-6">
+            <p className="text-[11px] font-bold text-slate-400 uppercase mb-1">
+             Your clubs
+            </p>
+            <h2 className="text-lg font-semibold">Teacher responsibilities</h2>
+            <p className="text-[13px] text-gray-500">
+            You own the clubs assigned to you — keep an eye on capacity and admit the right students.
+            </p>
+            <div className="mt-4 space-y-2 text-sm text-slate-600">
+              <div className="flex gap-3 bg-slate-50 p-3 rounded-lg">
+                <span className="bg-indigo-600 text-white w-5 h-5 flex items-center justify-center rounded-full text-[15px]">
+                  1
+                </span>{' '}
+             Review incoming requests
+              </div>
+              <div className="flex gap-3 bg-slate-50 p-3 rounded-lg">
+                <span className="bg-indigo-600 text-white w-5 h-5 flex items-center justify-center rounded-full text-[15px]">
+                  2
+                </span>{' '}
+               Approve or reject students
+              </div>
+              <div className="flex gap-3 bg-slate-50 p-3 rounded-lg">
+                <span className="bg-indigo-600 text-white w-5 h-5 flex items-center justify-center rounded-full text-[15px]">
+                  3
+                </span>{' '}
+              Monitor attendance (coming soon)
               </div>
             </div>
           </div>
-        </section>
+          </aside>
 
-        <section className="grid gap-4 lg:grid-cols-[0.92fr_1.08fr]">
-          <section className="dashboard-entrance rounded-[28px] border border-[#dce7f8] bg-white/92 p-5 shadow-[0_18px_60px_rgba(19,45,96,0.08)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.26em] text-[#6e86a7]">
-              Managed clubs
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold text-[#183153]">
-              Teacher responsibilities
-            </h2>
-            <p className="mt-3 text-sm text-[#57708f]">
-              Teachers own the clubs assigned to them, keep an eye on capacity,
-              and review which students should be admitted first.
-            </p>
-            <div className="mt-5 space-y-3">
-              {teacherActions.map((action) => (
-                <div
-                  key={action}
-                  className="rounded-3xl border border-[#e4edf9] bg-[#f8fbff] px-4 py-4 text-sm font-medium text-[#27466f]"
-                >
-                  {action}
-                </div>
-              ))}
-            </div>
-          </section>
+        <div className="bg-white border border-slate-200 rounded-xl p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-lg font-semibold text-slate-900">Request Queue</h2>
+            <StatusBadge type="pending" text="3 Pending" />
+          </div>
 
-          <section className="dashboard-entrance dashboard-entrance-delay-1 rounded-[28px] border border-[#dce7f8] bg-white/92 p-5 shadow-[0_18px_60px_rgba(19,45,96,0.08)]">
-            <div className="flex items-center justify-between gap-4">
+          <div className="space-y-3">
+            <div className="bg-slate-50 rounded-xl p-4 flex justify-between items-center">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.26em] text-[#6e86a7]">
-                  Request queue
-                </p>
-                <h2 className="mt-2 text-2xl font-semibold text-[#183153]">
-                  Students waiting for review
-                </h2>
+                <p className="font-medium text-slate-900">Anu Erdene</p>
+                <p className="text-xs text-slate-500 font-mono uppercase tracking-tight">Grade 6A • Wants speaking practice</p>
               </div>
-              <span className="rounded-full bg-[#e7f0ff] px-3 py-1 text-xs font-semibold text-[#244c87]">
-                English Club
-              </span>
+              <div className="flex gap-2">
+                <button className="bg-indigo-600 text-white px-4 py-1.5 rounded-full text-xs font-semibold">Approve</button>
+                <button className="bg-white border border-slate-200 px-4 py-1.5 rounded-full text-xs font-semibold text-slate-600">Reject</button>
+              </div>
             </div>
-
-            <div className="mt-5 space-y-3">
-              {teacherRequests.map((request, index) => (
-                <article
-                  key={request.student}
-                  className={`rounded-3xl border border-[#e6eefb] bg-[#f7fbff] p-4 ${
-                    index === 1
-                      ? 'dashboard-entrance-delay-2'
-                      : index === 2
-                      ? 'dashboard-entrance-delay-3'
-                      : ''
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="text-lg font-semibold text-[#163154]">
-                        {request.student}
-                      </h3>
-                      <p className="mt-1 text-sm text-[#57708f]">
-                        {request.detail}
-                      </p>
-                    </div>
-                    <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-[#4f6d97] ring-1 ring-[#d4e1f7]">
-                      {request.state}
-                    </span>
-                  </div>
-                  <div className="mt-4 flex items-center justify-between gap-4">
-                    <p className="text-sm font-medium text-[#29496f]">
-                      Club: {request.club}
-                    </p>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        className="rounded-full bg-[#193a70] px-4 py-2 text-sm font-semibold text-white"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        type="button"
-                        className="rounded-full bg-[#eaf1fb] px-4 py-2 text-sm font-semibold text-[#355987]"
-                      >
-                        Reject
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-        </section>
+          </div>
+        </div>
       </div>
     </main>
   );
