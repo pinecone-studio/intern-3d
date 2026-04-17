@@ -13,7 +13,7 @@
       "build": {
         "options": {
           "cwd": "apps/Team2-something-project",
-          "command": "env -u NO_COLOR NEXT_IGNORE_INCORRECT_LOCKFILE=1 next build"
+          "command": "env -u NO_COLOR NEXT_IGNORE_INCORRECT_LOCKFILE=1 next build --webpack"
         }
       },
       "dev": {
