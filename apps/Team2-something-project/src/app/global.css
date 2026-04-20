@@ -486,23 +486,50 @@ button {
 
 .student-primary-button,
 .student-secondary-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   min-height: 44px;
-  padding: 11px 18px;
+  padding: 8px 8px 8px 18px;
   border-radius: 999px;
   font-weight: 800;
 }
 
 .student-primary-button {
   border: 0;
-  background: var(--blue-deep);
+  background: linear-gradient(135deg, #18365f, #2d5796);
   color: white;
-  box-shadow: 0 10px 24px rgba(23, 49, 84, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 10px 24px rgba(23, 49, 84, 0.18);
 }
 
 .student-secondary-button {
   border: 1px solid rgba(22, 48, 78, 0.12);
-  background: rgba(255, 255, 255, 0.94);
-  color: var(--ink);
+  background: linear-gradient(135deg, #edf4ff, #dceaff);
+  color: #1f4778;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 10px 24px rgba(23, 49, 84, 0.08);
+}
+
+.student-button-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.student-primary-button .student-button-icon {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.student-secondary-button .student-button-icon {
+  background: rgba(31, 71, 120, 0.1);
 }
 
 .student-sidebar {

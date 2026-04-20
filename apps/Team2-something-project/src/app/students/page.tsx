@@ -89,10 +89,16 @@ export default function StudentsPage() {
 
                 <div className="student-actions">
                   <button type="button" className="student-primary-button">
-                    Send request
+                    <span>Send request</span>
+                    <span className="student-button-icon" aria-hidden="true">
+                      →
+                    </span>
                   </button>
                   <button type="button" className="student-secondary-button">
-                    View details
+                    <span>View details</span>
+                    <span className="student-button-icon" aria-hidden="true">
+                      +
+                    </span>
                   </button>
                 </div>
               </article>
