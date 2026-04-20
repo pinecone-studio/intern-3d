@@ -132,13 +132,22 @@ export default function TeacherPage() {
 
                   <div className="teacher-request-actions">
                     <button type="button" className="teacher-primary-button">
-                      Approve
+                      <span>Approve</span>
+                      <span className="teacher-button-icon" aria-hidden="true">
+                        ✓
+                      </span>
                     </button>
                     <button type="button" className="teacher-secondary-button">
-                      Reject
+                      <span>Reject</span>
+                      <span className="teacher-button-icon" aria-hidden="true">
+                        ×
+                      </span>
                     </button>
                     <button type="button" className="teacher-ghost-button">
-                      View profile
+                      <span>View profile</span>
+                      <span className="teacher-button-icon" aria-hidden="true">
+                        →
+                      </span>
                     </button>
                   </div>
                 </article>
