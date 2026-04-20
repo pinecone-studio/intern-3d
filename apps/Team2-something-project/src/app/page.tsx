@@ -93,7 +93,12 @@ export default function Page() {
               <p className="section-label">{card.label}</p>
               <h3>{card.title}</h3>
               <p className="role-description">{card.description}</p>
-              <span className="role-button">{card.action}</span>
+              <span className="role-button">
+                <span>{card.action}</span>
+                <span className="role-button-arrow" aria-hidden="true">
+                  ↗
+                </span>
+              </span>
             </Link>
           ))}
         </section>
