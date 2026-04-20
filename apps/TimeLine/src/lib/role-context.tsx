@@ -7,7 +7,7 @@ import { demoUsers } from './mock-data'
 type RoleContextType = {
   user: User | null
   role: UserRole | null
-  setRole: (role: UserRole) => void
+  setRole: (_role: UserRole) => void
   logout: () => void
 }
 

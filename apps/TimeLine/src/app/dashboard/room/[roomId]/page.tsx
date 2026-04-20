@@ -493,7 +493,7 @@ function WeeklyScheduleGrid({
 }: { 
   events: ScheduleEvent[]
   isAdmin: boolean
-  onEditEvent: (event: ScheduleEvent) => void
+  onEditEvent: (_event: ScheduleEvent) => void
 }) {
   const days = DAYS_OF_WEEK.filter(d => d.value >= 1 && d.value <= 5)
   const hours = Array.from({ length: 12 }, (_, i) => 8 + i) // 8:00 - 19:00
@@ -600,11 +600,11 @@ function EventFormDialog({
   open,
   onOpenChange,
   event,
-  roomId,
+  roomId: _roomId,
   onSave,
 }: {
   open: boolean
-  onOpenChange: (open: boolean) => void
+  onOpenChange: (_open: boolean) => void
   event: ScheduleEvent | null
   roomId: string
   onSave: () => void

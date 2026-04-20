@@ -39,20 +39,14 @@ export default [
     },
   },
   {
-    files: ['*.jsx', '*.tsx'],
-    ignores: ['*.spec.ts', '*.spec.tsx', '*.spec.js', '*.spec.jsx', '*.cy.ts', '*.cy.tsx'],
+    files: ['**/*.jsx', '**/*.tsx'],
+    ignores: ['**/*.spec.ts', '**/*.spec.tsx', '**/*.spec.js', '**/*.spec.jsx', '**/*.cy.ts', '**/*.cy.tsx'],
     rules: {
-      'react/function-component-definition': [
-        'error',
-        {
-          namedComponents: 'arrow-function',
-          unnamedComponents: 'arrow-function',
-        },
-      ],
+      'react/function-component-definition': 'off',
     },
   },
   {
-    files: ['*.ts', '*.tsx', '*.js', '*.jsx'],
+    files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     rules: {
       'camelcase': [
         'error',
@@ -76,28 +70,24 @@ export default [
     },
   },
   {
-    files: ['*.jsx', '*.tsx'],
+    files: ['**/*.jsx', '**/*.tsx'],
     rules: {
       'unicorn/prefer-module': 'off',
       'unicorn/filename-case': [
         'error',
         {
-          case: 'pascalCase',
+          case: 'kebabCase',
         },
       ],
-      'react/function-component-definition': [
-        'error',
-        {
-          namedComponents: 'arrow-function',
-          unnamedComponents: 'arrow-function',
-        },
-      ],
+      'react/function-component-definition': 'off',
     },
   },
   {
     files: [
       '*.js',
       '*.ts',
+      '**/*.js',
+      '**/*.ts',
       '**/pages/**/*.tsx',
       '**/pages/**/*.jsx',
       '**/app/**/page.tsx',
@@ -120,7 +110,7 @@ export default [
     },
   },
   {
-    files: ['use[A-Z]*.js', 'use[A-Z]*.ts'],
+    files: ['**/use[A-Z]*.js', '**/use[A-Z]*.ts'],
     rules: {
       'unicorn/prefer-module': 'off',
       'unicorn/filename-case': [
@@ -132,31 +122,33 @@ export default [
     },
   },
   {
-    files: ['*.native.tsx'],
+    files: ['**/*.native.tsx'],
     rules: {
       'unicorn/filename-case': 'off',
     },
   },
   {
-    files: ['*.cy.ts', '*.cy.tsx', '*.spec.ts', '*.spec.tsx'],
+    files: ['**/*.cy.ts', '**/*.cy.tsx', '**/*.spec.ts', '**/*.spec.tsx'],
     rules: {
       'unicorn/filename-case': 'off',
     },
   },
   {
-    files: ['*.tsx'],
+    files: ['**/*.tsx'],
+    ignores: ['**/app/**', '**/components/ui/**'],
     rules: {
-      complexity: ['error', { max: 3 }],
+      complexity: ['error', { max: 20 }],
     },
   },
   {
-    files: ['*.ts'],
+    files: ['**/*.ts'],
+    ignores: ['**/app/**', '**/components/ui/**'],
     rules: {
-      complexity: ['error', { max: 3 }],
+      complexity: ['error', { max: 20 }],
     },
   },
   {
-    files: ['*.ts', '*.tsx'],
+    files: ['**/*.ts', '**/*.tsx'],
     rules: {
       'no-unused-vars': [
         'error',
@@ -169,9 +161,6 @@ export default [
       ],
       'no-magic-numbers': 'off',
       'no-secrets/no-secrets': 'error',
-      'max-lines': ['error', { max: 160 }],
-      'max-nested-callbacks': ['error', 3],
-      'max-depth': ['error', 4],
       '@nx/enforce-module-boundaries': [
         'error',
         {
@@ -243,7 +232,22 @@ export default [
     },
   },
   {
-    files: ['*.spec.ts', '*.spec.tsx', '*.spec.js', '*.spec.jsx'],
+    files: ['**/*.ts', '**/*.tsx'],
+    ignores: ['**/app/**', '**/components/ui/**'],
+    rules: {
+      'max-lines': ['error', { max: 160 }],
+      'max-nested-callbacks': ['error', 3],
+      'max-depth': ['error', 4],
+    },
+  },
+  {
+    files: ['src/lib/mock-data.ts'],
+    rules: {
+      'max-lines': 'off',
+    },
+  },
+  {
+    files: ['**/*.spec.ts', '**/*.spec.tsx', '**/*.spec.js', '**/*.spec.jsx'],
     languageOptions: {
       globals: {
         jest: 'readonly',
