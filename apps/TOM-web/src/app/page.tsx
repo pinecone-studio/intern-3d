@@ -14,7 +14,7 @@ const roleLinks = [
   {
     href: '/admin',
     title: 'Admin',
-    description: 'Create clubs and control the overall club system.',
+    description: 'Approve clubs, manage status, and remove spam requests.',
   },
 ];
 
