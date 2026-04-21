@@ -52,7 +52,7 @@
     "jest-environment-jsdom": "^30.0.2",
     "jest-environment-node": "^30.0.2",
     "jest-util": "^30.0.2",
-    "nx": "22.6.2",
+    "nx": "22.6.4",
     "postcss": "8.4.38",
     "prettier": "^2.6.2",
     "react-refresh": "^0.10.0",
