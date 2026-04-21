@@ -1,6 +1,10 @@
 //@ts-check
 
 const { composePlugins, withNx } = require('@nx/next');
+if (process.env.NODE_ENV === 'development') {
+  const { initOpenNextCloudflareForDev } = require('@opennextjs/cloudflare');
+  initOpenNextCloudflareForDev();
+}
 
 /**
  * @type {import('@nx/next/plugins/with-nx').WithNxOptions}

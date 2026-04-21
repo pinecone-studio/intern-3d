@@ -1,0 +1,2 @@
+# Copy this file to .dev.vars only if you need additional local secrets.
+# D1 bindings are configured in wrangler.jsonc.

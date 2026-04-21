@@ -55,3 +55,6 @@ test-output
 
 # Temporary v0 export dropped inside the six7 app
 apps/six7/v0-employee-paperwork-automation/
+.open-next
+apps/TimeLine/.dev.vars
+apps/TimeLine/.wrangler
