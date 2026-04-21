@@ -1,288 +1,40 @@
 'use client';
 
-import { type FormEvent, useState } from 'react';
+import { type FormEvent } from 'react';
 
 import { CapacityBar, StatusBadge } from '@/app/_components';
-
-const teacherOptions = [
-  'Багш Сараа Ким',
-  'Бат-Эрдэнэ багш',
-  'Нараа багш',
-  'Темүүлэн багш',
-] as const;
-
-const dayOptions = [
-  'Даваа, Лхагва, Баасан',
-  'Мягмар, Пүрэв',
-  'Лхагва, Бямба',
-  'Даваа, Мягмар, Пүрэв',
-] as const;
-
-const gradeOptions = [
-  '6A - 7B анги',
-  '6A - 6C анги',
-  '7A - 8B анги',
-  '9A - 10B анги',
-] as const;
-
-const thresholdGoal = 7;
-
-type ClubRequest = {
-  id: string;
-  clubName: string;
-  teacher: string;
-  createdBy: string;
-  interestCount: number;
-  studentLimit: number;
-  gradeRange: string;
-  allowedDays: string;
-  requestStatus: 'pending' | 'approved' | 'rejected';
-  clubStatus: 'pending' | 'active' | 'paused' | 'spam';
-  flaggedReason?: string;
-  note: string;
-};
-
-const initialRequests: ClubRequest[] = [
-  {
-    id: 'club-robotics',
-    clubName: 'Robotics Club',
-    teacher: 'Багш Сараа Ким',
-    createdBy: 'STEM баг',
-    interestCount: 11,
-    studentLimit: 14,
-    gradeRange: '6A - 7B анги',
-    allowedDays: 'Даваа, Лхагва, Баасан',
-    requestStatus: 'pending',
-    clubStatus: 'pending',
-    note: 'Практик бүтээцийн хичээл болон тэмцээний бэлтгэлтэй.',
-  },
-  {
-    id: 'club-writing',
-    clubName: 'Бүтээлч бичгийн клуб',
-    teacher: 'Нараа багш',
-    createdBy: 'Хэлний уран зохиолын баг',
-    interestCount: 7,
-    studentLimit: 12,
-    gradeRange: '6A - 6C анги',
-    allowedDays: 'Мягмар, Пүрэв',
-    requestStatus: 'pending',
-    clubStatus: 'pending',
-    note: 'Хүртээмжийн босго хүрсэн, админы баталгаажуулалт хүлээж байна.',
-  },
-  {
-    id: 'club-debate',
-    clubName: 'Мэтгэлцээний клуб',
-    teacher: 'Бат-Эрдэнэ багш',
-    createdBy: 'Оюутны зөвлөл',
-    interestCount: 4,
-    studentLimit: 10,
-    gradeRange: '7A - 8B анги',
-    allowedDays: 'Лхагва, Бямба',
-    requestStatus: 'pending',
-    clubStatus: 'pending',
-    note: 'Нээлт хийхээс өмнө цөөн хэдэн бүртгэл нэмэгдэхийг хүлээж байна.',
-  },
-];
-
-const initialSpamQueue: ClubRequest[] = [
-  {
-    id: 'spam-club-1',
-    clubName: 'Үнэгүй iPad бэлэг клуб',
-    teacher: 'Тодорхойгүй хэрэглэгч',
-    createdBy: 'Гадаад холбоос',
-    interestCount: 1,
-    studentLimit: 99,
-    gradeRange: 'Бүх анги',
-    allowedDays: 'Хэзээ ч',
-    requestStatus: 'pending',
-    clubStatus: 'spam',
-    flaggedReason:
-      'Сэжигтэй нэр, сурталчилгааны өнгө аяс, багшийн эзэмшигчгүй байна.',
-    note: 'Хуурамч мэт харагдаж байгаа тул нэн даруй устгах шаардлагатай.',
-  },
-  {
-    id: 'spam-club-2',
-    clubName: 'Даалгавар туслагч бот',
-    teacher: 'Жинхэнэ ажилтан биш',
-    createdBy: 'Нэргүй хүсэлт',
-    interestCount: 2,
-    studentLimit: 80,
-    gradeRange: 'Бүх анги',
-    allowedDays: 'Даваа-Баасан',
-    requestStatus: 'pending',
-    clubStatus: 'spam',
-    flaggedReason: 'Давтагдсан түлхүүр үгтэй автомат илгээсэн хүсэлт байж магадгүй.',
-    note: 'Сурагчдад хүрэхээс өмнө шалгаж цэвэрлэх шаардлагатай.',
-  },
-];
-
-const initialActiveClubs: ClubRequest[] = [
-  {
-    id: 'active-english',
-    clubName: 'Англи хэлний клуб',
-    teacher: 'Темүүлэн багш',
-    createdBy: 'Батлагдсан хүсэлт',
-    interestCount: 9,
-    studentLimit: 12,
-    gradeRange: '6A - 7B анги',
-    allowedDays: 'Даваа, Лхагва, Баасан',
-    requestStatus: 'approved',
-    clubStatus: 'active',
-    note: 'Семестрийг давах хангалттай сонирхолтойгоор хэвийн явагдаж байна.',
-  },
-  {
-    id: 'active-design',
-    clubName: 'Дизайны клуб',
-    teacher: 'Багш Сараа Ким',
-    createdBy: 'Батлагдсан хүсэлт',
-    interestCount: 6,
-    studentLimit: 10,
-    gradeRange: '7A - 8B анги',
-    allowedDays: 'Мягмар, Пүрэв',
-    requestStatus: 'approved',
-    clubStatus: 'paused',
-    note: 'Дараагийн элсэлт босгод хүрэх хүртэл түр зогсоосон.',
-  },
-];
-
-const initialForm = {
-  clubName: '',
-  teacher: teacherOptions[0],
-  startDate: '2025-09-01',
-  endDate: '2025-12-20',
-  allowedDays: dayOptions[0],
-  gradeRange: gradeOptions[0],
-  studentLimit: '12',
-  interestCount: '0',
-  note: '',
-};
-
-const formatThresholdLabel = (current: number) => {
-  if (current >= thresholdGoal) {
-    return 'Босгонд хүрсэн';
-  }
-
-  const remaining = thresholdGoal - current;
-  return `Идэвхжүүлэхэд ${remaining} хүн дутуу`;
-};
+import {
+  dayOptions,
+  gradeOptions,
+  teacherOptions,
+} from './admin-data';
+import { useAdminDashboard } from './useAdminDashboard';
 
 export default function AdminDashboard() {
-  const [form, setForm] = useState(initialForm);
-  const [requests, setRequests] = useState(initialRequests);
-  const [activeClubs, setActiveClubs] = useState(initialActiveClubs);
-  const [spamQueue, setSpamQueue] = useState(initialSpamQueue);
-  const [banner, setBanner] = useState(
-    'Шинэ клубийн хүсэлтүүдийг шалгаж, боломжтойг нь идэвхжүүлж, spam-ийг хурдан цэвэрлэ.'
-  );
+  const {
+    activeClubs,
+    activeCount,
+    approveRequest,
+    banner,
+    form,
+    handleCreate,
+    pendingRequests,
+    rejectRequest,
+    removeSpamClub,
+    requests,
+    spamQueue,
+    thresholdGoal,
+    thresholdReachedCount,
+    resetForm,
+    toggleClubStatus,
+    updateField,
+    formatThresholdLabel,
+  } = useAdminDashboard();
 
-  const updateField = (field: keyof typeof initialForm, value: string) => {
-    setForm((current) => ({
-      ...current,
-      [field]: value,
-    }));
-  };
-
-  const handleCreate = (event: FormEvent<HTMLFormElement>) => {
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    const newRequest: ClubRequest = {
-      id: `club-${form.clubName.toLowerCase().replace(/\s+/g, '-') || 'draft'}`,
-      clubName: form.clubName || 'Нэргүй клуб',
-      teacher: form.teacher,
-      createdBy: 'Админ самбар',
-      interestCount: Number(form.interestCount) || 0,
-      studentLimit: Number(form.studentLimit) || 12,
-      gradeRange: form.gradeRange,
-      allowedDays: form.allowedDays,
-      requestStatus: 'pending',
-      clubStatus: 'pending',
-      note: form.note || 'Админ самбараас шинээр үүсгэсэн клубийн хүсэлт.',
-    };
-
-    setRequests((current) => [newRequest, ...current]);
-    setBanner(`${newRequest.clubName} шалгах дараалалд нэмэгдлээ.`);
-    setForm(initialForm);
+    handleCreate();
   };
-
-  const approveRequest = (requestId: string) => {
-    const request = requests.find((item) => item.id === requestId);
-
-    if (!request) return;
-
-    setRequests((current) =>
-      current.map((item) =>
-        item.id === requestId
-          ? { ...item, requestStatus: 'approved', clubStatus: 'active' }
-          : item
-      )
-    );
-
-    setActiveClubs((current) => [
-      {
-        ...request,
-        requestStatus: 'approved',
-        clubStatus: 'active',
-      },
-      ...current.filter((item) => item.id !== requestId),
-    ]);
-    setBanner(`${request.clubName} батлагдаж active төлөвт шилжлээ.`);
-  };
-
-  const rejectRequest = (requestId: string) => {
-    const request = requests.find((item) => item.id === requestId);
-
-    if (!request) return;
-
-    setRequests((current) =>
-      current.map((item) =>
-        item.id === requestId
-          ? { ...item, requestStatus: 'rejected', clubStatus: 'paused' }
-          : item
-      )
-    );
-    setActiveClubs((current) =>
-      current.filter((item) => item.id !== requestId)
-    );
-    setBanner(`${request.clubName} татгалзагдлаа.`);
-  };
-
-  const toggleClubStatus = (clubId: string) => {
-    setActiveClubs((current) =>
-      current.map((club) => {
-        if (club.id !== clubId) {
-          return club;
-        }
-
-        const nextStatus = club.clubStatus === 'active' ? 'paused' : 'active';
-        return {
-          ...club,
-          clubStatus: nextStatus,
-          requestStatus: nextStatus === 'active' ? 'approved' : club.requestStatus,
-        };
-      })
-    );
-    setBanner('Клубийн төлөв шинэчлэгдлээ.');
-  };
-
-  const removeSpamClub = (clubId: string) => {
-    const spamClub = spamQueue.find((item) => item.id === clubId);
-
-    if (!spamClub) return;
-
-    setSpamQueue((current) => current.filter((item) => item.id !== clubId));
-    setBanner(`${spamClub.clubName} spam гэж устгагдлаа.`);
-  };
-
-  const pendingRequests = requests.filter(
-    (request) => request.requestStatus === 'pending'
-  );
-  const activeCount = activeClubs.filter((club) => club.clubStatus === 'active')
-    .length;
-  const thresholdReachedCount = new Set(
-    [...requests, ...activeClubs]
-      .filter((club) => club.interestCount >= thresholdGoal)
-      .map((club) => club.id)
-  ).size;
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -354,7 +106,7 @@ export default function AdminDashboard() {
             <StatusBadge type="review" text="Шалгах горим" />
           </div>
 
-          <form className="space-y-5" onSubmit={handleCreate}>
+          <form className="space-y-5" onSubmit={onSubmit}>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <label className="block">
                 <span className="mb-2 block text-sm font-semibold text-slate-700">
@@ -507,7 +259,7 @@ export default function AdminDashboard() {
               </button>
               <button
                 type="button"
-                onClick={() => setForm(initialForm)}
+                onClick={resetForm}
                 className="rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 Дахин тохируулах
@@ -665,6 +417,14 @@ export default function AdminDashboard() {
                   </div>
                   <div className="rounded-2xl bg-white px-3 py-3">
                     <p className="text-[11px] uppercase tracking-[0.18em] text-[#6e86a7]">
+                      Хугацаа
+                    </p>
+                    <p className="mt-1 font-medium">
+                      {club.startDate} - {club.endDate}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-white px-3 py-3">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-[#6e86a7]">
                       Хязгаар
                     </p>
                     <p className="mt-1 font-medium">{club.studentLimit}</p>
@@ -749,6 +509,9 @@ export default function AdminDashboard() {
                 <p>{club.note}</p>
                 <p>
                   {club.allowedDays} · {club.gradeRange}
+                </p>
+                <p>
+                  {club.startDate} - {club.endDate}
                 </p>
                 <CapacityBar current={club.interestCount} total={club.studentLimit} />
               </div>
