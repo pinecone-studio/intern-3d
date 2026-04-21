@@ -16,9 +16,9 @@ interface RoomFilterBarProps {
   selectedFloor: 'all' | 3 | 4
   selectedStatus: RoomStatus | 'all'
   searchQuery: string
-  onFloorChange: (floor: 'all' | 3 | 4) => void
-  onStatusChange: (status: RoomStatus | 'all') => void
-  onSearchChange: (query: string) => void
+  onFloorChange: (_floor: 'all' | 3 | 4) => void
+  onStatusChange: (_status: RoomStatus | 'all') => void
+  onSearchChange: (_query: string) => void
 }
 
 export function RoomFilterBar({

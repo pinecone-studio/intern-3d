@@ -12,6 +12,41 @@
         "cwd": "apps/TimeLine",
         "command": "next build --webpack"
       }
+    },
+    "cf-preview": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/TimeLine",
+        "command": "npm run preview"
+      }
+    },
+    "cf-deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/TimeLine",
+        "command": "npm run deploy"
+      }
+    },
+    "cf-typegen": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/TimeLine",
+        "command": "npm run cf-typegen"
+      }
+    },
+    "d1-migrate-local": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/TimeLine",
+        "command": "npx wrangler d1 migrations apply Academic-TimeLine --config wrangler.jsonc --local"
+      }
+    },
+    "d1-migrate-remote": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/TimeLine",
+        "command": "npx wrangler d1 migrations apply Academic-TimeLine --config wrangler.jsonc --remote"
+      }
     }
   }
 }
