@@ -7,7 +7,7 @@ import { GraduationCap } from 'lucide-react';
 export default function Header() {
   const pathname = usePathname();
 
-  if (pathname === '/teacher') {
+  if (pathname === '/teacher' || pathname === '/admin') {
     return null;
   }
 

@@ -14,19 +14,19 @@ type StatusBadgeType =
   | 'banned';
 
 const badgeStyles: Record<StatusBadgeType, string> = {
-  open: 'bg-green-100 text-green-800',
-  full: 'bg-red-100 text-red-800',
-  pending: 'bg-yellow-100 text-yellow-700',
-  approved: 'bg-green-100 text-green-800',
-  active: 'bg-emerald-100 text-emerald-800',
-  student: 'bg-sky-100 text-sky-800',
-  teacher: 'bg-violet-100 text-violet-800',
-  rejected: 'bg-rose-100 text-rose-800',
-  spam: 'bg-slate-200 text-slate-700',
-  review: 'bg-indigo-100 text-indigo-800',
-  paused: 'bg-amber-100 text-amber-800',
-  restricted: 'bg-orange-100 text-orange-800',
-  banned: 'bg-rose-200 text-rose-900',
+  open: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100',
+  full: 'bg-rose-50 text-rose-700 ring-1 ring-rose-100',
+  pending: 'bg-amber-50 text-amber-700 ring-1 ring-amber-100',
+  approved: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100',
+  active: 'bg-sky-50 text-sky-700 ring-1 ring-sky-100',
+  student: 'bg-sky-50 text-sky-700 ring-1 ring-sky-100',
+  teacher: 'bg-violet-50 text-violet-700 ring-1 ring-violet-100',
+  rejected: 'bg-rose-50 text-rose-700 ring-1 ring-rose-100',
+  spam: 'bg-slate-100 text-slate-700 ring-1 ring-slate-200',
+  review: 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100',
+  paused: 'bg-amber-50 text-amber-700 ring-1 ring-amber-100',
+  restricted: 'bg-orange-50 text-orange-700 ring-1 ring-orange-100',
+  banned: 'bg-rose-100 text-rose-800 ring-1 ring-rose-200',
 };
 
 export const StatusBadge = ({
@@ -38,7 +38,7 @@ export const StatusBadge = ({
 }) => {
   return (
     <span
-      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider ${
+      className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold tracking-tight ${
         badgeStyles[type as StatusBadgeType] ?? 'bg-slate-100 text-slate-700'
       }`}
     >
