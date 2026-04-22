@@ -44,12 +44,12 @@ const monthLabels = [
 ];
 
 const fieldClass =
-  'w-full rounded-[18px] border border-[#d7e3f4] bg-[#f6faff] px-4 py-3 text-sm text-[#17304f] outline-none transition placeholder:text-[#8da1bc] focus:border-[#6ba7ee] focus:bg-white focus:ring-4 focus:ring-[#deecff]';
+  'w-full rounded-[18px] border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-3 text-sm text-[color:var(--text)] outline-none transition placeholder:text-[#8aa0be] focus:border-[color:var(--primary)] focus:bg-white focus:ring-4 focus:ring-[color:var(--primary-soft)]';
 
 const panelClass =
-  'rounded-[32px] border border-[#d8e6f7] bg-white/95 p-5 shadow-[0_18px_60px_rgba(24,58,112,0.08)] backdrop-blur';
+  'rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft backdrop-blur';
 
-const inputLabelClass = 'mb-2 block text-sm font-semibold text-[#5c7392]';
+const inputLabelClass = 'mb-2 block text-sm font-semibold text-[#5f7697]';
 
 export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState<AdminSection>('requests');
@@ -118,7 +118,7 @@ export default function AdminDashboard() {
       value: users.length,
       delta: '+4.2%',
       icon: Users,
-      tint: 'bg-[#6d89ee]',
+      tint: 'bg-gradient-primary',
       badge: 'bg-[#edf3ff] text-[#4f72d5]',
     },
     {
@@ -126,7 +126,7 @@ export default function AdminDashboard() {
       value: activeCount,
       delta: `+${activeClubs.length}`,
       icon: ShieldCheck,
-      tint: 'bg-[#52b8e8]',
+      tint: 'bg-gradient-teacher',
       badge: 'bg-[#eaf8ff] text-[#1f95ca]',
     },
     {
@@ -134,7 +134,7 @@ export default function AdminDashboard() {
       value: pendingRequests.length,
       delta: `+${thresholdReachedCount}`,
       icon: CalendarDays,
-      tint: 'bg-[#90b6ff]',
+      tint: 'bg-gradient-student',
       badge: 'bg-[#eef4ff] text-[#4f77d6]',
     },
     {
@@ -142,7 +142,7 @@ export default function AdminDashboard() {
       value: spamQueue.length,
       delta: `+${Math.max(1, spamQueue.length) * 9}%`,
       icon: ShieldAlert,
-      tint: 'bg-[#58d0df]',
+      tint: 'bg-gradient-admin',
       badge: 'bg-[#e8fbfd] text-[#1c9bb3]',
     },
   ];
@@ -196,13 +196,13 @@ export default function AdminDashboard() {
   const spotlightUsers = leaderboard.slice(0, 3);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(165,219,255,0.6),_transparent_38%),radial-gradient(circle_at_top_right,_rgba(170,199,255,0.35),_transparent_32%),linear-gradient(180deg,_#eef8ff_0%,_#f8fcff_46%,_#edf7ff_100%)]">
-      <div className="absolute left-[-5rem] top-20 h-64 w-64 rounded-full bg-[#c5ebff]/50 blur-3xl" />
-      <div className="absolute right-[-6rem] top-40 h-72 w-72 rounded-full bg-[#b8d6ff]/35 blur-3xl" />
-      <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-[#d7f5ff]/30 blur-3xl" />
+    <main className="relative min-h-screen overflow-hidden bg-gradient-hero text-[color:var(--foreground)]">
+      <div className="absolute left-[-5rem] top-20 h-64 w-64 rounded-full bg-[#c6e7ff]/55 blur-3xl" />
+      <div className="absolute right-[-6rem] top-40 h-72 w-72 rounded-full bg-[#d5e3ff]/35 blur-3xl" />
+      <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-[#d9f2ff]/28 blur-3xl" />
 
       <div className="relative mx-auto max-w-[1440px] px-0 py-0 sm:px-4 lg:px-8">
-        <header className="dashboard-entrance rounded-b-[36px] border border-[#d7e3f3] border-t-0 bg-white/95 px-4 py-3 shadow-none sm:px-5 sm:py-3.5 lg:px-8">
+        <header className="dashboard-entrance rounded-b-[36px] border border-[color:var(--border)] border-t-0 bg-white/90 px-4 py-3 shadow-none sm:px-5 sm:py-3.5 lg:px-8">
           <div className="flex items-center justify-between gap-3 sm:gap-4">
             <div className="flex min-w-0 items-center gap-2 text-[#5f7697] sm:gap-2.5">
               <Link
@@ -212,13 +212,13 @@ export default function AdminDashboard() {
                 <ArrowLeft className="h-3 w-3" />
                 Home
               </Link>
-              <span className="h-5 w-px bg-[#d8e4f5]" />
+              <span className="h-5 w-px bg-[color:var(--border)]" />
               <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[14px] bg-[#5f86ea] text-white shadow-[0_14px_28px_rgba(95,134,234,0.24)]">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[14px] bg-[color:var(--primary)] text-white shadow-[0_14px_28px_rgba(79,114,213,0.22)]">
                   <Sparkles className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
-                  <h1 className="text-[0.95rem] font-semibold tracking-tight text-[#15304e] sm:text-[1rem]">
+                  <h1 className="text-[0.95rem] font-semibold tracking-tight text-[#183153] sm:text-[1rem]">
                     Admin Panel
                   </h1>
                   <p className="text-[0.68rem] text-[#6781a3] sm:text-[0.72rem]">
@@ -229,11 +229,11 @@ export default function AdminDashboard() {
             </div>
 
             <div className="flex items-center gap-2 sm:gap-2.5">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#eff7ff] px-3 py-1.5 text-[0.78rem] font-medium text-[#58708f] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] sm:px-4 sm:text-[0.84rem]">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--primary-soft)] px-3 py-1.5 text-[0.78rem] font-medium text-[#58708f] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] sm:px-4 sm:text-[0.84rem]">
                 <span className="h-2 w-2 rounded-full bg-emerald-400" />
                 Online
               </span>
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#d7ebff] text-[0.84rem] font-semibold text-[#4f7ece] sm:h-10 sm:w-10">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--primary-soft)] text-[0.84rem] font-semibold text-[color:var(--primary)] sm:h-10 sm:w-10">
                 JD
               </span>
             </div>
@@ -251,7 +251,7 @@ export default function AdminDashboard() {
               >
                 <div className="flex items-start justify-between gap-4">
                   <div
-                    className={`flex h-12 w-12 items-center justify-center rounded-2xl ${card.tint} text-white shadow-[0_14px_28px_rgba(91,137,227,0.22)]`}
+                    className={`flex h-12 w-12 items-center justify-center rounded-2xl ${card.tint} text-white shadow-[0_14px_28px_rgba(91,137,227,0.18)]`}
                   >
                     <Icon className="h-5 w-5" />
                   </div>
@@ -261,7 +261,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="mt-8">
-                  <p className="text-3xl font-semibold tracking-tight text-[#16314f]">
+                  <p className="text-3xl font-semibold tracking-tight text-[#183153]">
                     {card.value}
                   </p>
                   <p className="mt-2 text-sm text-[#6a819f]">{card.label}</p>
@@ -275,9 +275,9 @@ export default function AdminDashboard() {
           <article className={`${panelClass} min-h-[430px]`}>
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <div className="flex items-center gap-2 text-[#4b7fe0]">
+                <div className="flex items-center gap-2 text-[color:var(--primary)]">
                   <ChartColumnIncreasing className="h-4 w-4" />
-                  <p className="text-sm font-semibold text-[#17304f]">
+                  <p className="text-sm font-semibold text-[#183153]">
                     Platform activity
                   </p>
                 </div>
@@ -286,12 +286,12 @@ export default function AdminDashboard() {
                   12 months.
                 </p>
               </div>
-              <span className="inline-flex items-center rounded-full bg-[#e8f2ff] px-4 py-2 text-sm font-semibold text-[#365f91]">
+              <span className="inline-flex items-center rounded-full bg-[color:var(--primary-soft)] px-4 py-2 text-sm font-semibold text-[#365f91]">
                 Last 12 months
               </span>
             </div>
 
-            <div className="mt-6 h-[300px] overflow-hidden rounded-[28px] border border-[#e3edf9] bg-[linear-gradient(180deg,_rgba(247,251,255,0.92),_rgba(255,255,255,0.94))] p-4">
+            <div className="mt-6 h-[300px] overflow-hidden rounded-[28px] border border-[color:var(--border)] bg-[linear-gradient(180deg,_rgba(247,251,255,0.92),_rgba(255,255,255,0.94))] p-4">
               <div className="relative h-full">
                 <div className="absolute inset-0 rounded-[24px] bg-[linear-gradient(180deg,_transparent_0%,_transparent_calc(100%-1px),_rgba(219,230,247,0.72)_calc(100%-1px))]" />
                 <div className="absolute inset-0 grid grid-cols-12 items-end gap-2 px-2 pb-8">
@@ -301,7 +301,7 @@ export default function AdminDashboard() {
                       className="flex h-full flex-col justify-end"
                     >
                       <div
-                        className="rounded-t-[18px] bg-[linear-gradient(180deg,_#6bb0f0_0%,_#99c8ff_52%,_#c8ddff_100%)] shadow-[0_12px_26px_rgba(88,134,221,0.22)]"
+                        className="rounded-t-[18px] bg-[linear-gradient(180deg,_#6bb0f0_0%,_#99c8ff_52%,_#c8ddff_100%)] shadow-[0_12px_26px_rgba(88,134,221,0.18)]"
                         style={{ height: `${value}%` }}
                       />
                     </div>
@@ -360,15 +360,15 @@ export default function AdminDashboard() {
 
           <article className={panelClass}>
             <div className="flex items-center gap-2">
-              <Trophy className="h-4 w-4 text-[#4a89e3]" />
-              <p className="text-lg font-semibold text-[#17304f]">Leaderboard</p>
+              <Trophy className="h-4 w-4 text-[color:var(--primary)]" />
+              <p className="text-lg font-semibold text-[#183153]">Leaderboard</p>
             </div>
 
             <div className="mt-5 space-y-4">
               {spotlightUsers.map((user, index) => (
                 <div
                   key={user.id}
-                  className="flex items-center justify-between gap-4 rounded-[24px] bg-[#f8fbff] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
+                  className="flex items-center justify-between gap-4 rounded-[24px] bg-[color:var(--surface)] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
                 >
                   <div className="flex min-w-0 items-center gap-3">
                     <div
@@ -385,7 +385,7 @@ export default function AdminDashboard() {
                       {user.rank}
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate font-semibold text-[#17304f]">
+                      <p className="truncate font-semibold text-[#183153]">
                         {user.name}
                       </p>
                       <p className="truncate text-xs text-[#6983a4]">
@@ -396,7 +396,7 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="text-right">
-                    <p className="text-base font-semibold text-[#4d95ef]">
+                    <p className="text-base font-semibold text-[color:var(--primary)]">
                       {user.points.toLocaleString()}
                     </p>
                     <p className="text-xs text-[#8195af]">{user.clubCount} clubs</p>
@@ -412,8 +412,8 @@ export default function AdminDashboard() {
             <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <BadgeAlert className="h-4 w-4 text-[#4a89e3]" />
-                  <p className="text-lg font-semibold text-[#17304f]">
+                  <BadgeAlert className="h-4 w-4 text-[color:var(--primary)]" />
+                  <p className="text-lg font-semibold text-[#183153]">
                     Club requests
                   </p>
                 </div>
@@ -426,8 +426,8 @@ export default function AdminDashboard() {
               <StatusBadge type="review" text="review mode" />
             </div>
 
-            <div className="overflow-hidden rounded-[26px] border border-[#e1ebf8] bg-[#fbfdff]">
-              <div className="grid grid-cols-[1.2fr_0.95fr_0.8fr_0.8fr] gap-4 border-b border-[#e1ebf8] px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#7f93b1]">
+            <div className="overflow-hidden rounded-[26px] border border-[color:var(--border)] bg-[color:var(--surface-strong)]">
+              <div className="grid grid-cols-[1.2fr_0.95fr_0.8fr_0.8fr] gap-4 border-b border-[color:var(--border)] px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#7f93b1]">
                 <span>Club</span>
                 <span>Interest</span>
                 <span>Status</span>
@@ -441,10 +441,10 @@ export default function AdminDashboard() {
                   return (
                     <div
                       key={club.id}
-                      className="grid items-center gap-4 px-4 py-4 transition hover:bg-[#f8fbff] sm:grid-cols-[1.2fr_0.95fr_0.8fr_0.8fr]"
+                      className="grid items-center gap-4 px-4 py-4 transition hover:bg-[color:var(--surface)] sm:grid-cols-[1.2fr_0.95fr_0.8fr_0.8fr]"
                     >
                       <div>
-                        <p className="font-semibold text-[#17304f]">
+                        <p className="font-semibold text-[#183153]">
                           {club.clubName}
                         </p>
                         <p className="mt-1 text-sm text-[#6f86a7]">
@@ -490,7 +490,7 @@ export default function AdminDashboard() {
                           type="button"
                           onClick={() => approveRequest(club.id)}
                           disabled={club.requestStatus !== 'pending'}
-                          className="rounded-full bg-[#4d95ef] px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(77,149,239,0.24)] transition hover:bg-[#3f88e1] disabled:cursor-not-allowed disabled:bg-[#b5d0f3]"
+                          className="rounded-full bg-[color:var(--primary)] px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(79,114,213,0.22)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-[#b5d0f3]"
                         >
                           Approve
                         </button>
@@ -504,8 +504,8 @@ export default function AdminDashboard() {
 
           <article className={panelClass}>
             <div className="flex items-center gap-2">
-              <Settings2 className="h-4 w-4 text-[#4a89e3]" />
-              <p className="text-lg font-semibold text-[#17304f]">
+              <Settings2 className="h-4 w-4 text-[color:var(--primary)]" />
+              <p className="text-lg font-semibold text-[#183153]">
                 System controls
               </p>
             </div>
@@ -547,10 +547,10 @@ export default function AdminDashboard() {
                     aria-pressed={item.active}
                     className={`flex w-full items-center gap-3 rounded-full border px-4 py-3.5 text-left transition ${
                       item.active
-                        ? 'border-[#4d95ef] bg-[#4d95ef] text-white shadow-[0_16px_28px_rgba(77,149,239,0.26)]'
+                        ? 'border-[color:var(--primary)] bg-[color:var(--primary)] text-white shadow-[0_16px_28px_rgba(79,114,213,0.22)]'
                         : index === 3
                         ? 'border-[#ffd6d8] bg-white text-[#ff4b57] hover:bg-[#fff5f5]'
-                        : 'border-[#dbe5f3] bg-white text-[#17304f] hover:border-[#b8cef0] hover:bg-[#f7fbff]'
+                        : 'border-[color:var(--border)] bg-white text-[#183153] hover:border-[#b8cef0] hover:bg-[color:var(--surface)]'
                     }`}
                   >
                     <span
@@ -574,14 +574,14 @@ export default function AdminDashboard() {
         </section>
 
         <section
-          className={`${panelClass} dashboard-entrance dashboard-entrance-delay-4 mt-6 rounded-[30px] border-[#dce7f8] bg-white px-5 py-5`}
+          className={`${panelClass} dashboard-entrance dashboard-entrance-delay-4 mt-6 rounded-[30px] border-[color:var(--border)] bg-[color:var(--card)] px-5 py-5`}
         >
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7c92b0]">
                 Management sections
               </p>
-              <h2 className="mt-2 text-[1.9rem] font-semibold tracking-tight text-[#183255]">
+              <h2 className="mt-2 text-[1.9rem] font-semibold tracking-tight text-[#183153]">
                 One visual system for every admin task
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6d829f]">
@@ -602,8 +602,8 @@ export default function AdminDashboard() {
                     onClick={() => setActiveSection(item.key)}
                     className={`inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition ${
                       isActive
-                        ? 'bg-[#1f3150] text-white shadow-[0_14px_24px_rgba(23,48,79,0.2)]'
-                        : 'border border-[#d8e4f2] bg-white text-[#5d7491] hover:bg-[#f7fbff]'
+                        ? 'bg-[color:var(--primary)] text-white shadow-[0_14px_24px_rgba(79,114,213,0.2)]'
+                        : 'border border-[color:var(--border)] bg-white text-[#5d7491] hover:bg-[color:var(--surface)]'
                     }`}
                   >
                     <Icon className="h-4 w-4" />
@@ -626,13 +626,13 @@ export default function AdminDashboard() {
           {activeSection === 'requests' ? (
             <>
               <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.18fr)_minmax(0,0.82fr)]">
-                <section className="rounded-[28px] border border-[#dbe7f8] bg-[#fbfdff] p-5 shadow-[0_14px_42px_rgba(24,58,112,0.06)]">
+                <section className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7f93b1]">
                         Create request
                       </p>
-                      <h3 className="mt-2 text-[1.15rem] font-semibold text-[#17304f]">
+                      <h3 className="mt-2 text-[1.15rem] font-semibold text-[#183153]">
                         New club request form
                       </h3>
                       <p className="mt-2 max-w-2xl text-[0.9rem] leading-6 text-[#6c829f]">
@@ -776,14 +776,14 @@ export default function AdminDashboard() {
                     <div className="flex flex-wrap items-center gap-3">
                       <button
                         type="submit"
-                        className="rounded-full bg-[#4d95ef] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(77,149,239,0.22)] transition hover:bg-[#3f88e1]"
+                        className="rounded-full bg-[color:var(--primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(79,114,213,0.22)] transition hover:opacity-90"
                       >
                         Create request
                       </button>
                       <button
                         type="button"
                         onClick={resetForm}
-                        className="rounded-full border border-[#d7e1ef] bg-white px-5 py-2.5 text-sm font-semibold text-[#56708f] transition hover:bg-[#f7fbff]"
+                        className="rounded-full border border-[color:var(--border)] bg-white px-5 py-2.5 text-sm font-semibold text-[#56708f] transition hover:bg-[color:var(--surface)]"
                       >
                         Reset
                       </button>
@@ -797,36 +797,36 @@ export default function AdminDashboard() {
                 </section>
 
                 <aside className="space-y-5">
-                  <section className="rounded-[28px] border border-[#dbe7f8] bg-[#fbfdff] p-5 shadow-[0_14px_42px_rgba(24,58,112,0.06)]">
+                  <section className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft">
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7f93b1]">
                       Review notes
                     </p>
-                    <h3 className="mt-2 text-[1.15rem] font-semibold text-[#17304f]">
+                      <h3 className="mt-2 text-[1.15rem] font-semibold text-[#183153]">
                       What the queue controls
                     </h3>
                     <div className="mt-4 space-y-3 text-sm text-[#60789a]">
-                      <div className="rounded-[22px] bg-[#f7fbff] px-4 py-3.5 leading-6">
+                      <div className="rounded-[22px] bg-[color:var(--surface)] px-4 py-3.5 leading-6">
                         Approve or reject each pending club request from one
                         clean list.
                       </div>
-                      <div className="rounded-[22px] bg-[#f7fbff] px-4 py-3.5 leading-6">
+                      <div className="rounded-[22px] bg-[color:var(--surface)] px-4 py-3.5 leading-6">
                         Promote accepted clubs from pending to active without
                         changing the layout.
                       </div>
-                      <div className="rounded-[22px] bg-[#f7fbff] px-4 py-3.5 leading-6">
+                      <div className="rounded-[22px] bg-[color:var(--surface)] px-4 py-3.5 leading-6">
                         Check whether interest reaches the {thresholdGoal}{' '}
                         student threshold.
                       </div>
                     </div>
                   </section>
 
-                  <section className="rounded-[28px] border border-[#dbe7f8] bg-[#fbfdff] p-5 shadow-[0_14px_42px_rgba(24,58,112,0.06)]">
+                  <section className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7f93b1]">
                           Threshold
                         </p>
-                        <h3 className="mt-2 text-[1.15rem] font-semibold text-[#17304f]">
+                        <h3 className="mt-2 text-[1.15rem] font-semibold text-[#183153]">
                           Interest progress
                         </h3>
                       </div>
@@ -837,11 +837,11 @@ export default function AdminDashboard() {
                       {spotlightClubs.map((club) => (
                         <div
                           key={club.id}
-                          className="rounded-[22px] bg-[#f7fbff] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]"
+                          className="rounded-[22px] bg-[color:var(--surface)] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]"
                         >
                           <div className="flex items-center justify-between gap-3">
                             <div>
-                              <p className="font-semibold text-[#17304f]">
+                              <p className="font-semibold text-[#183153]">
                                 {club.clubName}
                               </p>
                               <p className="text-xs text-[#7a8faa]">
@@ -875,7 +875,7 @@ export default function AdminDashboard() {
           {activeSection === 'users' ? (
             <section className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
               <form
-                className="rounded-[28px] border border-[#dbe7f8] bg-[#fbfdff] p-5"
+                className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5"
                 onSubmit={(event) => {
                   event.preventDefault();
                   handleCreateUser();
@@ -885,7 +885,7 @@ export default function AdminDashboard() {
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7f93b1]">
                     New user
                   </p>
-                  <h3 className="mt-2 text-xl font-semibold text-[#17304f]">
+                  <h3 className="mt-2 text-xl font-semibold text-[#183153]">
                     Create managed account
                   </h3>
                   <p className="mt-2 text-sm text-[#6c829f]">
@@ -952,14 +952,14 @@ export default function AdminDashboard() {
                 <div className="mt-5 flex flex-wrap items-center gap-3">
                   <button
                     type="submit"
-                    className="rounded-full bg-[#4d95ef] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(77,149,239,0.22)] transition hover:bg-[#3f88e1]"
+                    className="rounded-full bg-[color:var(--primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(79,114,213,0.22)] transition hover:opacity-90"
                   >
                     Add user
                   </button>
                   <button
                     type="button"
                     onClick={resetUserForm}
-                    className="rounded-full border border-[#d7e1ef] bg-white px-5 py-2.5 text-sm font-semibold text-[#56708f] transition hover:bg-[#f7fbff]"
+                    className="rounded-full border border-[color:var(--border)] bg-white px-5 py-2.5 text-sm font-semibold text-[#56708f] transition hover:bg-[color:var(--surface)]"
                   >
                     Reset
                   </button>
@@ -970,18 +970,18 @@ export default function AdminDashboard() {
                 {users.map((user, index) => (
                   <article
                     key={user.id}
-                    className={`rounded-[28px] border p-5 shadow-[0_14px_42px_rgba(24,58,112,0.06)] ${
+                    className={`rounded-[28px] border p-5 shadow-soft ${
                       user.accountStatus === 'banned'
                         ? 'border-[#ffd2d5] bg-[#fff7f8]'
                         : user.accountStatus === 'restricted'
                         ? 'border-[#ffe4b7] bg-[#fffaf0]'
-                        : 'border-[#dbe7f8] bg-[#fbfdff]'
+                        : 'border-[color:var(--border)] bg-[color:var(--card)]'
                     } ${index === 0 ? 'dashboard-entrance-delay-1' : ''}`}
                   >
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-lg font-semibold text-[#17304f]">
+                          <h3 className="text-lg font-semibold text-[#183153]">
                             {user.name}
                           </h3>
                           <StatusBadge
@@ -1003,7 +1003,7 @@ export default function AdminDashboard() {
                       </div>
                       <div className="text-right text-xs text-[#6f86a7]">
                         <p>Last active</p>
-                        <p className="mt-1 font-semibold text-[#17304f]">
+                        <p className="mt-1 font-semibold text-[#183153]">
                           {user.lastActive}
                         </p>
                       </div>
@@ -1030,7 +1030,7 @@ export default function AdminDashboard() {
                           <p className="text-[11px] uppercase tracking-[0.18em] text-[#7f93b1]">
                             {label}
                           </p>
-                          <p className="mt-1 text-sm font-medium text-[#17304f]">
+                          <p className="mt-1 text-sm font-medium text-[#183153]">
                             {value}
                           </p>
                         </div>
@@ -1046,7 +1046,7 @@ export default function AdminDashboard() {
                             user.role === 'student' ? 'teacher' : 'student'
                           )
                         }
-                        className="rounded-full bg-[#4d95ef] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#3f88e1]"
+                        className="rounded-full bg-[color:var(--primary)] px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90"
                       >
                         {user.role === 'student' ? 'Make teacher' : 'Make student'}
                       </button>
@@ -1078,11 +1078,11 @@ export default function AdminDashboard() {
               {activeClubs.map((club) => (
                 <article
                   key={club.id}
-                  className="rounded-[28px] border border-[#dbe7f8] bg-[#fbfdff] p-5 shadow-[0_14px_42px_rgba(24,58,112,0.06)]"
+                  className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <h3 className="text-lg font-semibold text-[#17304f]">
+                      <h3 className="text-lg font-semibold text-[#183153]">
                         {club.clubName}
                       </h3>
                       <p className="mt-1 text-sm text-[#6f86a7]">{club.teacher}</p>
@@ -1108,7 +1108,7 @@ export default function AdminDashboard() {
                     <button
                       type="button"
                       onClick={() => toggleClubStatus(club.id)}
-                      className="rounded-full bg-[#17304f] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#10253d]"
+                      className="rounded-full bg-[color:var(--primary)] px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90"
                     >
                       {club.clubStatus === 'active'
                         ? 'Pause club'
@@ -1131,11 +1131,11 @@ export default function AdminDashboard() {
               {spamQueue.map((club) => (
                 <article
                   key={club.id}
-                  className="rounded-[28px] border border-[#ffd2d5] bg-[#fff7f8] p-5 shadow-[0_14px_42px_rgba(24,58,112,0.06)]"
+                  className="rounded-[28px] border border-[#ffd2d5] bg-[#fff7f8] p-5 shadow-soft"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <h3 className="text-lg font-semibold text-[#17304f]">
+                      <h3 className="text-lg font-semibold text-[#183153]">
                         {club.clubName}
                       </h3>
                       <p className="mt-1 text-sm text-[#6f86a7]">{club.teacher}</p>
