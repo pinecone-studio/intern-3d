@@ -6,6 +6,7 @@ import { CapacityBar, StatusBadge } from '@/app/_components';
 import {
   dayOptions,
   gradeOptions,
+  userRoleOptions,
   teacherOptions,
 } from './admin-data';
 import { useAdminDashboard } from './useAdminDashboard';
@@ -18,17 +19,25 @@ export default function AdminDashboard() {
     banner,
     form,
     handleCreate,
+    handleCreateUser,
     pendingRequests,
     rejectRequest,
     removeSpamClub,
     requests,
     spamQueue,
+    resetUserForm,
     thresholdGoal,
     thresholdReachedCount,
     resetForm,
     toggleClubStatus,
+    toggleUserBan,
+    toggleUserRestriction,
+    updateUserField,
+    updateUserRole,
     updateField,
     formatThresholdLabel,
+    userForm,
+    users,
   } = useAdminDashboard();
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -330,6 +339,38 @@ export default function AdminDashboard() {
               ))}
             </div>
           </section>
+
+          <section className="dashboard-entrance rounded-[30px] border border-[#dce7f8] bg-white p-5 shadow-[0_18px_60px_rgba(19,45,96,0.08)]">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#6e86a7]">
+              Хэрэглэгчийн хяналт
+            </p>
+            <h3 className="mt-2 text-lg font-semibold text-[#183153]">
+              Role тохируулах ба access удирдах
+            </h3>
+            <p className="mt-2 text-sm text-[#57708f]">
+              Сурагч болон багшийн role-ийг өөрчилж, түр restriction эсвэл ban
+              төлөв оноох боломжтой.
+            </p>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl bg-[#f6f9ff] p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-[#6e86a7]">
+                  Нийт хэрэглэгч
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-[#183153]">
+                  {users.length}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-[#f6f9ff] p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-[#6e86a7]">
+                  Хязгаарлагдсан
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-[#183153]">
+                  {users.filter((user) => user.accountStatus === 'restricted').length}
+                </p>
+              </div>
+            </div>
+          </section>
         </aside>
       </div>
 
@@ -469,6 +510,224 @@ export default function AdminDashboard() {
               </article>
             );
           })}
+        </div>
+      </section>
+
+      <section className="dashboard-entrance mt-6 rounded-[30px] border border-[#dce7f8] bg-white p-5 shadow-[0_18px_60px_rgba(19,45,96,0.08)]">
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#6e86a7]">
+              Хэрэглэгчийн удирдлага
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-[#183153]">
+              Сурагч / багш role болон access control
+            </h2>
+            <p className="mt-2 text-sm text-[#57708f]">
+              Хэрэглэгч нэмэх, role өөрчлөх, restriction тавих, эсвэл ban хийх
+              үйлдлүүдийг нэг дороос удирдана.
+            </p>
+          </div>
+          <StatusBadge
+            type="review"
+            text={`${users.filter((user) => user.accountStatus !== 'active').length} хяналттай`}
+          />
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
+          <form
+            className="space-y-4 rounded-[26px] border border-slate-200 bg-slate-50/70 p-5"
+            onSubmit={(event) => {
+              event.preventDefault();
+              handleCreateUser();
+            }}
+          >
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#6e86a7]">
+                Шинэ хэрэглэгч
+              </p>
+              <h3 className="mt-2 text-lg font-semibold text-[#183153]">
+                Бүртгэл нэмэх
+              </h3>
+            </div>
+
+            <label className="block">
+              <span className="mb-2 block text-sm font-semibold text-slate-700">
+                Нэр
+              </span>
+              <input
+                type="text"
+                value={userForm.name}
+                onChange={(event) => updateUserField('name', event.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500"
+              />
+            </label>
+
+            <label className="block">
+              <span className="mb-2 block text-sm font-semibold text-slate-700">
+                Имэйл
+              </span>
+              <input
+                type="email"
+                value={userForm.email}
+                onChange={(event) => updateUserField('email', event.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500"
+              />
+            </label>
+
+            <label className="block">
+              <span className="mb-2 block text-sm font-semibold text-slate-700">
+                Эрх
+              </span>
+              <select
+                value={userForm.role}
+                onChange={(event) => updateUserField('role', event.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500"
+              >
+                {userRoleOptions.map((role) => (
+                  <option key={role} value={role}>
+                    {role === 'teacher' ? 'Багш' : 'Сурагч'}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="block">
+              <span className="mb-2 block text-sm font-semibold text-slate-700">
+                Тайлбар
+              </span>
+              <textarea
+                rows={3}
+                value={userForm.reason}
+                onChange={(event) =>
+                  updateUserField('reason', event.target.value)
+                }
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500"
+              />
+            </label>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="submit"
+                className="rounded-full bg-[#173765] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#112a48]"
+              >
+                Хэрэглэгч нэмэх
+              </button>
+              <button
+                type="button"
+                onClick={resetUserForm}
+                className="rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Дахин тохируулах
+              </button>
+            </div>
+          </form>
+
+          <div className="space-y-4">
+            {users.map((user, index) => (
+              <article
+                key={user.id}
+                className={`rounded-[26px] border p-5 ${
+                  user.accountStatus === 'banned'
+                    ? 'border-rose-200 bg-rose-50/70'
+                    : user.accountStatus === 'restricted'
+                    ? 'border-amber-200 bg-amber-50/70'
+                    : 'border-slate-200 bg-slate-50/70'
+                } ${index === 0 ? 'dashboard-entrance-delay-1' : ''}`}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-lg font-semibold text-[#183153]">
+                        {user.name}
+                      </h3>
+                      <StatusBadge
+                        type={user.role}
+                        text={user.role === 'teacher' ? 'багш' : 'сурагч'}
+                      />
+                      <StatusBadge
+                        type={user.accountStatus}
+                        text={
+                          user.accountStatus === 'active'
+                            ? 'идэвхтэй'
+                            : user.accountStatus === 'restricted'
+                            ? 'хязгаарласан'
+                            : 'түдгэлзүүлсэн'
+                        }
+                      />
+                    </div>
+                    <p className="mt-1 text-sm text-[#6e86a7]">{user.email}</p>
+                  </div>
+                  <div className="text-right text-xs text-[#6e86a7]">
+                    <p>Last active</p>
+                    <p className="mt-1 font-semibold text-[#183153]">
+                      {user.lastActive}
+                    </p>
+                  </div>
+                </div>
+
+                <p className="mt-3 text-sm text-[#57708f]">{user.reason}</p>
+                <p className="mt-2 text-sm text-[#57708f]">{user.notes}</p>
+
+                <div className="mt-4 grid grid-cols-2 gap-3 text-sm text-[#183153] sm:grid-cols-4">
+                  <div className="rounded-2xl bg-white px-3 py-3">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-[#6e86a7]">
+                      Role
+                    </p>
+                    <p className="mt-1 font-medium">{user.role}</p>
+                  </div>
+                  <div className="rounded-2xl bg-white px-3 py-3">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-[#6e86a7]">
+                      Clubs
+                    </p>
+                    <p className="mt-1 font-medium">{user.clubCount}</p>
+                  </div>
+                  <div className="rounded-2xl bg-white px-3 py-3">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-[#6e86a7]">
+                      Status
+                    </p>
+                    <p className="mt-1 font-medium">{user.accountStatus}</p>
+                  </div>
+                  <div className="rounded-2xl bg-white px-3 py-3">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-[#6e86a7]">
+                      ID
+                    </p>
+                    <p className="mt-1 font-medium">{user.id}</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateUserRole(
+                        user.id,
+                        user.role === 'student' ? 'teacher' : 'student'
+                      )
+                    }
+                    className="rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700"
+                  >
+                    {user.role === 'student' ? 'Багш болгох' : 'Сурагч болгох'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleUserRestriction(user.id)}
+                    className="rounded-full border border-amber-300 bg-white px-4 py-2 text-xs font-semibold text-amber-800 transition hover:bg-amber-50"
+                  >
+                    {user.accountStatus === 'restricted'
+                      ? 'Хязгаарлалт цуцлах'
+                      : 'Хязгаарлах'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleUserBan(user.id)}
+                    className="rounded-full border border-rose-300 bg-white px-4 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
+                  >
+                    {user.accountStatus === 'banned' ? 'Хаалтыг цуцлах' : 'Түр хаах'}
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 

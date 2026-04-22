@@ -5,6 +5,9 @@ export const teacherOptions = [
   'Темүүлэн багш',
 ] as const;
 
+export const userRoleOptions = ['student', 'teacher'] as const;
+export const userAccountStatusOptions = ['active', 'restricted', 'banned'] as const;
+
 export const dayOptions = [
   'Даваа, Лхагва, Баасан',
   'Мягмар, Пүрэв',
@@ -58,6 +61,29 @@ export type ClubForm = {
   note: string;
 };
 
+export type UserRole = (typeof userRoleOptions)[number];
+
+export type UserAccountStatus = (typeof userAccountStatusOptions)[number];
+
+export type ManagedUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  accountStatus: UserAccountStatus;
+  reason: string;
+  lastActive: string;
+  clubCount: number;
+  notes: string;
+};
+
+export type UserForm = {
+  name: string;
+  email: string;
+  role: UserRole;
+  reason: string;
+};
+
 export const initialForm: ClubForm = {
   clubName: '',
   teacher: teacherOptions[0],
@@ -68,6 +94,13 @@ export const initialForm: ClubForm = {
   studentLimit: '12',
   interestCount: '0',
   note: '',
+};
+
+export const initialUserForm: UserForm = {
+  name: 'Ганбат Энх',
+  email: 'ganbat.enkh@school.mn',
+  role: 'student',
+  reason: 'Хичээл, клубийн оролцоонд тулгуурласан анхан шатны бүртгэл.',
 };
 
 export const initialRequests: ClubRequest[] = [
@@ -187,6 +220,53 @@ export const initialActiveClubs: ActiveClub[] = [
   },
 ];
 
+export const initialManagedUsers: ManagedUser[] = [
+  {
+    id: 'user-student-1',
+    name: 'Анударь Ням',
+    email: 'anudari.nyam@school.mn',
+    role: 'student',
+    accountStatus: 'active',
+    reason: 'Ердийн идэвхтэй сурагчийн бүртгэл.',
+    lastActive: '2026-04-21',
+    clubCount: 3,
+    notes: 'Robotics болон Art клубт оролцож байсан.',
+  },
+  {
+    id: 'user-teacher-1',
+    name: 'Бат-Очир Төмөр',
+    email: 'bat-ochir@school.mn',
+    role: 'teacher',
+    accountStatus: 'active',
+    reason: 'Клуб удирдах эрхтэй багш.',
+    lastActive: '2026-04-20',
+    clubCount: 4,
+    notes: 'STEM, Debate клубүүдийн админ.',
+  },
+  {
+    id: 'user-student-2',
+    name: 'Мөнхжин Ариун',
+    email: 'munkhjin@school.mn',
+    role: 'student',
+    accountStatus: 'restricted',
+    reason: 'Дахин бүртгэлийн шалгалт дуустал хязгаарласан.',
+    lastActive: '2026-04-19',
+    clubCount: 1,
+    notes: 'Илүү баталгаажуулалт шаардлагатай.',
+  },
+  {
+    id: 'user-teacher-2',
+    name: 'Саруул Намуун',
+    email: 'saruul.namuun@school.mn',
+    role: 'teacher',
+    accountStatus: 'banned',
+    reason: 'Зөрчил илэрсэн тул түр хаасан.',
+    lastActive: '2026-04-12',
+    clubCount: 0,
+    notes: 'Админы хяналт шаардлагатай.',
+  },
+];
+
 export const formatThresholdLabel = (current: number) => {
   if (current >= thresholdGoal) {
     return 'Босгонд хүрсэн';
@@ -227,3 +307,28 @@ export const createPendingRequest = (form: ClubForm): ClubRequest => ({
   clubStatus: 'pending',
   note: form.note || 'Админ самбараас шинээр үүсгэсэн клубийн хүсэлт.',
 });
+
+export const createManagedUser = (form: UserForm): ManagedUser => ({
+  id: `user-${form.name.toLowerCase().replace(/\s+/g, '-') || 'draft'}`,
+  name: form.name || 'Нэргүй хэрэглэгч',
+  email: form.email || 'unknown@school.mn',
+  role: form.role,
+  accountStatus: 'active',
+  reason: form.reason || 'Админ самбараас шинээр бүртгэгдсэн хэрэглэгч.',
+  lastActive: '2026-04-22',
+  clubCount: 0,
+  notes: 'Шинэ бүртгэл.',
+});
+
+export const formatAccountStatusLabel = (status: UserAccountStatus) => {
+  switch (status) {
+    case 'active':
+      return 'active';
+    case 'restricted':
+      return 'restricted';
+    case 'banned':
+      return 'banned';
+    default:
+      return status;
+  }
+};

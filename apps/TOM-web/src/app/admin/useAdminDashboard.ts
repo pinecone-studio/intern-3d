@@ -3,23 +3,30 @@
 import { useState } from 'react';
 
 import {
+  createManagedUser,
   createPendingRequest,
   formatThresholdLabel,
   initialActiveClubs,
   initialForm,
+  initialManagedUsers,
   initialRequests,
   initialSpamQueue,
+  initialUserForm,
   requestToActiveClub,
   type ClubForm,
   type ClubRequest,
+  type ManagedUser,
+  type UserForm,
   thresholdGoal,
 } from './admin-data';
 
 export function useAdminDashboard() {
   const [form, setForm] = useState(initialForm);
+  const [userForm, setUserForm] = useState(initialUserForm);
   const [requests, setRequests] = useState(initialRequests);
   const [activeClubs, setActiveClubs] = useState(initialActiveClubs);
   const [spamQueue, setSpamQueue] = useState(initialSpamQueue);
+  const [users, setUsers] = useState(initialManagedUsers);
   const [banner, setBanner] = useState(
     'Шинэ клубийн хүсэлтүүдийг шалгаж, боломжтойг нь идэвхжүүлж, spam-ийг хурдан цэвэрлэ.'
   );
@@ -35,12 +42,31 @@ export function useAdminDashboard() {
     setForm(initialForm);
   };
 
+  const updateUserField = (field: keyof UserForm, value: string) => {
+    setUserForm((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  };
+
+  const resetUserForm = () => {
+    setUserForm(initialUserForm);
+  };
+
   const handleCreate = () => {
     const newRequest: ClubRequest = createPendingRequest(form);
 
     setRequests((current) => [newRequest, ...current]);
     setBanner(`${newRequest.clubName} шалгах дараалалд нэмэгдлээ.`);
     setForm(initialForm);
+  };
+
+  const handleCreateUser = () => {
+    const newUser: ManagedUser = createManagedUser(userForm);
+
+    setUsers((current) => [newUser, ...current]);
+    setBanner(`${newUser.name} хэрэглэгчийн бүртгэл нэмэгдлээ.`);
+    setUserForm(initialUserForm);
   };
 
   const approveRequest = (requestId: string) => {
@@ -99,6 +125,68 @@ export function useAdminDashboard() {
     setBanner('Клубийн төлөв шинэчлэгдлээ.');
   };
 
+  const updateUserRole = (userId: string, role: ManagedUser['role']) => {
+    setUsers((current) =>
+      current.map((user) => {
+        if (user.id !== userId) {
+          return user;
+        }
+
+        return {
+          ...user,
+          role,
+          notes: `${role === 'teacher' ? 'Багшийн' : 'Сурагчийн'} эрхээр шинэчиллээ.`,
+        };
+      })
+    );
+    setBanner('Хэрэглэгчийн эрх шинэчлэгдлээ.');
+  };
+
+  const toggleUserRestriction = (userId: string) => {
+    setUsers((current) =>
+      current.map((user) => {
+        if (user.id !== userId) {
+          return user;
+        }
+
+        const nextStatus =
+          user.accountStatus === 'restricted' ? 'active' : 'restricted';
+
+        return {
+          ...user,
+          accountStatus: nextStatus,
+          reason:
+            nextStatus === 'active'
+              ? 'Хязгаарлалт цуцлагдсан.'
+              : 'Дүрмийн зөрчил шалгагдаж байна.',
+        };
+      })
+    );
+    setBanner('Хэрэглэгчийн хязгаарлалт шинэчлэгдлээ.');
+  };
+
+  const toggleUserBan = (userId: string) => {
+    setUsers((current) =>
+      current.map((user) => {
+        if (user.id !== userId) {
+          return user;
+        }
+
+        const nextStatus = user.accountStatus === 'banned' ? 'active' : 'banned';
+
+        return {
+          ...user,
+          accountStatus: nextStatus,
+          reason:
+            nextStatus === 'active'
+              ? 'Блок тайлагдлаа.'
+              : 'Админы шийдвэрээр түдгэлзүүллээ.',
+        };
+      })
+    );
+    setBanner('Хэрэглэгчийн түдгэлзүүлэлт шинэчлэгдлээ.');
+  };
+
   const removeSpamClub = (clubId: string) => {
     const spamClub = spamQueue.find((item) => item.id === clubId);
 
@@ -126,15 +214,23 @@ export function useAdminDashboard() {
     banner,
     form,
     handleCreate,
+    handleCreateUser,
     pendingRequests,
     rejectRequest,
     removeSpamClub,
     requests,
     spamQueue,
+    resetUserForm,
     thresholdReachedCount,
     thresholdGoal,
     resetForm,
+    updateUserField,
     toggleClubStatus,
+    toggleUserBan,
+    toggleUserRestriction,
+    updateUserRole,
+    userForm,
+    users,
     updateField,
     formatThresholdLabel,
   };
