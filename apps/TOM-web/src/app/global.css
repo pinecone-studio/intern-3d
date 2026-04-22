@@ -153,6 +153,21 @@ svg {
   animation: dashboardFloat 16s ease-in-out infinite;
 }
 
+.badge-marquee {
+  overflow: hidden;
+}
+
+.badge-marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 1rem;
+  animation: badgeMarquee 20s linear infinite;
+}
+
+.badge-marquee-item {
+  flex: 0 0 auto;
+}
+
 @keyframes dashboardEntrance {
   from {
     opacity: 0;
@@ -176,6 +191,16 @@ svg {
   }
 }
 
+@keyframes badgeMarquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(-50% - 0.5rem));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,
@@ -184,7 +209,8 @@ svg {
   }
 
   .dashboard-entrance,
-  .floating-orb {
+  .floating-orb,
+  .badge-marquee-track {
     animation: none !important;
   }
 }

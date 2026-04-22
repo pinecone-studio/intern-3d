@@ -40,6 +40,8 @@ const badges = [
   },
 ];
 
+const badgeRail = [...badges, ...badges];
+
 const quickActions = [
   {
     title: 'Start a new club',
@@ -118,14 +120,12 @@ export default function StudentDashboard() {
   return (
     <main className="min-h-screen sm:px-6 lg:px-8 pt-10">
       <div className="mx-auto max-w-6xl space-y-6">
-        <section className="dashboard-entrance overflow-hidden rounded-[34px] border border-[#d8e7fb] bg-white shadow-[0_24px_80px_rgba(33,79,146,0.08)]">
+        <section className="dashboard-entrance overflow-hidden rounded-[34px] ">
 
-          <div className="relative overflow-hidden bg-[linear-gradient(180deg,#eaf7ff_0%,#eef9ff_30%,#f5fbff_100%)]  ">
-            <div className="floating-orb absolute -left-10 top-10 h-32 w-32 rounded-full bg-[radial-gradient(circle,_rgba(136,189,255,0.2)_0%,_rgba(136,189,255,0)_70%)]" />
-            <div className="floating-orb absolute right-8 top-0 h-40 w-40 rounded-full bg-[radial-gradient(circle,_rgba(109,207,223,0.16)_0%,_rgba(109,207,223,0)_70%)]" />
-
-            <div className="relative grid gap-6 xl:grid-cols-[1.6fr_0.9fr]">
-              <section className="dashboard-entrance dashboard-entrance-delay-1 rounded-[30px] bg-gradient-to-r from-[#6fb3f2] via-[#84aef6] to-[#b3aaf6] p-6 text-white shadow-[0_24px_50px_rgba(101,145,233,0.28)] sm:p-7">
+          <div className="relative overflow-hidden ">
+           
+            <div className="relative grid gap-6 xl:grid-cols-[minmax(0,1fr)_15rem]">
+              <section className="dashboard-entrance dashboard-entrance-delay-1 min-w-0 rounded-[30px] bg-gradient-to-r from-[#6fb3f2] via-[#84aef6] to-[#b3aaf6] p-6 text-white shadow-[0_24px_50px_rgba(101,145,233,0.28)] sm:p-7">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-sm font-semibold text-white/80">
@@ -157,20 +157,21 @@ export default function StudentDashboard() {
                 </div>
               </section>
 
-              <aside className="dashboard-entrance dashboard-entrance-delay-2 rounded-[30px] border border-[#dbe7f8] bg-white/95 p-6 shadow-[0_18px_45px_rgba(28,69,130,0.08)] backdrop-blur">
+              <aside className="dashboard-entrance dashboard-entrance-delay-2 w-60 shrink-0 rounded-[30px] border border-[#dbe7f8] bg-white/95 p-6 shadow-[0_18px_45px_rgba(28,69,130,0.08)] backdrop-blur">
                 <div className="flex items-center gap-2 text-[#1d355b]">
                   <Trophy className="h-5 w-5 text-[#7f9eea]" />
                   <h2 className="text-lg font-semibold">Badges</h2>
                 </div>
 
-                <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4 xl:grid-cols-2">
-                  {badges.map((badge) => {
+                <div className="badge-marquee mt-6">
+                  <div className="badge-marquee-track">
+                    {badgeRail.map((badge, index) => {
                     const Icon = badge.icon;
 
                     return (
                       <article
-                        key={badge.name}
-                        className="flex flex-col items-center rounded-2xl bg-[#fbfdff] px-3 py-2 text-center"
+                        key={`${badge.name}-${index}`}
+                        className="badge-marquee-item flex min-w-[148px] flex-col items-center rounded-2xl bg-[#fbfdff] px-3 py-3 text-center"
                       >
                         <div
                           className={`flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br ${badge.color} text-white shadow-[0_12px_22px_rgba(111,158,231,0.22)]`}
@@ -185,7 +186,8 @@ export default function StudentDashboard() {
                         </p>
                       </article>
                     );
-                  })}
+                    })}
+                  </div>
                 </div>
               </aside>
             </div>
