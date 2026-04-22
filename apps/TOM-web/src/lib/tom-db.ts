@@ -1,0 +1,674 @@
+import {
+  initialActiveClubs,
+  initialManagedUsers,
+  initialRequests,
+  initialSpamQueue,
+} from '@/app/admin/admin-data'
+import { getTomDb } from '@/lib/d1'
+import type {
+  Club,
+  ClubInput,
+  ClubRequest,
+  ClubRequestInput,
+  ClubStatus,
+  ManagedUser,
+  RequestStatus,
+  UserInput,
+} from '@/lib/tom-types'
+
+type ClubRow = {
+  id: string
+  name: string
+  description: string
+  teacher_name: string
+  created_by: string
+  interest_count: number
+  member_limit: number
+  member_count: number
+  grade_range: string
+  allowed_days: string
+  start_date: string
+  end_date: string
+  note: string
+  status: ClubStatus
+  category: string
+  verified: number
+  created_at: string
+  updated_at: string
+}
+
+type ClubRequestRow = {
+  id: string
+  club_name: string
+  requested_by: string
+  teacher_name: string
+  created_by: string
+  note: string
+  interest_count: number
+  student_limit: number
+  grade_range: string
+  allowed_days: string
+  start_date: string
+  end_date: string
+  status: RequestStatus
+  club_status: ClubStatus
+  flagged_reason: string | null
+  created_at: string
+  updated_at: string
+}
+
+type UserRow = {
+  id: string
+  full_name: string
+  email: string
+  role: ManagedUser['role']
+  account_status: ManagedUser['accountStatus']
+  reason: string
+  last_active: string
+  club_count: number
+  notes: string
+  created_at: string
+  updated_at: string
+}
+
+const defaultDate = '2026-04-22'
+
+function nowIso() {
+  return new Date().toISOString()
+}
+
+function toBoolInt(value: boolean) {
+  return value ? 1 : 0
+}
+
+function mapClubRow(row: ClubRow): Club {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    teacherName: row.teacher_name,
+    createdBy: row.created_by,
+    interestCount: row.interest_count,
+    studentLimit: row.member_limit,
+    memberCount: row.member_count,
+    gradeRange: row.grade_range,
+    allowedDays: row.allowed_days,
+    startDate: row.start_date,
+    endDate: row.end_date,
+    note: row.note,
+    status: row.status,
+    category: row.category,
+    verified: row.verified === 1,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+function mapRequestRow(row: ClubRequestRow): ClubRequest {
+  return {
+    id: row.id,
+    clubName: row.club_name,
+    teacherName: row.teacher_name,
+    createdBy: row.created_by || row.requested_by,
+    interestCount: row.interest_count,
+    studentLimit: row.student_limit,
+    gradeRange: row.grade_range,
+    allowedDays: row.allowed_days,
+    startDate: row.start_date,
+    endDate: row.end_date,
+    note: row.note,
+    requestStatus: row.status,
+    clubStatus: row.club_status,
+    flaggedReason: row.flagged_reason,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+function mapUserRow(row: UserRow): ManagedUser {
+  return {
+    id: row.id,
+    name: row.full_name,
+    email: row.email,
+    role: row.role,
+    accountStatus: row.account_status,
+    reason: row.reason,
+    lastActive: row.last_active,
+    clubCount: row.club_count,
+    notes: row.notes,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+function normalizeClub(input: ClubInput, current?: Club): Club {
+  const now = nowIso()
+
+  return {
+    id: current?.id ?? crypto.randomUUID(),
+    name: input.name,
+    description: input.description ?? current?.description ?? '',
+    teacherName: input.teacherName ?? current?.teacherName ?? 'Тодорхойгүй багш',
+    createdBy: input.createdBy ?? current?.createdBy ?? 'TOM system',
+    interestCount: input.interestCount ?? current?.interestCount ?? 0,
+    studentLimit: input.studentLimit ?? current?.studentLimit ?? 20,
+    memberCount: input.memberCount ?? current?.memberCount ?? 0,
+    gradeRange: input.gradeRange ?? current?.gradeRange ?? '',
+    allowedDays: input.allowedDays ?? current?.allowedDays ?? '',
+    startDate: input.startDate ?? current?.startDate ?? '',
+    endDate: input.endDate ?? current?.endDate ?? '',
+    note: input.note ?? current?.note ?? '',
+    status: input.status ?? current?.status ?? 'draft',
+    category: input.category ?? current?.category ?? 'general',
+    verified: input.verified ?? current?.verified ?? false,
+    createdAt: current?.createdAt ?? now,
+    updatedAt: now,
+  }
+}
+
+function normalizeRequest(input: ClubRequestInput, current?: ClubRequest): ClubRequest {
+  const now = nowIso()
+
+  return {
+    id: current?.id ?? crypto.randomUUID(),
+    clubName: input.clubName,
+    teacherName: input.teacherName ?? current?.teacherName ?? 'Тодорхойгүй багш',
+    createdBy: input.createdBy ?? current?.createdBy ?? 'TOM system',
+    interestCount: input.interestCount ?? current?.interestCount ?? 0,
+    studentLimit: input.studentLimit ?? current?.studentLimit ?? 20,
+    gradeRange: input.gradeRange ?? current?.gradeRange ?? '',
+    allowedDays: input.allowedDays ?? current?.allowedDays ?? '',
+    startDate: input.startDate ?? current?.startDate ?? '',
+    endDate: input.endDate ?? current?.endDate ?? '',
+    note: input.note ?? current?.note ?? '',
+    requestStatus: input.requestStatus ?? current?.requestStatus ?? 'pending',
+    clubStatus: input.clubStatus ?? current?.clubStatus ?? 'pending',
+    flaggedReason: input.flaggedReason ?? current?.flaggedReason ?? null,
+    createdAt: current?.createdAt ?? now,
+    updatedAt: now,
+  }
+}
+
+function normalizeUser(input: UserInput, current?: ManagedUser): ManagedUser {
+  const now = nowIso()
+
+  return {
+    id: current?.id ?? crypto.randomUUID(),
+    name: input.name,
+    email: input.email,
+    role: input.role ?? current?.role ?? 'student',
+    accountStatus: input.accountStatus ?? current?.accountStatus ?? 'active',
+    reason: input.reason ?? current?.reason ?? '',
+    lastActive: input.lastActive ?? current?.lastActive ?? defaultDate,
+    clubCount: input.clubCount ?? current?.clubCount ?? 0,
+    notes: input.notes ?? current?.notes ?? '',
+    createdAt: current?.createdAt ?? now,
+    updatedAt: now,
+  }
+}
+
+export async function listClubs(params: {
+  status?: string | null
+  teacher?: string | null
+  q?: string | null
+} = {}) {
+  const db = getTomDb()
+  const filters: string[] = []
+  const bindings: Array<string | number> = []
+
+  if (params.status) {
+    filters.push('status = ?')
+    bindings.push(params.status)
+  }
+
+  if (params.teacher) {
+    filters.push('teacher_name LIKE ?')
+    bindings.push(`%${params.teacher}%`)
+  }
+
+  if (params.q) {
+    filters.push('(name LIKE ? OR category LIKE ? OR teacher_name LIKE ?)')
+    bindings.push(`%${params.q}%`, `%${params.q}%`, `%${params.q}%`)
+  }
+
+  const where = filters.length > 0 ? `WHERE ${filters.join(' AND ')}` : ''
+  const result = await db
+    .prepare(`SELECT * FROM clubs ${where} ORDER BY updated_at DESC, name ASC`)
+    .bind(...bindings)
+    .all<ClubRow>()
+
+  return result.results.map(mapClubRow)
+}
+
+export async function getClub(id: string) {
+  const db = getTomDb()
+  const row = await db.prepare('SELECT * FROM clubs WHERE id = ? LIMIT 1').bind(id).first<ClubRow>()
+  return row ? mapClubRow(row) : null
+}
+
+export async function upsertClub(input: ClubInput, id?: string) {
+  const db = getTomDb()
+  const current = id ? await getClub(id) : null
+  const club = normalizeClub({ ...input, name: input.name }, current ?? undefined)
+
+  await db
+    .prepare(
+      `INSERT INTO clubs (
+        id, name, description, teacher_name, created_by, interest_count, member_limit, member_count,
+        grade_range, allowed_days, start_date, end_date, note, status, category, verified, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        name = excluded.name,
+        description = excluded.description,
+        teacher_name = excluded.teacher_name,
+        created_by = excluded.created_by,
+        interest_count = excluded.interest_count,
+        member_limit = excluded.member_limit,
+        member_count = excluded.member_count,
+        grade_range = excluded.grade_range,
+        allowed_days = excluded.allowed_days,
+        start_date = excluded.start_date,
+        end_date = excluded.end_date,
+        note = excluded.note,
+        status = excluded.status,
+        category = excluded.category,
+        verified = excluded.verified,
+        updated_at = excluded.updated_at`
+    )
+    .bind(
+      club.id,
+      club.name,
+      club.description,
+      club.teacherName,
+      club.createdBy,
+      club.interestCount,
+      club.studentLimit,
+      club.memberCount,
+      club.gradeRange,
+      club.allowedDays,
+      club.startDate,
+      club.endDate,
+      club.note,
+      club.status,
+      club.category,
+      toBoolInt(club.verified),
+      club.createdAt,
+      club.updatedAt
+    )
+    .run()
+
+  return club
+}
+
+export async function deleteClub(id: string) {
+  const db = getTomDb()
+  const current = await getClub(id)
+  if (!current) return false
+
+  await db.prepare('DELETE FROM clubs WHERE id = ?').bind(id).run()
+  return true
+}
+
+export async function listClubRequests(params: {
+  requestStatus?: string | null
+  clubStatus?: string | null
+  teacher?: string | null
+  q?: string | null
+} = {}) {
+  const db = getTomDb()
+  const filters: string[] = []
+  const bindings: Array<string | number> = []
+
+  if (params.requestStatus) {
+    filters.push('status = ?')
+    bindings.push(params.requestStatus)
+  }
+
+  if (params.clubStatus) {
+    filters.push('club_status = ?')
+    bindings.push(params.clubStatus)
+  }
+
+  if (params.teacher) {
+    filters.push('teacher_name LIKE ?')
+    bindings.push(`%${params.teacher}%`)
+  }
+
+  if (params.q) {
+    filters.push('(club_name LIKE ? OR created_by LIKE ? OR teacher_name LIKE ?)')
+    bindings.push(`%${params.q}%`, `%${params.q}%`, `%${params.q}%`)
+  }
+
+  const where = filters.length > 0 ? `WHERE ${filters.join(' AND ')}` : ''
+  const result = await db
+    .prepare(`SELECT * FROM club_requests ${where} ORDER BY updated_at DESC, club_name ASC`)
+    .bind(...bindings)
+    .all<ClubRequestRow>()
+
+  return result.results.map(mapRequestRow)
+}
+
+export async function getClubRequest(id: string) {
+  const db = getTomDb()
+  const row = await db.prepare('SELECT * FROM club_requests WHERE id = ? LIMIT 1').bind(id).first<ClubRequestRow>()
+  return row ? mapRequestRow(row) : null
+}
+
+export async function upsertClubRequest(input: ClubRequestInput, id?: string) {
+  const db = getTomDb()
+  const current = id ? await getClubRequest(id) : null
+  const request = normalizeRequest({ ...input, clubName: input.clubName }, current ?? undefined)
+
+  await db
+    .prepare(
+      `INSERT INTO club_requests (
+        id, club_name, requested_by, teacher_name, created_by, note, interest_count, student_limit, grade_range,
+        allowed_days, start_date, end_date, status, club_status, flagged_reason, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        club_name = excluded.club_name,
+        requested_by = excluded.requested_by,
+        teacher_name = excluded.teacher_name,
+        created_by = excluded.created_by,
+        note = excluded.note,
+        interest_count = excluded.interest_count,
+        student_limit = excluded.student_limit,
+        grade_range = excluded.grade_range,
+        allowed_days = excluded.allowed_days,
+        start_date = excluded.start_date,
+        end_date = excluded.end_date,
+        status = excluded.status,
+        club_status = excluded.club_status,
+        flagged_reason = excluded.flagged_reason,
+        updated_at = excluded.updated_at`
+    )
+    .bind(
+      request.id,
+      request.clubName,
+      request.createdBy,
+      request.teacherName,
+      request.createdBy,
+      request.note,
+      request.interestCount,
+      request.studentLimit,
+      request.gradeRange,
+      request.allowedDays,
+      request.startDate,
+      request.endDate,
+      request.requestStatus,
+      request.clubStatus,
+      request.flaggedReason,
+      request.createdAt,
+      request.updatedAt
+    )
+    .run()
+
+  return request
+}
+
+export async function deleteClubRequest(id: string) {
+  const db = getTomDb()
+  const current = await getClubRequest(id)
+  if (!current) return false
+
+  await db.prepare('DELETE FROM club_requests WHERE id = ?').bind(id).run()
+  return true
+}
+
+export async function approveClubRequest(id: string) {
+  const request = await getClubRequest(id)
+  if (!request) return null
+
+  const approvedRequest = await upsertClubRequest(
+    {
+      clubName: request.clubName,
+      teacherName: request.teacherName,
+      createdBy: request.createdBy,
+      interestCount: request.interestCount,
+      studentLimit: request.studentLimit,
+      gradeRange: request.gradeRange,
+      allowedDays: request.allowedDays,
+      startDate: request.startDate,
+      endDate: request.endDate,
+      note: request.note,
+      requestStatus: 'approved',
+      clubStatus: 'active',
+      flaggedReason: request.flaggedReason ?? null,
+    },
+    id
+  )
+
+  const club = await upsertClub({
+    name: approvedRequest.clubName,
+    teacherName: approvedRequest.teacherName,
+    createdBy: approvedRequest.createdBy,
+    interestCount: approvedRequest.interestCount,
+    studentLimit: approvedRequest.studentLimit,
+    gradeRange: approvedRequest.gradeRange,
+    allowedDays: approvedRequest.allowedDays,
+    startDate: approvedRequest.startDate,
+    endDate: approvedRequest.endDate,
+    note: approvedRequest.note,
+    status: 'active',
+    category: 'general',
+    verified: false,
+    memberCount: 0,
+    description: approvedRequest.note,
+  }, id)
+
+  return { request: approvedRequest, club }
+}
+
+export async function rejectClubRequest(id: string) {
+  const request = await getClubRequest(id)
+  if (!request) return null
+
+  return upsertClubRequest(
+    {
+      clubName: request.clubName,
+      teacherName: request.teacherName,
+      createdBy: request.createdBy,
+      interestCount: request.interestCount,
+      studentLimit: request.studentLimit,
+      gradeRange: request.gradeRange,
+      allowedDays: request.allowedDays,
+      startDate: request.startDate,
+      endDate: request.endDate,
+      note: request.note,
+      requestStatus: 'rejected',
+      clubStatus: 'paused',
+      flaggedReason: request.flaggedReason ?? null,
+    },
+    id
+  )
+}
+
+export async function markClubRequestAsSpam(id: string, flaggedReason?: string | null) {
+  const request = await getClubRequest(id)
+  if (!request) return null
+
+  return upsertClubRequest(
+    {
+      clubName: request.clubName,
+      teacherName: request.teacherName,
+      createdBy: request.createdBy,
+      interestCount: request.interestCount,
+      studentLimit: request.studentLimit,
+      gradeRange: request.gradeRange,
+      allowedDays: request.allowedDays,
+      startDate: request.startDate,
+      endDate: request.endDate,
+      note: request.note,
+      requestStatus: request.requestStatus,
+      clubStatus: 'spam',
+      flaggedReason: flaggedReason ?? request.flaggedReason ?? 'Marked as spam by admin.',
+    },
+    id
+  )
+}
+
+export async function listUsers(params: {
+  role?: string | null
+  accountStatus?: string | null
+  q?: string | null
+} = {}) {
+  const db = getTomDb()
+  const filters: string[] = []
+  const bindings: Array<string | number> = []
+
+  if (params.role) {
+    filters.push('role = ?')
+    bindings.push(params.role)
+  }
+
+  if (params.accountStatus) {
+    filters.push('account_status = ?')
+    bindings.push(params.accountStatus)
+  }
+
+  if (params.q) {
+    filters.push('(full_name LIKE ? OR email LIKE ?)')
+    bindings.push(`%${params.q}%`, `%${params.q}%`)
+  }
+
+  const where = filters.length > 0 ? `WHERE ${filters.join(' AND ')}` : ''
+  const result = await db
+    .prepare(`SELECT * FROM users ${where} ORDER BY updated_at DESC, full_name ASC`)
+    .bind(...bindings)
+    .all<UserRow>()
+
+  return result.results.map(mapUserRow)
+}
+
+export async function getUser(id: string) {
+  const db = getTomDb()
+  const row = await db.prepare('SELECT * FROM users WHERE id = ? LIMIT 1').bind(id).first<UserRow>()
+  return row ? mapUserRow(row) : null
+}
+
+export async function upsertUser(input: UserInput, id?: string) {
+  const db = getTomDb()
+  const current = id ? await getUser(id) : null
+  const user = normalizeUser({ ...input, name: input.name, email: input.email }, current ?? undefined)
+
+  await db
+    .prepare(
+      `INSERT INTO users (
+        id, full_name, email, role, account_status, reason, last_active, club_count, notes, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        full_name = excluded.full_name,
+        email = excluded.email,
+        role = excluded.role,
+        account_status = excluded.account_status,
+        reason = excluded.reason,
+        last_active = excluded.last_active,
+        club_count = excluded.club_count,
+        notes = excluded.notes,
+        updated_at = excluded.updated_at`
+    )
+    .bind(
+      user.id,
+      user.name,
+      user.email,
+      user.role,
+      user.accountStatus,
+      user.reason,
+      user.lastActive,
+      user.clubCount,
+      user.notes,
+      user.createdAt,
+      user.updatedAt
+    )
+    .run()
+
+  return user
+}
+
+export async function getDashboardSummary() {
+  const db = getTomDb()
+  const [usersCount, activeClubsCount, pendingRequestsCount, spamRequestsCount, thresholdReachedCount] =
+    await Promise.all([
+      db.prepare('SELECT COUNT(*) AS count FROM users').first<{ count: number }>(),
+      db.prepare("SELECT COUNT(*) AS count FROM clubs WHERE status = 'active'").first<{ count: number }>(),
+      db.prepare("SELECT COUNT(*) AS count FROM club_requests WHERE status = 'pending'").first<{ count: number }>(),
+      db.prepare("SELECT COUNT(*) AS count FROM club_requests WHERE club_status = 'spam'").first<{ count: number }>(),
+      db.prepare('SELECT COUNT(*) AS count FROM club_requests WHERE interest_count >= 7').first<{ count: number }>(),
+    ])
+
+  return {
+    totalUsers: usersCount?.count ?? 0,
+    activeClubs: activeClubsCount?.count ?? 0,
+    pendingRequests: pendingRequestsCount?.count ?? 0,
+    spamRequests: spamRequestsCount?.count ?? 0,
+    thresholdReachedRequests: thresholdReachedCount?.count ?? 0,
+  }
+}
+
+export async function seedTomDatabase({ reset = false }: { reset?: boolean } = {}) {
+  const db = getTomDb()
+
+  if (reset) {
+    await db.prepare('DELETE FROM clubs').run()
+    await db.prepare('DELETE FROM club_requests').run()
+    await db.prepare('DELETE FROM users').run()
+  }
+
+  for (const request of [...initialRequests, ...initialSpamQueue]) {
+    await upsertClubRequest({
+      clubName: request.clubName,
+      teacherName: request.teacher,
+      createdBy: request.createdBy,
+      interestCount: request.interestCount,
+      studentLimit: request.studentLimit,
+      gradeRange: request.gradeRange,
+      allowedDays: request.allowedDays,
+      startDate: request.startDate,
+      endDate: request.endDate,
+      note: request.note,
+      requestStatus: request.requestStatus,
+      clubStatus: request.clubStatus,
+      flaggedReason: request.flaggedReason,
+    }, request.id)
+  }
+
+  for (const club of initialActiveClubs) {
+    await upsertClub({
+      name: club.clubName,
+      teacherName: club.teacher,
+      createdBy: club.createdBy,
+      interestCount: club.interestCount,
+      studentLimit: club.studentLimit,
+      memberCount: 0,
+      gradeRange: club.gradeRange,
+      allowedDays: club.allowedDays,
+      startDate: club.startDate,
+      endDate: club.endDate,
+      note: club.note,
+      description: club.note,
+      status: club.clubStatus,
+      category: 'general',
+      verified: false,
+    }, club.id)
+  }
+
+  for (const user of initialManagedUsers) {
+    await upsertUser({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      accountStatus: user.accountStatus,
+      reason: user.reason,
+      lastActive: user.lastActive,
+      clubCount: user.clubCount,
+      notes: user.notes,
+    }, user.id)
+  }
+
+  return {
+    ok: true,
+    clubs: initialActiveClubs.length,
+    requests: initialRequests.length + initialSpamQueue.length,
+    users: initialManagedUsers.length,
+  }
+}

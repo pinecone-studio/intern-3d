@@ -2,9 +2,23 @@
   "name": "@org/web",
   "version": "0.0.1",
   "private": true,
+  "scripts": {
+    "build": "next build --webpack",
+    "dev": "next dev",
+    "start": "next start",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "cf-typegen": "wrangler types --config wrangler.jsonc --env-interface CloudflareEnv cloudflare-env.d.ts"
+  },
   "dependencies": {
+    "@opennextjs/cloudflare": "1.14.10",
     "next": "~16.1.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260114.0",
+    "esbuild": "^0.27.0",
+    "wrangler": "^4.49.1"
   }
 }

@@ -1,0 +1,22 @@
+{
+  "name": "@org/web",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/TOM-web",
+  "projectType": "application",
+  "targets": {
+    "d1-migrate-local": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/TOM-web",
+        "command": "npx wrangler d1 migrations apply tom-db --config wrangler.jsonc --local"
+      }
+    },
+    "d1-migrate-remote": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/TOM-web",
+        "command": "npx wrangler d1 migrations apply tom-db --config wrangler.jsonc --remote"
+      }
+    }
+  }
+}

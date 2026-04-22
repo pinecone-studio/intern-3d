@@ -34,6 +34,7 @@
     ".next/dev/types/**/*.ts",
     "../../dist/apps/TOM-web/.next/types/**/*.ts",
     "../../dist/apps/TOM-web/.next/dev/types/**/*.ts",
+    "cloudflare-env.d.ts",
     "index.d.ts",
     "next-env.d.ts"
   ],
