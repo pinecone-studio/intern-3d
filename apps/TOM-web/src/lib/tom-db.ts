@@ -17,6 +17,8 @@ import type {
   RequestStatus,
   SchoolEvent,
   UserInput,
+  XpLog,
+  XpSource,
 } from '@/lib/tom-types'
 
 type ClubRow = {
@@ -811,6 +813,68 @@ export async function autoJoinAllUsers(eventId: string) {
        FROM users`
     )
     .bind(eventId, now)
+    .run()
+}
+
+export async function grantXp(userId: string, amount: number, reason: string, source: XpSource): Promise<XpLog> {
+  const db = getTomDb()
+  const id = crypto.randomUUID()
+  const now = nowIso()
+
+  await db
+    .prepare('INSERT INTO xp_logs (id, user_id, amount, reason, source, created_at) VALUES (?, ?, ?, ?, ?, ?)')
+    .bind(id, userId, amount, reason, source, now)
+    .run()
+
+  return { id, userId, amount, reason, source, createdAt: now }
+}
+
+export async function getUserXpTotal(userId: string): Promise<number> {
+  const db = getTomDb()
+  const row = await db
+    .prepare('SELECT COALESCE(SUM(amount), 0) AS total FROM xp_logs WHERE user_id = ?')
+    .bind(userId)
+    .first<{ total: number }>()
+
+  return row?.total ?? 0
+}
+
+export async function listXpLogs(userId?: string): Promise<XpLog[]> {
+  const db = getTomDb()
+  const where = userId ? 'WHERE user_id = ?' : ''
+  const bindings = userId ? [userId] : []
+
+  const result = await db
+    .prepare(`SELECT * FROM xp_logs ${where} ORDER BY created_at DESC LIMIT 100`)
+    .bind(...bindings)
+    .all<{ id: string; user_id: string; amount: number; reason: string; source: XpSource; created_at: string }>()
+
+  return result.results.map((row) => ({
+    id: row.id,
+    userId: row.user_id,
+    amount: row.amount,
+    reason: row.reason,
+    source: row.source,
+    createdAt: row.created_at,
+  }))
+}
+
+export async function getXpConfig(): Promise<Record<string, string>> {
+  const db = getTomDb()
+  const result = await db
+    .prepare('SELECT key, value FROM xp_config')
+    .all<{ key: string; value: string }>()
+
+  return Object.fromEntries(result.results.map((row) => [row.key, row.value]))
+}
+
+export async function setXpConfig(key: string, value: string): Promise<void> {
+  const db = getTomDb()
+  const now = nowIso()
+
+  await db
+    .prepare('INSERT INTO xp_config (key, value, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at')
+    .bind(key, value, now)
     .run()
 }
 
