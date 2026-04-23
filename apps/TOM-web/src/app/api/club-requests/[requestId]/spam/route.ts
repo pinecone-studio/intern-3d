@@ -1,6 +1,8 @@
 import { notFound, ok, serverError } from '@/lib/tom-http'
 import { markClubRequestAsSpam } from '@/lib/tom-db'
 
+export const runtime = 'edge'
+
 export async function POST(request: Request, context: { params: Promise<{ requestId: string }> }) {
   try {
     const { requestId } = await context.params

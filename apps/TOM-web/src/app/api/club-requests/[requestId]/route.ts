@@ -2,6 +2,8 @@ import { badRequest, notFound, ok, serverError } from '@/lib/tom-http'
 import { deleteClubRequest, getClubRequest, upsertClubRequest } from '@/lib/tom-db'
 import { parseClubRequestInput } from '@/lib/tom-validators'
 
+export const runtime = 'edge'
+
 export async function GET(_request: Request, context: { params: Promise<{ requestId: string }> }) {
   try {
     const { requestId } = await context.params

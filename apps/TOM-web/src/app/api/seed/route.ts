@@ -1,6 +1,8 @@
 import { seedTomDatabase } from '@/lib/tom-db'
 import { ok, serverError } from '@/lib/tom-http'
 
+export const runtime = 'edge'
+
 export async function POST(request: Request) {
   try {
     const body = (await request.json().catch(() => ({}))) as { reset?: boolean }
