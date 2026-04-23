@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import Script from 'next/script'
 import { RoleProvider } from '@/lib/role-context'
 import { AppApolloProvider } from '@/components/providers/apollo-provider'
 import { ThemeProvider } from '@/components/theme-provider'
@@ -42,13 +41,6 @@ export default function RootLayout({
   return (
     <html lang="mn" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
-        <Script id="esbuild-name-helper" strategy="beforeInteractive">
-          {`
-            window.__name ||= function(target, value) {
-              return Object.defineProperty(target, "name", { value: value, configurable: true });
-            };
-          `}
-        </Script>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
