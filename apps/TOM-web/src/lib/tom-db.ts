@@ -1068,3 +1068,74 @@ export async function seedTomDatabase({ reset = false }: { reset?: boolean } = {
     users: initialManagedUsers.length,
   }
 }
+
+export type LeaderboardEntry = {
+  userId: string
+  name: string
+  email: string
+  totalXp: number
+  badgeCount: number
+  rank: number
+}
+
+export async function getLeaderboard(limit = 50): Promise<LeaderboardEntry[]> {
+  const db = getTomDb()
+  const rows = await db
+    .prepare(
+      `SELECT u.id as user_id, u.name, u.email,
+              COALESCE(SUM(x.amount), 0) as total_xp,
+              COUNT(DISTINCT ub.badge_id) as badge_count
+       FROM users u
+       LEFT JOIN xp_logs x ON x.user_id = u.id
+       LEFT JOIN user_badges ub ON ub.user_id = u.id
+       GROUP BY u.id, u.name, u.email
+       ORDER BY total_xp DESC
+       LIMIT ?`
+    )
+    .bind(limit)
+    .all<{ user_id: string; name: string; email: string; total_xp: number; badge_count: number }>()
+
+  return rows.results.map((row, index) => ({
+    userId: row.user_id,
+    name: row.name,
+    email: row.email,
+    totalXp: row.total_xp,
+    badgeCount: row.badge_count,
+    rank: index + 1,
+  }))
+}
+
+export type AnalyticsSummary = {
+  totalUsers: number
+  totalXpGranted: number
+  totalBadgesAwarded: number
+  totalEvents: number
+  totalEventParticipants: number
+  xpBySource: Record<string, number>
+}
+
+export async function getAnalytics(): Promise<AnalyticsSummary> {
+  const db = getTomDb()
+  const [users, xpTotal, badgeCount, eventCount, participantCount, xpBySource] = await Promise.all([
+    db.prepare('SELECT COUNT(*) as count FROM users').first<{ count: number }>(),
+    db.prepare('SELECT COALESCE(SUM(amount), 0) as total FROM xp_logs').first<{ total: number }>(),
+    db.prepare('SELECT COUNT(*) as count FROM user_badges').first<{ count: number }>(),
+    db.prepare('SELECT COUNT(*) as count FROM events').first<{ count: number }>(),
+    db.prepare('SELECT COUNT(*) as count FROM event_participants').first<{ count: number }>(),
+    db.prepare('SELECT source, COALESCE(SUM(amount), 0) as total FROM xp_logs GROUP BY source').all<{ source: string; total: number }>(),
+  ])
+
+  const xpBySourceMap: Record<string, number> = {}
+  for (const row of xpBySource.results) {
+    xpBySourceMap[row.source] = row.total
+  }
+
+  return {
+    totalUsers: users?.count ?? 0,
+    totalXpGranted: xpTotal?.total ?? 0,
+    totalBadgesAwarded: badgeCount?.count ?? 0,
+    totalEvents: eventCount?.count ?? 0,
+    totalEventParticipants: participantCount?.count ?? 0,
+    xpBySource: xpBySourceMap,
+  }
+}
