@@ -18,6 +18,7 @@ import type {
   ManagedUser,
   RequestStatus,
   SchoolEvent,
+  UserBadge,
   UserInput,
   XpLog,
   XpSource,
@@ -897,6 +898,45 @@ export async function deleteBadge(id: string): Promise<boolean> {
   if (!current) return false
   await db.prepare('DELETE FROM badges WHERE id = ?').bind(id).run()
   return true
+}
+
+export async function checkAndAwardBadges(userId: string): Promise<UserBadge[]> {
+  const db = getTomDb()
+  const [badges, xpTotal, eventCount, clubCount] = await Promise.all([
+    listBadges(),
+    getUserXpTotal(userId),
+    db.prepare('SELECT COUNT(*) as count FROM event_participants WHERE user_id = ?').bind(userId).first<{ count: number }>().then(r => r?.count ?? 0),
+    db.prepare('SELECT club_count FROM users WHERE id = ? LIMIT 1').bind(userId).first<{ club_count: number }>().then(r => r?.club_count ?? 0),
+  ])
+
+  const awarded: UserBadge[] = []
+  const now = nowIso()
+
+  for (const badge of badges) {
+    const qualifies =
+      (badge.xpThreshold === 0 || xpTotal >= badge.xpThreshold) &&
+      (badge.eventCountThreshold === 0 || eventCount >= badge.eventCountThreshold) &&
+      (badge.clubCountThreshold === 0 || clubCount >= badge.clubCountThreshold)
+
+    if (!qualifies) continue
+
+    const existing = await db
+      .prepare('SELECT id FROM user_badges WHERE user_id = ? AND badge_id = ? LIMIT 1')
+      .bind(userId, badge.id)
+      .first<{ id: string }>()
+
+    if (existing) continue
+
+    const id = crypto.randomUUID()
+    await db
+      .prepare('INSERT INTO user_badges (id, user_id, badge_id, awarded_at) VALUES (?, ?, ?, ?)')
+      .bind(id, userId, badge.id, now)
+      .run()
+
+    awarded.push({ id, userId, badgeId: badge.id, awardedAt: now })
+  }
+
+  return awarded
 }
 
 export async function grantXp(userId: string, amount: number, reason: string, source: XpSource): Promise<XpLog> {
