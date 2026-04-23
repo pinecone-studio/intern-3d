@@ -9,12 +9,13 @@ export async function GET(request: Request) {
 
   const db = getTimelineDb()
 
-  const [tablesResult, roomsCountResult, eventsCountResult] = await Promise.all([
+  const [tablesResult, roomsCountResult, schedulesCountResult, overridesCountResult] = await Promise.all([
     db
       .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name")
       .all<{ name: string }>(),
     db.prepare('SELECT COUNT(*) AS count FROM rooms').all<{ count: number }>().catch(() => ({ results: [] })),
-    db.prepare('SELECT COUNT(*) AS count FROM schedule_events').all<{ count: number }>().catch(() => ({ results: [] })),
+    db.prepare('SELECT COUNT(*) AS count FROM schedules').all<{ count: number }>().catch(() => ({ results: [] })),
+    db.prepare('SELECT COUNT(*) AS count FROM schedule_overrides').all<{ count: number }>().catch(() => ({ results: [] })),
   ])
 
   return applyRateLimitHeaders(
@@ -23,7 +24,8 @@ export async function GET(request: Request) {
       binding: 'ACADEMIC_TIMELINE_DB',
       tables: tablesResult.results.map((table: { name: string }) => table.name),
       roomCount: roomsCountResult.results[0]?.count ?? 0,
-      scheduleEventCount: eventsCountResult.results[0]?.count ?? 0,
+      scheduleCount: schedulesCountResult.results[0]?.count ?? 0,
+      overrideCount: overridesCountResult.results[0]?.count ?? 0,
     }),
     rateLimit,
     limitResult.remaining,

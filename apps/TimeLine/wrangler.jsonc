@@ -12,7 +12,7 @@
     {
       "binding": "ACADEMIC_TIMELINE_DB",
       "database_name": "Academic-TimeLine",
-      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID",
+      "database_id": "dd763e75-72c1-40c0-82f2-9e94209df36f",
       "preview_database_id": "ACADEMIC_TIMELINE_DB",
       "migrations_dir": "migrations"
     }
