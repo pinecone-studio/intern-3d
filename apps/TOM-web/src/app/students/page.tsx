@@ -6,7 +6,6 @@ import {
   CalendarDays,
   ChevronRight,
   Heart,
-  MessageCircle,
   PlusCircle,
   Sparkles,
   Star,
