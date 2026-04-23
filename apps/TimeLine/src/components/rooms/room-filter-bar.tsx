@@ -17,6 +17,7 @@ interface RoomFilterBarProps {
   selectedFloor: 3 | 4
   selectedStatus: RoomStatus | 'all'
   searchQuery: string
+  roomCount?: number
   onFloorChange: (_floor: 3 | 4) => void
   onStatusChange: (_status: RoomStatus | 'all') => void
   onSearchChange: (_query: string) => void
@@ -28,6 +29,7 @@ export function RoomFilterBar({
   selectedFloor,
   selectedStatus,
   searchQuery,
+  roomCount,
   onFloorChange,
   onStatusChange,
   onSearchChange,
@@ -62,6 +64,11 @@ export function RoomFilterBar({
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          {typeof roomCount === 'number' ? (
+            <span className="text-sm text-muted-foreground sm:mr-1">
+              {roomCount} өрөө
+            </span>
+          ) : null}
           <Select
             value={selectedStatus}
             onValueChange={(value) => onStatusChange(value as RoomStatus | 'all')}

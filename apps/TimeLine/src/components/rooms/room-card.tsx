@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { RoomStatusBadge } from './room-status-badge'
 import type { Room } from '@/lib/types'
@@ -15,8 +16,9 @@ interface RoomCardProps {
   compact?: boolean
 }
 
-export function RoomCard({ room, compact }: RoomCardProps) {
+export function RoomCard({ room, showDeviceInfo = false, assignedDeviceName, compact }: RoomCardProps) {
   const isAvailable = room.status === 'available'
+  const availableDeviceCount = room.devices.filter(d => d.status === 'available').length
 
   const cardContent = compact ? (
     <div className="flex items-center justify-between gap-3">
@@ -29,7 +31,7 @@ export function RoomCard({ room, compact }: RoomCardProps) {
       <div className="flex items-center gap-2">
         {room.devices.length > 0 && (
           <span className="text-xs text-muted-foreground">
-            {room.devices.filter(d => d.status === 'available').length}/{room.devices.length} сул
+            {availableDeviceCount}/{room.devices.length} сул
           </span>
         )}
         <span className="timeline-room-card-hover flex items-center justify-center">
@@ -41,7 +43,15 @@ export function RoomCard({ room, compact }: RoomCardProps) {
     <>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
-          <RoomStatusBadge status={room.status} size="md" />
+          <div className="flex flex-wrap items-center gap-2">
+            <RoomStatusBadge status={room.status} size="md" />
+            {showDeviceInfo && assignedDeviceName ? (
+              <Badge variant="outline" className="rounded-full px-2.5 py-1 text-[11px] font-medium">
+                <Monitor className="h-3 w-3" />
+                Таны iMac: {assignedDeviceName}
+              </Badge>
+            ) : null}
+          </div>
           <div className="text-right">
             <h3 className="text-xl font-semibold text-foreground">{room.number}</h3>
           </div>
@@ -77,7 +87,7 @@ export function RoomCard({ room, compact }: RoomCardProps) {
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <ArrowRight className="h-3 w-3" />
             <span>
-              Up next: {room.nextEvent.title} ({room.nextEvent.startTime})
+              Дараа нь: {room.nextEvent.title} ({room.nextEvent.startTime})
             </span>
           </div>
         )}
@@ -85,15 +95,15 @@ export function RoomCard({ room, compact }: RoomCardProps) {
         {!room.nextEvent && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <ArrowRight className="h-3 w-3" />
-            <span>Up next: None scheduled</span>
+            <span>Дараагийн хуваарь байхгүй</span>
           </div>
         )}
 
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <div className="flex flex-col gap-2 text-xs text-muted-foreground">
           <div className="flex items-center gap-2">
             <Monitor className="h-3 w-3" />
             <span>
-              {room.devices.filter(d => d.status === 'available').length}/{room.devices.length} remaining iMac
+              {availableDeviceCount}/{room.devices.length} iMac сул байна
             </span>
           </div>
         </div>
@@ -109,7 +119,7 @@ export function RoomCard({ room, compact }: RoomCardProps) {
 
   return (
     <Link href={`/dashboard/room/${room.id}`} className="block h-full">
-      <Card 
+      <Card
         className={cn(
           'timeline-room-card flex h-full cursor-pointer flex-col overflow-hidden rounded-md border border-border transition-colors hover:bg-muted/30',
           isAvailable && 'bg-muted/30',

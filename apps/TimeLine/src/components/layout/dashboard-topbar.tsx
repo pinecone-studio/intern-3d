@@ -11,16 +11,12 @@ export function DashboardTopbar() {
   const { role, user, logout } = useRole()
 
   const now = new Date()
-  const formattedDate = now.toLocaleDateString('mn-MN', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-  const formattedTime = now.toLocaleTimeString('mn-MN', {
+  const formattedDate = `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`
+  const formattedTime = new Intl.DateTimeFormat('mn-MN', {
     hour: '2-digit',
     minute: '2-digit',
-  })
+    hour12: false,
+  }).format(now)
 
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-background">
@@ -44,7 +40,7 @@ export function DashboardTopbar() {
             {role === 'student' && user?.assignedDevice && (
               <Badge variant="outline" className="rounded-full px-3 py-1 text-xs font-medium">
                 <Monitor className="mr-1.5 h-3.5 w-3.5" />
-                Your Imac: {user.assignedDevice.name}
+                Таны iMac: {user.assignedDevice.name}
               </Badge>
             )}
             <Badge variant="outline" className="text-xs font-mono">

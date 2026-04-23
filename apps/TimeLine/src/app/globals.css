@@ -82,31 +82,32 @@
   .timeline-room-card {
     width: 100%;
     transition:
-      transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-      box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-      border-color 0.22s ease,
-      background-color 0.22s ease;
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      border-color 0.2s ease,
+      background-color 0.2s ease;
     border-radius: 10px;
     padding: 3px;
     border: 2px solid transparent;
     cursor: pointer;
     background-color: hsl(var(--card));
+    box-shadow: 0 0 8px rgb(0 0 0 / 5%);
   }
 
   .timeline-room-card:hover {
-    box-shadow: 6px 6px 0 #4e84ff, 12px 12px 0 #4444bd;
-    border-color: #0578c5;
-    transform: translate(-6px, -6px);
+    box-shadow: 0 7px 20px rgb(99 102 241 / 28%);
+    border-color: hsl(var(--primary) / 0.45);
+    transform: translateY(-2px);
   }
 
   .timeline-room-card:active {
     box-shadow: none;
-    transform: translate(0, 0);
+    transform: translateY(2px);
   }
 
   .timeline-room-card:hover .timeline-room-card-hover {
     transform: translateY(-1px) rotate(-45deg);
-    background-color: #a6c2f0;
+    background-color: hsl(var(--primary) / 0.12);
   }
 
   .timeline-room-card-hover {
@@ -115,17 +116,17 @@
     height: 36px;
     padding: 8px;
     transition:
-      transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-      background-color 0.22s ease;
+      transform 0.2s ease,
+      background-color 0.2s ease;
     background-color: transparent;
   }
 
   .dark .timeline-room-card:hover {
-    box-shadow: 6px 6px 0 #355cc2, 12px 12px 0 #2a2a7d;
-    border-color: #4e84ff;
+    box-shadow: 0 7px 20px rgb(99 102 241 / 32%);
+    border-color: hsl(var(--primary) / 0.5);
   }
 
   .dark .timeline-room-card:hover .timeline-room-card-hover {
-    background-color: rgba(78, 132, 255, 0.18);
+    background-color: hsl(var(--primary) / 0.18);
   }
 }
