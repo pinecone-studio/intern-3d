@@ -1,29 +1,75 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { RoomCard } from '@/components/rooms/room-card'
 import { RoomFilterBar } from '@/components/rooms/room-filter-bar'
 import { Button } from '@/components/ui/button'
 import { STATUS_CONFIG } from '@/lib/constants'
-import { createRooms } from '@/lib/mock-data'
 import { useRole } from '@/lib/role-context'
-import type { RoomStatus } from '@/lib/types'
+import type { Room, RoomStatus } from '@/lib/types'
+
+type RoomsResponse = {
+  rooms: Room[]
+}
+
+function buildRoomsUrl(floor: 3 | 4, search: string) {
+  const params = new URLSearchParams({ floor: String(floor) })
+  const trimmedSearch = search.trim()
+
+  if (trimmedSearch) {
+    params.set('search', trimmedSearch)
+  }
+
+  return `/api/rooms?${params.toString()}`
+}
 
 export default function DashboardPage() {
   const { role, user } = useRole()
-  const rooms = useMemo(() => createRooms(), [])
-
   const [selectedFloor, setSelectedFloor] = useState<3 | 4>(3)
   const [selectedStatus, setSelectedStatus] = useState<RoomStatus | 'all'>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const deferredSearchQuery = useDeferredValue(searchQuery)
+  const [rooms, setRooms] = useState<Room[]>([])
+  const [isLoadingRooms, setIsLoadingRooms] = useState(true)
+  const [roomsError, setRoomsError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    async function loadRooms() {
+      setIsLoadingRooms(true)
+      setRoomsError(null)
+
+      try {
+        const response = await fetch(buildRoomsUrl(selectedFloor, deferredSearchQuery), {
+          signal: controller.signal,
+        })
+
+        if (!response.ok) {
+          throw new Error(`Rooms API failed with ${response.status}`)
+        }
+
+        const data = (await response.json()) as RoomsResponse
+        setRooms(data.rooms)
+      } catch (error) {
+        if (controller.signal.aborted) return
+        setRoomsError(error instanceof Error ? error.message : 'Өрөөнүүдийг ачаалж чадсангүй')
+        setRooms([])
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoadingRooms(false)
+        }
+      }
+    }
+
+    void loadRooms()
+
+    return () => controller.abort()
+  }, [deferredSearchQuery, selectedFloor])
 
   const floorRooms = useMemo(() => {
-    return rooms.filter(room => {
-      if (room.floor !== selectedFloor) return false
-      if (searchQuery && !room.number.toLowerCase().includes(searchQuery.toLowerCase())) return false
-      return true
-    })
-  }, [rooms, searchQuery, selectedFloor])
+    return rooms.filter(room => room.floor === selectedFloor)
+  }, [rooms, selectedFloor])
 
   const filteredRooms = useMemo(() => {
     return floorRooms.filter(room => {
@@ -147,6 +193,15 @@ export default function DashboardPage() {
                 assignedDeviceName={userDevice?.roomId === room.id ? userDevice.name : undefined}
               />
             ))}
+          </div>
+        ) : isLoadingRooms ? (
+          <div className="rounded-md border border-dashed border-border bg-background/60 p-8 text-center">
+            <p className="text-muted-foreground">Өрөөнүүдийг ачаалж байна...</p>
+          </div>
+        ) : roomsError ? (
+          <div className="rounded-md border border-destructive/40 bg-destructive/5 p-8 text-center">
+            <p className="font-medium text-destructive">Өрөөнүүдийг ачаалж чадсангүй</p>
+            <p className="mt-2 text-sm text-muted-foreground">{roomsError}</p>
           </div>
         ) : (
           <div className="rounded-md border border-dashed border-border bg-background/60 p-8 text-center">

@@ -30,7 +30,7 @@ export default [
   ...baseConfig,
   ...nx.configs['flat/react-typescript'],
   {
-    ignores: ['.next/**/*', '**/out-tsc'],
+    ignores: ['.next/**/*', '.open-next/**/*', '**/out-tsc', 'cloudflare-env.d.ts'],
   },
   {
     files: ['**/_components/**/*.{ts,tsx,js,jsx}', '**/_features/**/*.{ts,tsx,js,jsx}'],
