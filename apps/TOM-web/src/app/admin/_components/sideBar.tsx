@@ -20,6 +20,16 @@ const navItems = [
 
 export default function AdminLayout() {
   const pathname = usePathname();
+  const normalizedPathname =
+    pathname !== '/' && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+  const activeHref =
+    navItems.find(({ href }) => normalizedPathname === href)?.href ??
+    navItems
+      .filter(
+        ({ href }) =>
+          href !== '/admin' && normalizedPathname.startsWith(`${href}/`)
+      )
+      .sort((left, right) => right.href.length - left.href.length)[0]?.href;
 
   return (
     <div className="flex h-full w-56 flex-col border-r border-[#e2eaf5] bg-white shadow-[2px_0_12px_rgba(20,50,100,0.06)]">
@@ -37,9 +47,7 @@ export default function AdminLayout() {
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
         {navItems.map(({ href, label, icon: Icon }) => {
-          const isActive =
-            pathname === href ||
-            (href !== '/students' && pathname.startsWith(href));
+          const isActive = activeHref === href;
           return (
             <Link
               key={href}
