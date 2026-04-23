@@ -18,6 +18,7 @@ import type {
   ManagedUser,
   RequestStatus,
   SchoolEvent,
+  TomFormOptions,
   UserBadge,
   UserInput,
   XpLog,
@@ -77,6 +78,13 @@ type UserRow = {
   notes: string
   created_at: string
   updated_at: string
+}
+
+type FormOptionCategory = 'teacher' | 'allowed_day' | 'grade_range'
+
+type FormOptionRow = {
+  category: FormOptionCategory
+  value: string
 }
 
 const defaultDate = '2026-04-22'
@@ -147,6 +155,33 @@ function mapUserRow(row: UserRow): ManagedUser {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
+}
+
+export async function getFormOptions(): Promise<TomFormOptions> {
+  const db = getTomDb()
+  const result = await db
+    .prepare(
+      'SELECT category, value FROM form_options ORDER BY category ASC, sort_order ASC, value ASC'
+    )
+    .all<FormOptionRow>()
+
+  const options: TomFormOptions = {
+    teachers: [],
+    allowedDays: [],
+    gradeRanges: [],
+  }
+
+  for (const row of result.results) {
+    if (row.category === 'teacher') {
+      options.teachers.push(row.value)
+    } else if (row.category === 'allowed_day') {
+      options.allowedDays.push(row.value)
+    } else if (row.category === 'grade_range') {
+      options.gradeRanges.push(row.value)
+    }
+  }
+
+  return options
 }
 
 function normalizeClub(input: ClubInput, current?: Club): Club {
