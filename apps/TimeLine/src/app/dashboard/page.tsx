@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useDeferredValue, useMemo, useState } from 'react'
 import { gql } from '@apollo/client'
 import { useQuery } from '@apollo/client/react'
 import { RoomCard } from '@/components/rooms/room-card'
@@ -68,11 +68,12 @@ export default function DashboardPage() {
   const [selectedFloor, setSelectedFloor] = useState<3 | 4>(3)
   const [selectedStatus, setSelectedStatus] = useState<RoomStatus | 'all'>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const deferredSearchQuery = useDeferredValue(searchQuery)
 
   const { data, loading, error, refetch } = useQuery<{ rooms: Room[] }>(GET_DASHBOARD_ROOMS, {
     variables: {
       floor: selectedFloor,
-      search: searchQuery.trim() || null,
+      search: deferredSearchQuery.trim() || null,
     },
   })
 
