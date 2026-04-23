@@ -16,7 +16,7 @@ function isoDayFromDate(date: string): number {
   return day === 0 ? 7 : day
 }
 
-export function mapScheduleRow(schedule: ScheduleRow): ScheduleEvent {
+export function mapScheduleRow(schedule: ScheduleRow, instructor?: string): ScheduleEvent {
   const daysOfWeek = parseDaysOfWeek(schedule.daysOfWeek)
 
   return {
@@ -29,12 +29,13 @@ export function mapScheduleRow(schedule: ScheduleRow): ScheduleEvent {
     dayOfWeek: daysOfWeek[0] ?? 0,
     daysOfWeek,
     isOverride: false,
+    instructor,
     validFrom: schedule.startDate,
     validUntil: schedule.endDate,
   }
 }
 
-export function mapScheduleOverrideRow(override: ScheduleOverrideRow): ScheduleEvent {
+export function mapScheduleOverrideRow(override: ScheduleOverrideRow, instructor?: string): ScheduleEvent {
   const dayOfWeek = isoDayFromDate(override.date)
 
   return {
@@ -48,6 +49,7 @@ export function mapScheduleOverrideRow(override: ScheduleOverrideRow): ScheduleE
     daysOfWeek: [dayOfWeek],
     date: override.date,
     isOverride: true,
+    instructor,
   }
 }
 
