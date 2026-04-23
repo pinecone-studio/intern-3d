@@ -6,6 +6,8 @@ import {
 } from '@/app/admin/admin-data'
 import { getTomDb } from '@/lib/d1'
 import type {
+  Badge,
+  BadgeInput,
   Club,
   ClubInput,
   ClubRequest,
@@ -814,6 +816,87 @@ export async function autoJoinAllUsers(eventId: string) {
     )
     .bind(eventId, now)
     .run()
+}
+
+type BadgeRow = {
+  id: string
+  name: string
+  description: string
+  icon: string
+  xp_threshold: number
+  event_count_threshold: number
+  club_count_threshold: number
+  created_at: string
+  updated_at: string
+}
+
+function mapBadgeRow(row: BadgeRow): Badge {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    icon: row.icon,
+    xpThreshold: row.xp_threshold,
+    eventCountThreshold: row.event_count_threshold,
+    clubCountThreshold: row.club_count_threshold,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+export async function listBadges(): Promise<Badge[]> {
+  const db = getTomDb()
+  const result = await db.prepare('SELECT * FROM badges ORDER BY name ASC').all<BadgeRow>()
+  return result.results.map(mapBadgeRow)
+}
+
+export async function getBadge(id: string): Promise<Badge | null> {
+  const db = getTomDb()
+  const row = await db.prepare('SELECT * FROM badges WHERE id = ? LIMIT 1').bind(id).first<BadgeRow>()
+  return row ? mapBadgeRow(row) : null
+}
+
+export async function upsertBadge(input: BadgeInput, id?: string): Promise<Badge> {
+  const db = getTomDb()
+  const now = nowIso()
+  const current = id ? await getBadge(id) : null
+  const badge: Badge = {
+    id: current?.id ?? crypto.randomUUID(),
+    name: input.name,
+    description: input.description ?? current?.description ?? '',
+    icon: input.icon ?? current?.icon ?? '🏅',
+    xpThreshold: input.xpThreshold ?? current?.xpThreshold ?? 0,
+    eventCountThreshold: input.eventCountThreshold ?? current?.eventCountThreshold ?? 0,
+    clubCountThreshold: input.clubCountThreshold ?? current?.clubCountThreshold ?? 0,
+    createdAt: current?.createdAt ?? now,
+    updatedAt: now,
+  }
+
+  await db
+    .prepare(
+      `INSERT INTO badges (id, name, description, icon, xp_threshold, event_count_threshold, club_count_threshold, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET
+         name = excluded.name,
+         description = excluded.description,
+         icon = excluded.icon,
+         xp_threshold = excluded.xp_threshold,
+         event_count_threshold = excluded.event_count_threshold,
+         club_count_threshold = excluded.club_count_threshold,
+         updated_at = excluded.updated_at`
+    )
+    .bind(badge.id, badge.name, badge.description, badge.icon, badge.xpThreshold, badge.eventCountThreshold, badge.clubCountThreshold, badge.createdAt, badge.updatedAt)
+    .run()
+
+  return badge
+}
+
+export async function deleteBadge(id: string): Promise<boolean> {
+  const db = getTomDb()
+  const current = await getBadge(id)
+  if (!current) return false
+  await db.prepare('DELETE FROM badges WHERE id = ?').bind(id).run()
+  return true
 }
 
 export async function grantXp(userId: string, amount: number, reason: string, source: XpSource): Promise<XpLog> {
