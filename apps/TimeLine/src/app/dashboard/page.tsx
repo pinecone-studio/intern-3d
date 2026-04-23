@@ -38,6 +38,7 @@ export default function DashboardPage() {
           onFloorChange={setSelectedFloor}
           onStatusChange={setSelectedStatus}
           onSearchChange={setSearchQuery}
+          showScheduleLink={role === 'admin'}
           embedded
         />
       </div>

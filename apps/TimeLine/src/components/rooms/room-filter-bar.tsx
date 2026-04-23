@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -20,6 +21,7 @@ interface RoomFilterBarProps {
   onStatusChange: (_status: RoomStatus | 'all') => void
   onSearchChange: (_query: string) => void
   embedded?: boolean
+  showScheduleLink?: boolean
 }
 
 export function RoomFilterBar({
@@ -30,11 +32,17 @@ export function RoomFilterBar({
   onStatusChange,
   onSearchChange,
   embedded = false,
+  showScheduleLink = false,
 }: RoomFilterBarProps) {
   return (
     <div className={embedded ? '' : 'rounded-md border border-border bg-card p-4'}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-2">
+          {showScheduleLink ? (
+            <Button asChild variant="outline" size="sm" className="rounded-md">
+              <Link href="/dashboard/my-schedule">My schedule</Link>
+            </Button>
+          ) : null}
           <Button
             variant={selectedFloor === 3 ? 'default' : 'outline'}
             size="sm"
