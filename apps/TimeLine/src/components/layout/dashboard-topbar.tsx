@@ -1,21 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import { useRole } from '@/lib/role-context'
 import { Badge } from '@/components/ui/badge'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Button } from '@/components/ui/button'
 import { Monitor, LogOut, Orbit } from 'lucide-react'
 
-const adminNavItems = [
-  { title: 'My schedule', href: '/dashboard/my-schedule' },
-]
-
 export function DashboardTopbar() {
-  const pathname = usePathname()
   const { role, user, logout } = useRole()
-  const navItems = role === 'admin' ? adminNavItems : []
 
   const now = new Date()
   const formattedDate = now.toLocaleDateString('mn-MN', {
@@ -46,26 +39,6 @@ export function DashboardTopbar() {
               </p>
             </div>
           </Link>
-
-          <div className="flex flex-wrap items-center gap-2">
-            {navItems.map((item) => {
-              const isActive =
-                pathname === item.href ||
-                (item.href !== '/dashboard' && pathname.startsWith(item.href))
-
-              return (
-                <Button
-                  key={item.href}
-                  asChild
-                  variant={isActive ? 'default' : 'outline'}
-                  size="sm"
-                  className="rounded-md"
-                >
-                  <Link href={item.href}>{item.title}</Link>
-                </Button>
-              )
-            })}
-          </div>
 
           <div className="flex flex-wrap items-center gap-2">
             {role === 'student' && user?.assignedDevice && (
