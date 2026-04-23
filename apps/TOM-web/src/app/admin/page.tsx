@@ -1418,10 +1418,13 @@ export default function AdminDashboard() {
                 </div>
 
                 {events.length === 0 ? (
-                  <div className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-8 text-center">
-                    <CalendarDays className="mx-auto h-10 w-10 text-[#b5c8e8]" />
-                    <p className="mt-3 text-sm text-[#6982a2]">
-                      Одоогоор event алга байна. Эхний event-ийг үүсгэнэ үү.
+                  <div className="rounded-[28px] border border-dashed border-[color:var(--border)] bg-[color:var(--surface)] p-10 text-center">
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[color:var(--primary-soft)]">
+                      <CalendarDays className="h-6 w-6 text-[color:var(--primary)]" />
+                    </div>
+                    <p className="mt-4 font-semibold text-[#183153]">Event байхгүй байна</p>
+                    <p className="mt-1 text-sm text-[#6982a2]">
+                      Эхний event үүсгэхэд бүх хэрэглэгч автоматаар нэгдэнэ.
                     </p>
                   </div>
                 ) : (
