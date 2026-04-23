@@ -757,6 +757,28 @@ export async function deleteEvent(id: string) {
   return true
 }
 
+export async function getEventParticipants(eventId: string) {
+  const db = getTomDb()
+  const result = await db
+    .prepare(
+      `SELECT u.id, u.full_name, u.email, u.role, ep.joined_at
+       FROM event_participants ep
+       JOIN users u ON u.id = ep.user_id
+       WHERE ep.event_id = ?
+       ORDER BY ep.joined_at ASC`
+    )
+    .bind(eventId)
+    .all<{ id: string; full_name: string; email: string; role: string; joined_at: string }>()
+
+  return result.results.map((row) => ({
+    id: row.id,
+    name: row.full_name,
+    email: row.email,
+    role: row.role,
+    joinedAt: row.joined_at,
+  }))
+}
+
 export async function autoJoinAllUsers(eventId: string) {
   const db = getTomDb()
   const now = nowIso()
