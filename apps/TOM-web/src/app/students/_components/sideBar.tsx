@@ -10,6 +10,7 @@ import {
   BookOpen,
   Trophy,
   GraduationCap,
+  LogOut,
 } from 'lucide-react';
 
 const navItems = [
@@ -59,6 +60,16 @@ export default function StudentLayout() {
           );
         })}
       </nav>
+
+      <div className="border-t border-[#e8eef8] p-3">
+        <Link
+          href="/"
+          className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[#4a6080] transition-colors hover:bg-[#eef4ff] hover:text-[#1a3560]"
+        >
+          <LogOut className="h-4 w-4 shrink-0" />
+          Log out
+        </Link>
+      </div>
     </div>
   );
 }

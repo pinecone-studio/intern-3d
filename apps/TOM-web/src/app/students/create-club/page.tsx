@@ -26,6 +26,19 @@ export default function CreateClubPage() {
       </p>
 
       <div className="mt-7 space-y-6">
+        {/* Description */}
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-[#0f1f3d]">
+            Purpose
+          </label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Yund zoriulj yaagad neej bgaga"
+            rows={6}
+            className="w-full resize-y h-11 rounded-xl border border-[#e2eaf5] bg-white px-4 py-3 text-sm text-[#0f1f3d] placeholder:text-[#b0bdd4] focus:border-[#1a3560] focus:outline-none focus:ring-2 focus:ring-[#1a3560]/10"
+          />
+        </div>
         {/* Name */}
         <div className="space-y-2">
           <label className="text-sm font-semibold text-[#0f1f3d]">Name</label>

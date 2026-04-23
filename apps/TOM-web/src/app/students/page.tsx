@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import {
   CalendarDays,
@@ -54,21 +55,16 @@ const quickActions = [
     icon: PlusCircle,
     accent: 'bg-[#e9f5ff] text-[#3f7ad8]',
     cta: 'Submit request',
+    href: '/students/create-club',
   },
-  {
-    title: 'Post to your community',
-    description:
-      'Share updates, comment on plans, and keep your members engaged.',
-    icon: MessageCircle,
-    accent: 'bg-[#ecfbff] text-[#20a1bf]',
-    cta: 'Create post',
-  },
+
   {
     title: 'Jump into events',
     description: 'RSVP for workshops, game nights, and club meetups this week.',
     icon: CalendarDays,
     accent: 'bg-[#eef1ff] text-[#5f79d8]',
     cta: 'See events',
+    href: '/students/events',
   },
 ];
 
@@ -280,11 +276,11 @@ export default function StudentDashboard() {
         <section className="dashboard-entrance overflow-hidden rounded-[34px]">
           <div className="relative overflow-hidden">
             <div className="relative grid gap-6 xl:grid-cols-[minmax(0,1fr)_15rem]">
-              <section className="dashboard-entrance dashboard-entrance-delay-1 min-w-0 rounded-[30px] bg-blue-950 p-6 text-white shadow-[0_24px_50px_rgba(101,145,233,0.28)] sm:p-7">
+              <section className="dashboard-entrance dashboard-entrance-delay-1 min-w-0 rounded-[30px] bg-blue-950 p-6 text-white  sm:p-7">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-sm font-semibold text-white/80">
-                      Welcome back, Jordan
+                      Welcome back, Tselmeg
                     </p>
                     <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-[2rem]">
                       Level 7 · Club Explorer
@@ -302,7 +298,7 @@ export default function StudentDashboard() {
                   </div>
                   <div className="h-3 overflow-hidden rounded-full bg-white/30">
                     <div
-                      className="h-full rounded-full bg-white shadow-[0_0_18px_rgba(255,255,255,0.45)]"
+                      className="h-full rounded-full bg-white "
                       style={{ width: `${progress}%` }}
                     />
                   </div>
@@ -312,9 +308,9 @@ export default function StudentDashboard() {
                 </div>
               </section>
 
-              <aside className="dashboard-entrance dashboard-entrance-delay-2 w-60 shrink-0 rounded-[30px] border border-[#dbe7f8] bg-white/95 p-6 shadow-[0_18px_45px_rgba(28,69,130,0.08)] backdrop-blur">
+              <aside className="dashboard-entrance dashboard-entrance-delay-2 w-60 shrink-0 rounded-[30px] border border-[#dbe7f8] bg-white/95 p-6 ">
                 <div className="flex items-center gap-2 text-[#1d355b]">
-                  <Trophy className="h-5 w-5 text-[#7f9eea]" />
+                  <Trophy className="h-5 w-5 text-blue-950" />
                   <h2 className="text-lg font-semibold">Badges</h2>
                 </div>
 
@@ -329,7 +325,7 @@ export default function StudentDashboard() {
                           className="badge-marquee-item flex min-w-[148px] flex-col items-center rounded-2xl bg-[#fbfdff] px-3 py-3 text-center"
                         >
                           <div
-                            className={`flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br ${badge.color} text-white shadow-[0_12px_22px_rgba(111,158,231,0.22)]`}
+                            className={`flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br ${badge.color} text-white `}
                           >
                             <Icon className="h-5 w-5" />
                           </div>
@@ -347,7 +343,7 @@ export default function StudentDashboard() {
               </aside>
             </div>
 
-            <section className="dashboard-entrance dashboard-entrance-delay-3 mt-6 rounded-[28px] border border-[#dce7f8] bg-white/90 p-5 shadow-[0_16px_44px_rgba(31,73,132,0.06)]">
+            <section className="dashboard-entrance dashboard-entrance-delay-3 mt-6 rounded-[28px] border border-[#dce7f8] bg-white/90 p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6f86a7]">
@@ -381,7 +377,7 @@ export default function StudentDashboard() {
                 return (
                   <article
                     key={action.title}
-                    className="rounded-[26px] border border-[#dbe8f9] bg-white/90 p-5 shadow-[0_16px_40px_rgba(30,74,138,0.06)]"
+                    className="rounded-[26px] border border-[#dbe8f9] bg-white/90 p-5"
                   >
                     <div
                       className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl ${action.accent}`}
@@ -394,21 +390,57 @@ export default function StudentDashboard() {
                     <p className="mt-2 text-sm leading-6 text-[#6f86a6]">
                       {action.description}
                     </p>
-                    <button
-                      disabled
-                      className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#5e95e5] px-4 py-2 text-sm font-semibold text-white opacity-70"
-                    >
-                      {action.cta}
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
+                    {action.href ? (
+                      <Link
+                        href={action.href}
+                        className="mt-5 inline-flex items-center gap-2 rounded-full bg-blue-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#13284a]"
+                      >
+                        {action.cta}
+                        <ChevronRight className="h-4 w-4" />
+                      </Link>
+                    ) : (
+                      <button
+                        disabled
+                        className="mt-5 inline-flex items-center gap-2 rounded-full bg-blue-950 px-4 py-2 text-sm font-semibold text-white opacity-70"
+                      >
+                        {action.cta}
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    )}
                   </article>
                 );
-              })}
+              })}{' '}
+              <section className="rounded-[28px] border border-[#dce7f8] bg-[linear-gradient(180deg,#f6fbff_0%,#ffffff_100%)] p-5 ">
+                <div className="flex items-center gap-2">
+                  <Swords className="h-5 w-5 text-[#6f8fe3]" />
+                  <h3 className="text-lg font-semibold text-[#223b5f]">
+                    Activity Quest
+                  </h3>
+                </div>
+
+                <div className="mt-5 space-y-3">
+                  <div className="rounded-2xl bg-[#eef6ff] p-4">
+                    <p className="text-sm font-semibold text-[#224064]">
+                      Show interest in a club
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-[#eefcfb] p-4">
+                    <p className="text-sm font-semibold text-[#224064]">
+                      Join an active community
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-[#f2f1ff] p-4">
+                    <p className="text-sm font-semibold text-[#224064]">
+                      Track pending club ideas
+                    </p>
+                  </div>
+                </div>
+              </section>
             </section>
           </div>
         </section>
 
-        <section className="dashboard-entrance dashboard-entrance-delay-4 rounded-[34px] border border-[#d8e6f8] bg-white px-5 py-6 shadow-[0_20px_65px_rgba(22,57,111,0.08)] sm:px-8">
+        <section className="dashboard-entrance dashboard-entrance-delay-4 rounded-[34px] border border-[#d8e6f8] bg-white px-5 py-6  sm:px-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7c92b0]">
@@ -430,7 +462,7 @@ export default function StudentDashboard() {
                   key={tab}
                   className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
                     index === 0
-                      ? 'bg-white text-[#234064] shadow-[0_8px_20px_rgba(44,88,153,0.14)] ring-1 ring-[#d6e3f7]'
+                      ? 'bg-white text-[#234064] ring-1 ring-[#d6e3f7]'
                       : 'text-[#7a90af] hover:bg-[#f3f8ff]'
                   }`}
                 >
@@ -445,7 +477,7 @@ export default function StudentDashboard() {
               {featuredClubs.map((club, index) => (
                 <article
                   key={club.id}
-                  className={`rounded-[28px] border border-[#dce8f8] bg-white shadow-[0_18px_45px_rgba(29,66,123,0.07)] dashboard-entrance ${
+                  className={`rounded-[28px] border border-[#dce8f8] bg-white  dashboard-entrance ${
                     index === 1
                       ? 'dashboard-entrance-delay-1'
                       : index === 2
@@ -515,50 +547,7 @@ export default function StudentDashboard() {
             </div>
 
             <aside className="space-y-5">
-              <section className="rounded-[28px] border border-[#dce7f8] bg-[linear-gradient(180deg,#f6fbff_0%,#ffffff_100%)] p-5 shadow-[0_18px_48px_rgba(31,73,132,0.06)]">
-                <div className="flex items-center gap-2">
-                  <Swords className="h-5 w-5 text-[#6f8fe3]" />
-                  <h3 className="text-lg font-semibold text-[#223b5f]">
-                    Activity Quest
-                  </h3>
-                </div>
-                <p className="mt-2 text-sm leading-6 text-[#7086a5]">
-                  Student actions on this page now update club interest and
-                  member metrics in the live TOM data source.
-                </p>
-
-                <div className="mt-5 space-y-3">
-                  <div className="rounded-2xl bg-[#eef6ff] p-4">
-                    <p className="text-sm font-semibold text-[#224064]">
-                      Show interest in a club
-                    </p>
-                    <p className="mt-1 text-xs leading-5 text-[#7086a6]">
-                      The Interested button increases the visible interest
-                      count.
-                    </p>
-                  </div>
-                  <div className="rounded-2xl bg-[#eefcfb] p-4">
-                    <p className="text-sm font-semibold text-[#224064]">
-                      Join an active community
-                    </p>
-                    <p className="mt-1 text-xs leading-5 text-[#7086a6]">
-                      Join updates both interest and member totals for demo
-                      flow.
-                    </p>
-                  </div>
-                  <div className="rounded-2xl bg-[#f2f1ff] p-4">
-                    <p className="text-sm font-semibold text-[#224064]">
-                      Track pending club ideas
-                    </p>
-                    <p className="mt-1 text-xs leading-5 text-[#7086a6]">
-                      Live activity reflects what is currently in the review
-                      queue.
-                    </p>
-                  </div>
-                </div>
-              </section>
-
-              <section className="rounded-[28px] border border-[#dce7f8] bg-white p-5 shadow-[0_16px_44px_rgba(31,73,132,0.06)]">
+              <section className="rounded-[28px] border border-[#dce7f8] bg-white p-5 ">
                 <h3 className="text-lg font-semibold text-[#223b5f]">
                   Live activity
                 </h3>
