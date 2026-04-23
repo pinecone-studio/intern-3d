@@ -1,8 +1,22 @@
 import { NextResponse } from 'next/server'
 import { buildSchema, graphql } from 'graphql'
-import { getRoomDetail, listRooms, listScheduleEvents } from '@/lib/timeline-rest'
+import { createScheduleEvent, deleteScheduleEvent, getRoomDetail, listRooms, listScheduleEvents, updateScheduleEvent } from '@/lib/timeline-rest'
+import type { ScheduleEventInput } from '@/lib/timeline-mutations'
 
 const schema = buildSchema(`
+  input ScheduleEventInput {
+    roomId: ID!
+    title: String!
+    type: String!
+    startTime: String!
+    endTime: String!
+    daysOfWeek: [Int!]!
+    date: String
+    isOverride: Boolean
+    validFrom: String
+    validUntil: String
+  }
+
   type Device {
     id: ID!
     name: String!
@@ -50,6 +64,12 @@ const schema = buildSchema(`
     events(roomId: ID, dayOfWeek: Int, instructor: String): [ScheduleEvent!]!
     room(roomId: ID!): RoomDetail
   }
+
+  type Mutation {
+    createScheduleEvent(input: ScheduleEventInput!): RoomDetail
+    updateScheduleEvent(id: ID!, input: ScheduleEventInput!): RoomDetail
+    deleteScheduleEvent(id: ID!): Boolean!
+  }
 `)
 
 type QueryArgs = {
@@ -59,6 +79,11 @@ type QueryArgs = {
   roomId?: string | null
   dayOfWeek?: number | null
   instructor?: string | null
+}
+
+type MutationArgs = {
+  id?: string
+  input?: ScheduleEventInput
 }
 
 const root = {
@@ -77,6 +102,18 @@ const root = {
   room: async ({ roomId }: QueryArgs) => {
     if (!roomId) return null
     return getRoomDetail(roomId)
+  },
+  createScheduleEvent: async ({ input }: MutationArgs) => {
+    if (!input) return null
+    return createScheduleEvent(input)
+  },
+  updateScheduleEvent: async ({ id, input }: MutationArgs) => {
+    if (!id || !input) return null
+    return updateScheduleEvent(id, input)
+  },
+  deleteScheduleEvent: async ({ id }: MutationArgs) => {
+    if (!id) return false
+    return deleteScheduleEvent(id)
   },
 }
 

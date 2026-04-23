@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { gql } from '@apollo/client'
-import { useQuery } from '@apollo/client/react'
+import { useMutation, useQuery } from '@apollo/client/react'
 import { useRole } from '@/lib/role-context'
 import { DAYS_OF_WEEK, EVENT_TYPE_CONFIG, STATUS_CONFIG } from '@/lib/constants'
 import type { ScheduleEvent, EventType, Room } from '@/lib/types'
@@ -119,6 +119,32 @@ const GET_ROOM_DETAIL = gql`
   }
 `
 
+const CREATE_SCHEDULE_EVENT = gql`
+  mutation CreateScheduleEvent($input: ScheduleEventInput!) {
+    createScheduleEvent(input: $input) {
+      room {
+        id
+      }
+    }
+  }
+`
+
+const UPDATE_SCHEDULE_EVENT = gql`
+  mutation UpdateScheduleEvent($id: ID!, $input: ScheduleEventInput!) {
+    updateScheduleEvent(id: $id, input: $input) {
+      room {
+        id
+      }
+    }
+  }
+`
+
+const DELETE_SCHEDULE_EVENT = gql`
+  mutation DeleteScheduleEvent($id: ID!) {
+    deleteScheduleEvent(id: $id)
+  }
+`
+
 type RoomDetailQueryResult = {
   room: {
     room: Room
@@ -140,6 +166,19 @@ type EventFormData = {
   date: string
 }
 
+type ScheduleEventMutationInput = {
+  roomId: string
+  title: string
+  type: EventType
+  startTime: string
+  endTime: string
+  daysOfWeek: number[]
+  date?: string | null
+  isOverride: boolean
+  validFrom?: string | null
+  validUntil?: string | null
+}
+
 function createEventFormData(event: ScheduleEvent | null): EventFormData {
   return {
     title: event?.title || '',
@@ -156,6 +195,21 @@ function createEventFormData(event: ScheduleEvent | null): EventFormData {
   }
 }
 
+function createMutationInput(roomId: string, formData: EventFormData): ScheduleEventMutationInput {
+  return {
+    roomId,
+    title: formData.title.trim(),
+    type: formData.type,
+    startTime: formData.startTime,
+    endTime: formData.endTime,
+    daysOfWeek: formData.daysOfWeek,
+    date: formData.date || null,
+    isOverride: formData.isOverride,
+    validFrom: formData.validFrom || null,
+    validUntil: formData.validUntil || null,
+  }
+}
+
 function timeToMinutes(time: string): number {
   const [hours, minutes] = time.split(':').map(Number)
   return hours * 60 + minutes
@@ -168,6 +222,9 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
   const { data, loading, error, refetch } = useQuery<RoomDetailQueryResult>(GET_ROOM_DETAIL, {
     variables: { roomId },
   })
+  const [createScheduleEvent, { loading: creatingEvent }] = useMutation(CREATE_SCHEDULE_EVENT)
+  const [updateScheduleEvent, { loading: updatingEvent }] = useMutation(UPDATE_SCHEDULE_EVENT)
+  const [deleteScheduleEvent, { loading: deletingEvent }] = useMutation(DELETE_SCHEDULE_EVENT)
   const room = data?.room?.room
   const roomEvents = data?.room?.events ?? []
   
@@ -176,6 +233,8 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
   const [editingEvent, setEditingEvent] = useState<ScheduleEvent | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [eventToDelete, setEventToDelete] = useState<ScheduleEvent | null>(null)
+  const [mutationError, setMutationError] = useState<string | null>(null)
+  const isSavingEvent = creatingEvent || updatingEvent
 
   if (loading) {
     return (
@@ -215,30 +274,54 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
   const overrideEvents = roomEvents.filter(e => e.isOverride)
 
   const handleCreateEvent = () => {
+    setMutationError(null)
     setEditingEvent(null)
     setEditDialogOpen(true)
   }
 
   const handleEditEvent = (event: ScheduleEvent) => {
+    setMutationError(null)
     setEditingEvent(event)
     setEditDialogOpen(true)
   }
 
   const handleDeleteEvent = (event: ScheduleEvent) => {
+    setMutationError(null)
     setEventToDelete(event)
     setDeleteDialogOpen(true)
   }
 
-  const handleSaveEvent = () => {
-    // In a real app, this would save to a database
-    setEditDialogOpen(false)
-    setEditingEvent(null)
+  const handleSaveEvent = async (formData: EventFormData) => {
+    try {
+      setMutationError(null)
+      const input = createMutationInput(roomId, formData)
+
+      if (editingEvent) {
+        await updateScheduleEvent({ variables: { id: editingEvent.id, input } })
+      } else {
+        await createScheduleEvent({ variables: { input } })
+      }
+
+      await refetch()
+      setEditDialogOpen(false)
+      setEditingEvent(null)
+    } catch (saveError) {
+      setMutationError(saveError instanceof Error ? saveError.message : 'Хуваарь хадгалж чадсангүй')
+    }
   }
 
-  const handleConfirmDelete = () => {
-    // In a real app, this would delete from a database
-    setDeleteDialogOpen(false)
-    setEventToDelete(null)
+  const handleConfirmDelete = async () => {
+    if (!eventToDelete) return
+
+    try {
+      setMutationError(null)
+      await deleteScheduleEvent({ variables: { id: eventToDelete.id } })
+      await refetch()
+      setDeleteDialogOpen(false)
+      setEventToDelete(null)
+    } catch (deleteError) {
+      setMutationError(deleteError instanceof Error ? deleteError.message : 'Хуваарь устгаж чадсангүй')
+    }
   }
 
   return (
@@ -347,6 +430,12 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
       </div>
 
       {/* Schedule Tabs */}
+      {mutationError && (
+        <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
+          {mutationError}
+        </div>
+      )}
+
       <Tabs defaultValue="today" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="today" className="flex items-center gap-2">
@@ -588,6 +677,7 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
         event={editingEvent}
         roomId={roomId}
         onSave={handleSaveEvent}
+        saving={isSavingEvent}
       />
 
       {/* Delete Confirmation Dialog */}
@@ -604,8 +694,8 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
             <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
               Болих
             </Button>
-            <Button variant="destructive" onClick={handleConfirmDelete}>
-              Устгах
+            <Button variant="destructive" onClick={handleConfirmDelete} disabled={deletingEvent}>
+              {deletingEvent ? 'Устгаж байна...' : 'Устгах'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -731,12 +821,14 @@ function EventFormDialog({
   event,
   roomId: _roomId,
   onSave,
+  saving,
 }: {
   open: boolean
   onOpenChange: (_open: boolean) => void
   event: ScheduleEvent | null
   roomId: string
-  onSave: () => void
+  onSave: (_formData: EventFormData) => void
+  saving: boolean
 }) {
   const isEditing = !!event
   const [formData, setFormData] = useState<EventFormData>(() => createEventFormData(event))
@@ -945,8 +1037,8 @@ function EventFormDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Болих
           </Button>
-          <Button onClick={onSave} disabled={formData.daysOfWeek.length === 0}>
-            {isEditing ? 'Хадгалах' : 'Үүсгэх'}
+          <Button onClick={() => onSave(formData)} disabled={saving || formData.daysOfWeek.length === 0 || formData.title.trim().length === 0}>
+            {saving ? 'Хадгалж байна...' : isEditing ? 'Хадгалах' : 'Үүсгэх'}
           </Button>
         </DialogFooter>
       </DialogContent>
