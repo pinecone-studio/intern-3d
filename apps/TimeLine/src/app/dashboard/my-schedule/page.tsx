@@ -25,8 +25,8 @@ import Link from 'next/link'
 type FilterType = 'today' | 'week' | 'month'
 
 const GET_MY_SCHEDULE = gql`
-  query GetMySchedule($instructor: String) {
-    events(instructor: $instructor) {
+  query GetMySchedule {
+    events {
       id
       roomId
       title
@@ -59,6 +59,11 @@ function getInstructorSearchName(userName?: string): string {
   return lastName && lastName !== 'Admin' ? lastName : 'Болд'
 }
 
+function getInstructorEvents(events: ScheduleEvent[], instructorName: string): ScheduleEvent[] {
+  const instructorEvents = events.filter(event => event.instructor?.includes(instructorName))
+  return instructorEvents.length > 0 ? instructorEvents : events
+}
+
 // Demo date: Tuesday, April 15, 2026
 const DEMO_DATE = new Date(2026, 3, 15) // April 15, 2026
 
@@ -69,13 +74,12 @@ export default function MySchedulePage() {
   // Get the instructor name from the user
   const instructorName = getInstructorSearchName(user?.name)
   const { data, loading, error, refetch } = useQuery<MyScheduleQueryResult>(GET_MY_SCHEDULE, {
-    variables: {
-      instructor: instructorName || null,
-    },
     skip: role !== 'admin',
   })
 
-  const myEvents = data?.events ?? []
+  const myEvents = useMemo(() => {
+    return getInstructorEvents(data?.events ?? [], instructorName)
+  }, [data?.events, instructorName])
   const roomNamesById = useMemo(() => {
     return new Map((data?.rooms ?? []).map(room => [room.id, room.number]))
   }, [data?.rooms])
