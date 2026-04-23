@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getTomDb } from '@/lib/d1'
 
+export const runtime = 'edge'
+
 export async function GET() {
   const db = getTomDb()
 

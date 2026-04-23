@@ -2,6 +2,8 @@ import { badRequest, ok, serverError } from '@/lib/tom-http'
 import { listClubs, upsertClub } from '@/lib/tom-db'
 import { parseClubInput } from '@/lib/tom-validators'
 
+export const runtime = 'edge'
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
