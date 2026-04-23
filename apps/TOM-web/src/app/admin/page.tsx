@@ -16,11 +16,9 @@ import {
 } from 'lucide-react';
 
 import { CapacityBar, StatusBadge } from '@/app/_components';
+import { useTomOptions } from '@/app/_hooks/useTomOptions';
 import {
-  dayOptions,
-  gradeOptions,
   userRoleOptions,
-  teacherOptions,
 } from './admin-data';
 import { useAdminDashboard } from './useAdminDashboard';
 
@@ -50,6 +48,11 @@ const panelClass =
 const inputLabelClass = 'mb-2 block text-sm font-semibold text-[#5f7697]';
 
 export default function AdminDashboard() {
+  const {
+    options,
+    isLoading: isOptionsLoading,
+    errorMessage: optionsErrorMessage,
+  } = useTomOptions();
   const [activeSection, setActiveSection] = useState<AdminSection>('requests');
   const {
     activeClubs,
@@ -88,7 +91,7 @@ export default function AdminDashboard() {
     summary,
     userForm,
     users,
-  } = useAdminDashboard();
+  } = useAdminDashboard(options);
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -234,10 +237,13 @@ export default function AdminDashboard() {
                     : 'Live sync'}
                 </p>
                 <p className="mt-1 text-sm">
-                  {errorMessage ||
-                    (isLoading
-                      ? 'Cloudflare D1 дээрх өгөгдлийг admin dashboard руу ачаалж байна.'
-                      : isSaving
+                {optionsErrorMessage ||
+                  errorMessage ||
+                  (isLoading
+                    ? 'Cloudflare D1 дээрх option, өгөгдлийг admin dashboard руу ачаалж байна.'
+                    : isOptionsLoading
+                    ? 'Cloudflare D1 дээрх өгөгдлийг admin dashboard руу ачаалж байна.'
+                    : isSaving
                       ? 'Сүүлд хийсэн өөрчлөлтийг API-аар хадгалж байна.'
                       : banner)}
                 </p>
@@ -717,10 +723,10 @@ export default function AdminDashboard() {
                           }
                           className={fieldClass}
                         >
-                          {teacherOptions.map((teacher) => (
-                            <option key={teacher} value={teacher}>
-                              {teacher}
-                            </option>
+                        {options.teachers.map((teacher) => (
+                          <option key={teacher} value={teacher}>
+                            {teacher}
+                          </option>
                           ))}
                         </select>
                       </label>
@@ -758,10 +764,10 @@ export default function AdminDashboard() {
                           }
                           className={fieldClass}
                         >
-                          {dayOptions.map((days) => (
-                            <option key={days} value={days}>
-                              {days}
-                            </option>
+                        {options.allowedDays.map((days) => (
+                          <option key={days} value={days}>
+                            {days}
+                          </option>
                           ))}
                         </select>
                       </label>
@@ -775,10 +781,10 @@ export default function AdminDashboard() {
                           }
                           className={fieldClass}
                         >
-                          {gradeOptions.map((grade) => (
-                            <option key={grade} value={grade}>
-                              {grade}
-                            </option>
+                        {options.gradeRanges.map((grade) => (
+                          <option key={grade} value={grade}>
+                            {grade}
+                          </option>
                           ))}
                         </select>
                       </label>

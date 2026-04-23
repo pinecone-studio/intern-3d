@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { CalendarDays, MapPin, Plus, Search, Trash2 } from 'lucide-react';
 
 import { StatusBadge } from '@/app/_components';
-import { teacherOptions } from '@/app/admin/admin-data';
+import { useTomOptions } from '@/app/_hooks/useTomOptions';
 import type { EventStatus, SchoolEvent } from '@/lib/tom-types';
 
 const eventStatuses: EventStatus[] = [
@@ -31,7 +31,7 @@ const emptyForm: EventForm = {
   eventDate: '',
   startTime: '',
   endTime: '',
-  createdBy: teacherOptions[0],
+  createdBy: '',
 };
 
 async function readJson<T>(response: Response) {
@@ -60,6 +60,8 @@ async function apiRequest<T>(input: string, init?: RequestInit) {
 }
 
 export default function EventsPage() {
+  const { options, isLoading: isOptionsLoading, errorMessage: optionsError } =
+    useTomOptions();
   const [events, setEvents] = useState<SchoolEvent[]>([]);
   const [form, setForm] = useState<EventForm>(emptyForm);
   const [statusFilter, setStatusFilter] = useState<'all' | EventStatus>('all');
@@ -70,6 +72,13 @@ export default function EventsPage() {
   const [message, setMessage] = useState(
     'Teacher events page event мэдээллийг ачааллаа.'
   );
+
+  useEffect(() => {
+    setForm((current) => ({
+      ...current,
+      createdBy: current.createdBy || options.teachers[0] || current.createdBy,
+    }));
+  }, [options.teachers]);
 
   const loadData = async (nextMessage?: string) => {
     const query = new URLSearchParams();
@@ -141,7 +150,10 @@ export default function EventsPage() {
         method: 'POST',
         body: JSON.stringify(form),
       });
-      setForm(emptyForm);
+      setForm({
+        ...emptyForm,
+        createdBy: options.teachers[0] ?? '',
+      });
       await loadData(`${form.title} event үүслээ.`);
     }, 'Event үүсгэж чадсангүй.');
   };
@@ -199,8 +211,11 @@ export default function EventsPage() {
                 : 'Teacher events'}
             </p>
             <p className="mt-1 text-sm">
-              {errorMessage ||
+              {optionsError ||
+                errorMessage ||
                 (isLoading
+                  ? 'Event option болон schedule-ийг ачаалж байна.'
+                  : isOptionsLoading
                   ? 'Event list болон schedule-ийг ачаалж байна.'
                   : isSaving
                   ? 'Event өөрчлөлтийг хадгалж байна.'
@@ -310,7 +325,7 @@ export default function EventsPage() {
                 }
                 className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
               >
-                {teacherOptions.map((teacher) => (
+                {options.teachers.map((teacher) => (
                   <option key={teacher} value={teacher}>
                     {teacher}
                   </option>

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, Search, ShieldCheck, XCircle } from 'lucide-react';
 
 import { CapacityBar, StatusBadge } from '@/app/_components';
-import { teacherOptions } from '@/app/admin/admin-data';
+import { useTomOptions } from '@/app/_hooks/useTomOptions';
 import type { Club, ClubRequest } from '@/lib/tom-types';
 
 async function readJson<T>(response: Response) {
@@ -33,6 +33,8 @@ async function apiRequest<T>(input: string, init?: RequestInit) {
 }
 
 export default function ClubsPage() {
+  const { options, isLoading: isOptionsLoading, errorMessage: optionsError } =
+    useTomOptions();
   const [clubs, setClubs] = useState<Club[]>([]);
   const [requests, setRequests] = useState<ClubRequest[]>([]);
   const [selectedTeacher, setSelectedTeacher] = useState<string>('all');
@@ -181,8 +183,11 @@ export default function ClubsPage() {
                 : 'Teacher clubs'}
             </p>
             <p className="mt-1 text-sm">
-              {errorMessage ||
+              {optionsError ||
+                errorMessage ||
                 (isLoading
+                  ? 'Клубийн option болон хүсэлтийн өгөгдлийг ачаалж байна.'
+                  : isOptionsLoading
                   ? 'Клуб, хүсэлтийн өгөгдлийг ачаалж байна.'
                   : isSaving
                   ? 'Сүүлд хийсэн өөрчлөлтийг хадгалж байна.'
@@ -198,7 +203,7 @@ export default function ClubsPage() {
                 className="bg-transparent outline-none"
               >
                 <option value="all">All teachers</option>
-                {teacherOptions.map((teacher) => (
+                {options.teachers.map((teacher) => (
                   <option key={teacher} value={teacher}>
                     {teacher}
                   </option>

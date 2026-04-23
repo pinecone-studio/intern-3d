@@ -4,11 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { FileText, Save, Search } from 'lucide-react';
 
 import { CapacityBar, StatusBadge } from '@/app/_components';
-import {
-  dayOptions,
-  gradeOptions,
-  teacherOptions,
-} from '@/app/admin/admin-data';
+import { useTomOptions } from '@/app/_hooks/useTomOptions';
 import type { Club, ClubStatus } from '@/lib/tom-types';
 
 type EditableClub = {
@@ -73,6 +69,8 @@ async function apiRequest<T>(input: string, init?: RequestInit) {
 }
 
 export default function DetailPage() {
+  const { options, isLoading: isOptionsLoading, errorMessage: optionsError } =
+    useTomOptions();
   const [clubs, setClubs] = useState<Club[]>([]);
   const [selectedClubId, setSelectedClubId] = useState<string>('');
   const [draft, setDraft] = useState<EditableClub | null>(null);
@@ -213,8 +211,11 @@ export default function DetailPage() {
                 : 'Club detail'}
             </p>
             <p className="mt-1 text-sm">
-              {errorMessage ||
+              {optionsError ||
+                errorMessage ||
                 (isLoading
+                  ? 'Option болон клубийн дэлгэрэнгүйг ачаалж байна.'
+                  : isOptionsLoading
                   ? 'Клубийн дэлгэрэнгүй мэдээллийг ачаалж байна.'
                   : isSaving
                   ? 'Клубийн өөрчлөлтийг хадгалж байна.'
@@ -372,7 +373,7 @@ export default function DetailPage() {
                   }
                   className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
                 >
-                  {teacherOptions.map((teacher) => (
+                  {options.teachers.map((teacher) => (
                     <option key={teacher} value={teacher}>
                       {teacher}
                     </option>
@@ -389,7 +390,7 @@ export default function DetailPage() {
                   }
                   className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
                 >
-                  {gradeOptions.map((grade) => (
+                  {options.gradeRanges.map((grade) => (
                     <option key={grade} value={grade}>
                       {grade}
                     </option>
@@ -406,7 +407,7 @@ export default function DetailPage() {
                   }
                   className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
                 >
-                  {dayOptions.map((day) => (
+                  {options.allowedDays.map((day) => (
                     <option key={day} value={day}>
                       {day}
                     </option>

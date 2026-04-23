@@ -1,26 +1,5 @@
-export const teacherOptions = [
-  'Багш Сараа Ким',
-  'Бат-Эрдэнэ багш',
-  'Нараа багш',
-  'Темүүлэн багш',
-] as const;
-
 export const userRoleOptions = ['student', 'teacher'] as const;
 export const userAccountStatusOptions = ['active', 'restricted', 'banned'] as const;
-
-export const dayOptions = [
-  'Даваа, Лхагва, Баасан',
-  'Мягмар, Пүрэв',
-  'Лхагва, Бямба',
-  'Даваа, Мягмар, Пүрэв',
-] as const;
-
-export const gradeOptions = [
-  '6A - 7B анги',
-  '6A - 6C анги',
-  '7A - 8B анги',
-  '9A - 10B анги',
-] as const;
 
 export const thresholdGoal = 7;
 
@@ -51,11 +30,11 @@ export type ActiveClub = ClubBase & {
 
 export type ClubForm = {
   clubName: string;
-  teacher: (typeof teacherOptions)[number];
+  teacher: string;
   startDate: string;
   endDate: string;
-  allowedDays: (typeof dayOptions)[number];
-  gradeRange: (typeof gradeOptions)[number];
+  allowedDays: string;
+  gradeRange: string;
   studentLimit: string;
   interestCount: string;
   note: string;
@@ -86,11 +65,11 @@ export type UserForm = {
 
 export const initialForm: ClubForm = {
   clubName: '',
-  teacher: teacherOptions[0],
+  teacher: '',
   startDate: '2025-09-01',
   endDate: '2025-12-20',
-  allowedDays: dayOptions[0],
-  gradeRange: gradeOptions[0],
+  allowedDays: '',
+  gradeRange: '',
   studentLimit: '12',
   interestCount: '0',
   note: '',

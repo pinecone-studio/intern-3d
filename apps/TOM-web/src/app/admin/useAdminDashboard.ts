@@ -7,6 +7,7 @@ import type {
   ClubRequest as ApiClubRequest,
   ManagedUser as ApiManagedUser,
   SchoolEvent as ApiEvent,
+  TomFormOptions,
 } from '@/lib/tom-types';
 
 import {
@@ -159,8 +160,17 @@ const initialEventForm: EventForm = {
   endTime: '',
 };
 
-export function useAdminDashboard() {
-  const [form, setForm] = useState(initialForm);
+function createInitialClubForm(options: TomFormOptions): ClubForm {
+  return {
+    ...initialForm,
+    teacher: options.teachers[0] ?? '',
+    allowedDays: options.allowedDays[0] ?? '',
+    gradeRange: options.gradeRanges[0] ?? '',
+  };
+}
+
+export function useAdminDashboard(options: TomFormOptions) {
+  const [form, setForm] = useState<ClubForm>(() => createInitialClubForm(options));
   const [userForm, setUserForm] = useState(initialUserForm);
   const [eventForm, setEventForm] = useState<EventForm>(initialEventForm);
   const [requests, setRequests] = useState<ClubRequest[]>([]);
@@ -181,7 +191,7 @@ export function useAdminDashboard() {
   };
 
   const resetForm = () => {
-    setForm(initialForm);
+    setForm(createInitialClubForm(options));
   };
 
   const updateUserField = (field: keyof UserForm, value: string) => {
@@ -194,6 +204,18 @@ export function useAdminDashboard() {
   const resetUserForm = () => {
     setUserForm(initialUserForm);
   };
+
+  useEffect(() => {
+    setForm((current) => ({
+      ...current,
+      teacher:
+        current.teacher || options.teachers[0] || current.teacher,
+      allowedDays:
+        current.allowedDays || options.allowedDays[0] || current.allowedDays,
+      gradeRange:
+        current.gradeRange || options.gradeRanges[0] || current.gradeRange,
+    }));
+  }, [options.allowedDays, options.gradeRanges, options.teachers]);
 
   const loadDashboardSnapshot = async (): Promise<DashboardSnapshot> => {
     const [summaryData, requestData, clubData, userData, eventData] = await Promise.all([
@@ -298,7 +320,7 @@ export function useAdminDashboard() {
         }),
       });
 
-      setForm(initialForm);
+      setForm(createInitialClubForm(options));
       await refreshDashboard(`${clubName} шалгах дараалалд нэмэгдлээ.`);
     }, 'Шинэ клубийн хүсэлт үүсгэж чадсангүй.');
   };
