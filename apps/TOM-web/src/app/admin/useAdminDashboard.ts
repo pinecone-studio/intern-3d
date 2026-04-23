@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import type {
+  Badge as ApiBadge,
   Club as ApiClub,
   ClubRequest as ApiClubRequest,
   ManagedUser as ApiManagedUser,
@@ -27,6 +28,15 @@ type DashboardSummary = {
   pendingRequests: number;
   spamRequests: number;
   thresholdReachedRequests: number;
+};
+
+type LeaderboardEntry = {
+  userId: string;
+  name: string;
+  email: string;
+  totalXp: number;
+  badgeCount: number;
+  rank: number;
 };
 
 type DashboardSnapshot = {
@@ -167,6 +177,8 @@ export function useAdminDashboard() {
   const [activeClubs, setActiveClubs] = useState<ActiveClub[]>([]);
   const [users, setUsers] = useState<ManagedUser[]>([]);
   const [events, setEvents] = useState<ApiEvent[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [badges, setBadges] = useState<ApiBadge[]>([]);
   const [summary, setSummary] = useState<DashboardSummary>(emptySummary);
   const [banner, setBanner] = useState(defaultBanner);
   const [errorMessage, setErrorMessage] = useState('');
@@ -203,6 +215,14 @@ export function useAdminDashboard() {
       apiRequest<{ users: ApiManagedUser[] }>('/api/users'),
       apiRequest<{ events: ApiEvent[] }>('/api/events').catch(() => ({ events: [] })),
     ]);
+
+    const [leaderboardData, badgeData] = await Promise.all([
+      apiRequest<{ leaderboard: LeaderboardEntry[] }>('/api/leaderboard').catch(() => ({ leaderboard: [] })),
+      apiRequest<{ badges: ApiBadge[] }>('/api/badges').catch(() => ({ badges: [] })),
+    ]);
+
+    setLeaderboard(leaderboardData.leaderboard);
+    setBadges(badgeData.badges);
 
     return {
       summary: summaryData.summary,
@@ -525,6 +545,28 @@ export function useAdminDashboard() {
     }, 'Event төлөв шинэчилж чадсангүй.');
   };
 
+  const handleCreateBadge = async (input: Omit<ApiBadge, 'id' | 'createdAt' | 'updatedAt'>) => {
+    await runMutation(async () => {
+      await apiRequest('/api/badges', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      });
+      const badgeData = await apiRequest<{ badges: ApiBadge[] }>('/api/badges').catch(() => ({ badges: [] }));
+      setBadges(badgeData.badges);
+      setBanner(`"${input.name}" badge үүслээ.`);
+    }, 'Badge үүсгэж чадсангүй.');
+  };
+
+  const handleDeleteBadge = async (badgeId: string) => {
+    await runMutation(async () => {
+      const badge = badges.find((b) => b.id === badgeId);
+      await apiRequest(`/api/badges/${badgeId}`, { method: 'DELETE' });
+      const badgeData = await apiRequest<{ badges: ApiBadge[] }>('/api/badges').catch(() => ({ badges: [] }));
+      setBadges(badgeData.badges);
+      setBanner(`"${badge?.name ?? 'Badge'}" устгагдлаа.`);
+    }, 'Badge устгаж чадсангүй.');
+  };
+
   const spamQueue = requests.filter((request) => request.clubStatus === 'spam');
   const reviewRequests = requests.filter((request) => request.clubStatus !== 'spam');
   const pendingRequests = reviewRequests.filter(
@@ -537,9 +579,13 @@ export function useAdminDashboard() {
     activeClubs,
     activeCount,
     approveRequest,
+    badges,
     banner,
     errorMessage,
     events,
+    handleCreateBadge,
+    handleDeleteBadge,
+    leaderboard,
     eventForm,
     form,
     handleCreate,

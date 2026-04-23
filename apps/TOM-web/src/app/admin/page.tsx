@@ -26,7 +26,7 @@ import {
 } from './admin-data';
 import { useAdminDashboard } from './useAdminDashboard';
 
-type AdminSection = 'requests' | 'users' | 'clubs' | 'spam' | 'events';
+type AdminSection = 'requests' | 'users' | 'clubs' | 'spam' | 'events' | 'leaderboard' | 'badges';
 
 const monthLabels = [
   'Jan',
@@ -57,18 +57,22 @@ export default function AdminDashboard() {
     activeClubs,
     activeCount,
     approveRequest,
+    badges,
     banner,
     errorMessage,
     events,
     eventForm,
     form,
     handleCreate,
+    handleCreateBadge,
     handleCreateEvent,
     handleCreateUser,
+    handleDeleteBadge,
     handleDeleteEvent,
     handleToggleEventStatus,
     isLoading,
     isSaving,
+    leaderboard,
     pendingRequests,
     rejectRequest,
     removeSpamClub,
@@ -127,6 +131,18 @@ export default function AdminDashboard() {
       label: 'Events',
       count: events.length,
       icon: CalendarDays,
+    },
+    {
+      key: 'leaderboard',
+      label: 'Leaderboard',
+      count: leaderboard.length,
+      icon: Users,
+    },
+    {
+      key: 'badges',
+      label: 'Badges',
+      count: badges.length,
+      icon: ShieldAlert,
     },
   ] as const;
 
@@ -1502,6 +1518,140 @@ export default function AdminDashboard() {
                         </article>
                       );
                     })}
+                  </div>
+                )}
+              </div>
+            </section>
+          ) : null}
+
+          {activeSection === 'leaderboard' ? (
+            <section className="mt-6">
+              <div className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft">
+                <div className="mb-4 flex items-center gap-2">
+                  <Users className="h-4 w-4 text-[color:var(--primary)]" />
+                  <h3 className="text-lg font-semibold text-[#183153]">XP Leaderboard</h3>
+                </div>
+                {leaderboard.length === 0 ? (
+                  <p className="text-sm text-[#8a9ab7]">Одоогоор XP бүртгэл байхгүй байна.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-[color:var(--border)] text-left text-xs font-semibold uppercase tracking-wider text-[#7f93b1]">
+                          <th className="pb-2 pr-4">#</th>
+                          <th className="pb-2 pr-4">Нэр</th>
+                          <th className="pb-2 pr-4">И-мэйл</th>
+                          <th className="pb-2 pr-4">XP</th>
+                          <th className="pb-2">Badge</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {leaderboard.map((entry) => (
+                          <tr key={entry.userId} className="border-b border-[color:var(--border)] last:border-0">
+                            <td className="py-2 pr-4 font-bold text-[#4f72d5]">{entry.rank}</td>
+                            <td className="py-2 pr-4 font-medium text-[#183153]">{entry.name}</td>
+                            <td className="py-2 pr-4 text-[#6c829f]">{entry.email}</td>
+                            <td className="py-2 pr-4 font-semibold text-[#183153]">{entry.totalXp}</td>
+                            <td className="py-2 text-[#6c829f]">{entry.badgeCount}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </section>
+          ) : null}
+
+          {activeSection === 'badges' ? (
+            <section className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+              <form
+                className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const form = e.currentTarget;
+                  const data = new FormData(form);
+                  void handleCreateBadge({
+                    name: String(data.get('name') ?? ''),
+                    description: String(data.get('description') ?? ''),
+                    icon: String(data.get('icon') ?? '🏅'),
+                    xpThreshold: Number(data.get('xpThreshold') ?? 0),
+                    eventCountThreshold: Number(data.get('eventCountThreshold') ?? 0),
+                    clubCountThreshold: Number(data.get('clubCountThreshold') ?? 0),
+                  });
+                  form.reset();
+                }}
+              >
+                <div className="mb-4 flex items-center gap-2">
+                  <ShieldAlert className="h-4 w-4 text-[color:var(--primary)]" />
+                  <h3 className="text-lg font-semibold text-[#183153]">Шинэ badge үүсгэх</h3>
+                </div>
+                <div className="space-y-3">
+                  <label className="block">
+                    <span className={inputLabelClass}>Нэр</span>
+                    <input name="name" required placeholder="Badge нэр" className={fieldClass} />
+                  </label>
+                  <label className="block">
+                    <span className={inputLabelClass}>Тайлбар</span>
+                    <input name="description" placeholder="Тайлбар" className={fieldClass} />
+                  </label>
+                  <label className="block">
+                    <span className={inputLabelClass}>Icon (emoji)</span>
+                    <input name="icon" defaultValue="🏅" className={fieldClass} />
+                  </label>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <label className="block">
+                      <span className={inputLabelClass}>XP босго</span>
+                      <input name="xpThreshold" type="number" defaultValue="0" min="0" className={fieldClass} />
+                    </label>
+                    <label className="block">
+                      <span className={inputLabelClass}>Event тоо</span>
+                      <input name="eventCountThreshold" type="number" defaultValue="0" min="0" className={fieldClass} />
+                    </label>
+                    <label className="block">
+                      <span className={inputLabelClass}>Клуб тоо</span>
+                      <input name="clubCountThreshold" type="number" defaultValue="0" min="0" className={fieldClass} />
+                    </label>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isSaving}
+                    className="mt-2 rounded-full bg-[color:var(--primary)] px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
+                  >
+                    Badge үүсгэх
+                  </button>
+                </div>
+              </form>
+
+              <div className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft">
+                <div className="mb-4 flex items-center gap-2">
+                  <ShieldAlert className="h-4 w-4 text-[color:var(--primary)]" />
+                  <h3 className="text-lg font-semibold text-[#183153]">Badge жагсаалт</h3>
+                </div>
+                {badges.length === 0 ? (
+                  <p className="text-sm text-[#8a9ab7]">Одоогоор badge байхгүй байна.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {badges.map((badge) => (
+                      <article key={badge.id} className="flex items-center gap-3 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
+                        <span className="text-2xl">{badge.icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-[#183153]">{badge.name}</p>
+                          <p className="text-xs text-[#6c829f] truncate">{badge.description}</p>
+                          <p className="mt-1 text-xs text-[#8a9ab7]">
+                            XP≥{badge.xpThreshold} · Event≥{badge.eventCountThreshold} · Клуб≥{badge.clubCountThreshold}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => void handleDeleteBadge(badge.id)}
+                          disabled={isSaving}
+                          className="rounded-full border border-[#ffd2d5] bg-white px-3 py-1 text-xs font-semibold text-[#de4a58] transition hover:bg-[#fff6f7] disabled:opacity-40"
+                        >
+                          Устгах
+                        </button>
+                      </article>
+                    ))}
                   </div>
                 )}
               </div>
