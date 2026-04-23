@@ -26,7 +26,7 @@ import {
 } from './admin-data';
 import { useAdminDashboard } from './useAdminDashboard';
 
-type AdminSection = 'requests' | 'users' | 'clubs' | 'spam';
+type AdminSection = 'requests' | 'users' | 'clubs' | 'spam' | 'events';
 
 const monthLabels = [
   'Jan',
@@ -59,9 +59,14 @@ export default function AdminDashboard() {
     approveRequest,
     banner,
     errorMessage,
+    events,
+    eventForm,
     form,
     handleCreate,
+    handleCreateEvent,
     handleCreateUser,
+    handleDeleteEvent,
+    handleToggleEventStatus,
     isLoading,
     isSaving,
     pendingRequests,
@@ -69,6 +74,7 @@ export default function AdminDashboard() {
     removeSpamClub,
     requests,
     spamQueue,
+    resetEventForm,
     resetUserForm,
     thresholdGoal,
     thresholdReachedCount,
@@ -76,6 +82,7 @@ export default function AdminDashboard() {
     toggleClubStatus,
     toggleUserBan,
     toggleUserRestriction,
+    updateEventField,
     updateUserField,
     updateUserRole,
     updateField,
@@ -114,6 +121,12 @@ export default function AdminDashboard() {
       label: 'Spam',
       count: summary.spamRequests,
       icon: ShieldAlert,
+    },
+    {
+      key: 'events',
+      label: 'Events',
+      count: events.length,
+      icon: CalendarDays,
     },
   ] as const;
 
@@ -189,9 +202,9 @@ export default function AdminDashboard() {
   const activityPath = activitySeries
     .map(
       (value, index) =>
-        `${index === 0 ? 'M' : 'L'} ${(index / (activitySeries.length - 1)) * 100} ${
-          100 - value
-        }`
+        `${index === 0 ? 'M' : 'L'} ${
+          (index / (activitySeries.length - 1)) * 100
+        } ${100 - value}`
     )
     .join(' ');
 
@@ -304,7 +317,9 @@ export default function AdminDashboard() {
                   >
                     <Icon className="h-5 w-5" />
                   </div>
-                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${card.badge}`}>
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${card.badge}`}
+                  >
                     {card.delta}
                   </span>
                 </div>
@@ -363,11 +378,31 @@ export default function AdminDashboard() {
                   className="absolute inset-x-3 bottom-10 top-4 h-[calc(100%-1.75rem)] w-[calc(100%-1.5rem)]"
                 >
                   <defs>
-                    <linearGradient id="admin-chart-area" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#6faef4" stopOpacity="0.34" />
-                      <stop offset="100%" stopColor="#6faef4" stopOpacity="0.03" />
+                    <linearGradient
+                      id="admin-chart-area"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor="#6faef4"
+                        stopOpacity="0.34"
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor="#6faef4"
+                        stopOpacity="0.03"
+                      />
                     </linearGradient>
-                    <linearGradient id="admin-chart-line" x1="0" y1="0" x2="1" y2="0">
+                    <linearGradient
+                      id="admin-chart-line"
+                      x1="0"
+                      y1="0"
+                      x2="1"
+                      y2="0"
+                    >
                       <stop offset="0%" stopColor="#4f8fe7" />
                       <stop offset="100%" stopColor="#78b8ff" />
                     </linearGradient>
@@ -410,7 +445,9 @@ export default function AdminDashboard() {
           <article className={panelClass}>
             <div className="flex items-center gap-2">
               <Trophy className="h-4 w-4 text-[color:var(--primary)]" />
-              <p className="text-lg font-semibold text-[#183153]">Leaderboard</p>
+              <p className="text-lg font-semibold text-[#183153]">
+                Leaderboard
+              </p>
             </div>
 
             <div className="mt-5 space-y-4">
@@ -448,7 +485,9 @@ export default function AdminDashboard() {
                     <p className="text-base font-semibold text-[color:var(--primary)]">
                       {user.points.toLocaleString()}
                     </p>
-                    <p className="text-xs text-[#8195af]">{user.clubCount} clubs</p>
+                    <p className="text-xs text-[#8195af]">
+                      {user.clubCount} clubs
+                    </p>
                   </div>
                 </div>
               ))}
@@ -502,7 +541,10 @@ export default function AdminDashboard() {
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <CapacityBar current={club.interestCount} total={thresholdGoal} />
+                        <CapacityBar
+                          current={club.interestCount}
+                          total={thresholdGoal}
+                        />
                       </div>
 
                       <StatusBadge
@@ -530,7 +572,9 @@ export default function AdminDashboard() {
                         <button
                           type="button"
                           onClick={() => void rejectRequest(club.id)}
-                          disabled={club.requestStatus !== 'pending' || isSaving}
+                          disabled={
+                            club.requestStatus !== 'pending' || isSaving
+                          }
                           className="rounded-full px-3 py-2 text-sm font-semibold text-[#ff5c5c] transition hover:bg-[#fff1f2] hover:text-[#e33f3f] disabled:cursor-not-allowed disabled:opacity-40"
                         >
                           Reject
@@ -538,7 +582,9 @@ export default function AdminDashboard() {
                         <button
                           type="button"
                           onClick={() => void approveRequest(club.id)}
-                          disabled={club.requestStatus !== 'pending' || isSaving}
+                          disabled={
+                            club.requestStatus !== 'pending' || isSaving
+                          }
                           className="rounded-full bg-[color:var(--primary)] px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(79,114,213,0.22)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-[#b5d0f3]"
                         >
                           Approve
@@ -564,8 +610,8 @@ export default function AdminDashboard() {
                 {
                   label: 'Create global event',
                   icon: CalendarDays,
-                  action: () => setActiveSection('requests'),
-                  active: activeSection === 'requests',
+                  action: () => setActiveSection('events'),
+                  active: activeSection === 'events',
                 },
                 {
                   label: 'Manage users',
@@ -618,7 +664,6 @@ export default function AdminDashboard() {
                 );
               })}
             </div>
-
           </article>
         </section>
 
@@ -797,7 +842,9 @@ export default function AdminDashboard() {
                       </label>
 
                       <label className="block">
-                        <span className={inputLabelClass}>Current interest</span>
+                        <span className={inputLabelClass}>
+                          Current interest
+                        </span>
                         <input
                           type="number"
                           min="0"
@@ -816,7 +863,9 @@ export default function AdminDashboard() {
                       <textarea
                         rows={4}
                         value={form.note}
-                        onChange={(event) => updateField('note', event.target.value)}
+                        onChange={(event) =>
+                          updateField('note', event.target.value)
+                        }
                         placeholder="Why this club matters, what to review, and any approval notes."
                         className={fieldClass}
                       />
@@ -851,7 +900,7 @@ export default function AdminDashboard() {
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7f93b1]">
                       Review notes
                     </p>
-                      <h3 className="mt-2 text-[1.15rem] font-semibold text-[#183153]">
+                    <h3 className="mt-2 text-[1.15rem] font-semibold text-[#183153]">
                       What the queue controls
                     </h3>
                     <div className="mt-4 space-y-3 text-sm text-[#60789a]">
@@ -1037,7 +1086,9 @@ export default function AdminDashboard() {
                           </h3>
                           <StatusBadge
                             type={user.role}
-                            text={user.role === 'teacher' ? 'teacher' : 'student'}
+                            text={
+                              user.role === 'teacher' ? 'teacher' : 'student'
+                            }
                           />
                           <StatusBadge
                             type={user.accountStatus}
@@ -1050,7 +1101,9 @@ export default function AdminDashboard() {
                             }
                           />
                         </div>
-                        <p className="mt-1 text-sm text-[#6f86a7]">{user.email}</p>
+                        <p className="mt-1 text-sm text-[#6f86a7]">
+                          {user.email}
+                        </p>
                       </div>
                       <div className="text-right text-xs text-[#6f86a7]">
                         <p>Last active</p>
@@ -1100,7 +1153,9 @@ export default function AdminDashboard() {
                         disabled={isSaving}
                         className="rounded-full bg-[color:var(--primary)] px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90"
                       >
-                        {user.role === 'student' ? 'Make teacher' : 'Make student'}
+                        {user.role === 'student'
+                          ? 'Make teacher'
+                          : 'Make student'}
                       </button>
                       <button
                         type="button"
@@ -1139,9 +1194,14 @@ export default function AdminDashboard() {
                       <h3 className="text-lg font-semibold text-[#183153]">
                         {club.clubName}
                       </h3>
-                      <p className="mt-1 text-sm text-[#6f86a7]">{club.teacher}</p>
+                      <p className="mt-1 text-sm text-[#6f86a7]">
+                        {club.teacher}
+                      </p>
                     </div>
-                    <StatusBadge type={club.clubStatus} text={club.clubStatus} />
+                    <StatusBadge
+                      type={club.clubStatus}
+                      text={club.clubStatus}
+                    />
                   </div>
 
                   <div className="mt-4 space-y-3 text-sm text-[#60789a]">
@@ -1171,7 +1231,9 @@ export default function AdminDashboard() {
                     </button>
                     <StatusBadge
                       type={
-                        club.interestCount >= thresholdGoal ? 'approved' : 'pending'
+                        club.interestCount >= thresholdGoal
+                          ? 'approved'
+                          : 'pending'
                       }
                       text={formatThresholdLabel(club.interestCount)}
                     />
@@ -1193,7 +1255,9 @@ export default function AdminDashboard() {
                       <h3 className="text-lg font-semibold text-[#183153]">
                         {club.clubName}
                       </h3>
-                      <p className="mt-1 text-sm text-[#6f86a7]">{club.teacher}</p>
+                      <p className="mt-1 text-sm text-[#6f86a7]">
+                        {club.teacher}
+                      </p>
                     </div>
                     <StatusBadge type="spam" text="flagged" />
                   </div>
@@ -1214,14 +1278,235 @@ export default function AdminDashboard() {
                     >
                       Remove spam club
                     </button>
-                    <span className="text-xs text-[#8a5c64]">{club.createdBy}</span>
+                    <span className="text-xs text-[#8a5c64]">
+                      {club.createdBy}
+                    </span>
                   </div>
                 </article>
               ))}
             </section>
           ) : null}
+
+          {activeSection === 'events' ? (
+            <section className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+              <form
+                className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void handleCreateEvent();
+                }}
+              >
+                <div>
+                  <div className="flex items-center gap-2">
+                    <CalendarDays className="h-4 w-4 text-[color:var(--primary)]" />
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7f93b1]">
+                      Шинэ event
+                    </p>
+                  </div>
+                  <h3 className="mt-2 text-xl font-semibold text-[#183153]">
+                    Сургуулийн event үүсгэх
+                  </h3>
+                  <p className="mt-2 text-sm text-[#6c829f]">
+                    Event үүсгэхэд бүх хэрэглэгч автоматаар нэгддэг.
+                  </p>
+                </div>
+
+                <div className="mt-6 space-y-4">
+                  <label className="block">
+                    <span className={inputLabelClass}>Event гарчиг</span>
+                    <input
+                      type="text"
+                      value={eventForm.title}
+                      onChange={(e) =>
+                        updateEventField('title', e.target.value)
+                      }
+                      placeholder="Жишээ: Сургуулийн тамирын өдөр"
+                      className={fieldClass}
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className={inputLabelClass}>Огноо</span>
+                    <input
+                      type="date"
+                      value={eventForm.eventDate}
+                      onChange={(e) =>
+                        updateEventField('eventDate', e.target.value)
+                      }
+                      className={fieldClass}
+                    />
+                  </label>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <label className="block">
+                      <span className={inputLabelClass}>Эхлэх цаг</span>
+                      <input
+                        type="time"
+                        value={eventForm.startTime}
+                        onChange={(e) =>
+                          updateEventField('startTime', e.target.value)
+                        }
+                        className={fieldClass}
+                      />
+                    </label>
+                    <label className="block">
+                      <span className={inputLabelClass}>Дуусах цаг</span>
+                      <input
+                        type="time"
+                        value={eventForm.endTime}
+                        onChange={(e) =>
+                          updateEventField('endTime', e.target.value)
+                        }
+                        className={fieldClass}
+                      />
+                    </label>
+                  </div>
+
+                  <label className="block">
+                    <span className={inputLabelClass}>Байршил</span>
+                    <input
+                      type="text"
+                      value={eventForm.location}
+                      onChange={(e) =>
+                        updateEventField('location', e.target.value)
+                      }
+                      placeholder="Жишээ: Тамирын заал, 3-р давхар"
+                      className={fieldClass}
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className={inputLabelClass}>Тайлбар</span>
+                    <textarea
+                      rows={3}
+                      value={eventForm.description}
+                      onChange={(e) =>
+                        updateEventField('description', e.target.value)
+                      }
+                      placeholder="Event-ийн дэлгэрэнгүй мэдээлэл..."
+                      className={fieldClass}
+                    />
+                  </label>
+                </div>
+
+                <div className="mt-5 flex flex-wrap items-center gap-3">
+                  <button
+                    type="submit"
+                    disabled={
+                      isSaving || !eventForm.title || !eventForm.eventDate
+                    }
+                    className="rounded-full bg-[color:var(--primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(79,114,213,0.22)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-[#b5d0f3]"
+                  >
+                    Event үүсгэж auto join хийх
+                  </button>
+                  <button
+                    type="button"
+                    onClick={resetEventForm}
+                    className="rounded-full border border-[color:var(--border)] bg-white px-5 py-2.5 text-sm font-semibold text-[#56708f] transition hover:bg-[color:var(--surface)]"
+                  >
+                    Цэвэрлэх
+                  </button>
+                </div>
+              </form>
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-[color:var(--primary)]" />
+                  <p className="text-lg font-semibold text-[#183153]">
+                    Бүх events ({events.length})
+                  </p>
+                </div>
+
+                {events.length === 0 ? (
+                  <div className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-8 text-center">
+                    <CalendarDays className="mx-auto h-10 w-10 text-[#b5c8e8]" />
+                    <p className="mt-3 text-sm text-[#6982a2]">
+                      Одоогоор event алга байна. Эхний event-ийг үүсгэнэ үү.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {events.map((event) => {
+                      const statusColor =
+                        event.status === 'upcoming'
+                          ? 'bg-[#eef4ff] text-[#4f72d5]'
+                          : event.status === 'ongoing'
+                          ? 'bg-[#e6fbf0] text-[#1a8f5a]'
+                          : event.status === 'completed'
+                          ? 'bg-[#f0f0f0] text-[#6b7280]'
+                          : 'bg-[#fff0f0] text-[#d94f4f]';
+
+                      const nextStatusLabel =
+                        event.status === 'upcoming'
+                          ? 'Ongoing болгох'
+                          : event.status === 'ongoing'
+                          ? 'Completed болгох'
+                          : 'Upcoming болгох';
+
+                      return (
+                        <article
+                          key={event.id}
+                          className="rounded-[24px] border border-[color:var(--border)] bg-[color:var(--card)] p-4 shadow-soft"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <h3 className="truncate font-semibold text-[#183153]">
+                                {event.title}
+                              </h3>
+                              <p className="mt-0.5 text-xs text-[#6f86a7]">
+                                {event.eventDate}
+                                {event.startTime ? ` · ${event.startTime}` : ''}
+                                {event.location ? ` · ${event.location}` : ''}
+                              </p>
+                            </div>
+                            <span
+                              className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${statusColor}`}
+                            >
+                              {event.status}
+                            </span>
+                          </div>
+
+                          {event.description ? (
+                            <p className="mt-2 text-sm leading-5 text-[#60789a]">
+                              {event.description}
+                            </p>
+                          ) : null}
+
+                          <div className="mt-3 flex flex-wrap items-center gap-2">
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--surface)] px-3 py-1 text-xs font-medium text-[#5f7697]">
+                              <Users className="h-3 w-3" />
+                              {event.participantCount} оролцогч
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                void handleToggleEventStatus(event.id)
+                              }
+                              disabled={isSaving}
+                              className="rounded-full border border-[color:var(--border)] bg-white px-3 py-1 text-xs font-semibold text-[#183153] transition hover:bg-[color:var(--surface)] disabled:opacity-40"
+                            >
+                              {nextStatusLabel}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void handleDeleteEvent(event.id)}
+                              disabled={isSaving}
+                              className="rounded-full border border-[#ffd2d5] bg-white px-3 py-1 text-xs font-semibold text-[#de4a58] transition hover:bg-[#fff6f7] disabled:opacity-40"
+                            >
+                              Устгах
+                            </button>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </section>
+          ) : null}
         </section>
       </div>
     </main>
+    //fvbsfbyv
   );
 }

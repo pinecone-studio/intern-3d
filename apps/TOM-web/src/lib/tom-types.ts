@@ -57,6 +57,28 @@ export type ManagedUser = {
   updatedAt: string
 }
 
+export type EventStatus = 'upcoming' | 'ongoing' | 'completed' | 'cancelled'
+
+export type SchoolEvent = {
+  id: string
+  title: string
+  description: string
+  location: string
+  eventDate: string
+  startTime: string
+  endTime: string
+  status: EventStatus
+  createdBy: string
+  participantCount: number
+  createdAt: string
+  updatedAt: string
+}
+
+export type EventInput = Partial<Omit<SchoolEvent, 'id' | 'createdAt' | 'updatedAt' | 'participantCount'>> & {
+  title: string
+  eventDate: string
+}
+
 export type ClubInput = Partial<Omit<Club, 'id' | 'createdAt' | 'updatedAt'>> & {
   name: string
 }
