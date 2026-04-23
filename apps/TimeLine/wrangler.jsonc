@@ -1,6 +1,7 @@
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "timeline",
+  "account_id": "3b40709174f6f706a921eb9e4d809c0d",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-04-21",
   "compatibility_flags": ["nodejs_compat"],
@@ -13,7 +14,7 @@
       "binding": "ACADEMIC_TIMELINE_DB",
       "database_name": "Academic-TimeLine",
       "database_id": "dd763e75-72c1-40c0-82f2-9e94209df36f",
-      "preview_database_id": "ACADEMIC_TIMELINE_DB",
+      "preview_database_id": "dd763e75-72c1-40c0-82f2-9e94209df36f",
       "migrations_dir": "migrations"
     }
   ]

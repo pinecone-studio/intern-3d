@@ -1,7 +1,6 @@
 import { applyRateLimitHeaders, checkRateLimit, createRateLimitResponse } from '@/lib/api-rate-limit'
 import { listScheduleEvents } from '@/lib/timeline-rest'
 
-export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
 
 const encoder = new TextEncoder()
