@@ -1,7 +1,7 @@
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "timeline",
-  "account_id": "3b40709174f6f706a921eb9e4d809c0d",
+  "account_id": "7d8b0122a2359d0987e1bd36da7f7882",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-04-21",
   "compatibility_flags": ["nodejs_compat"],
