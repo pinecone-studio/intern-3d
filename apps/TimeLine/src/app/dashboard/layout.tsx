@@ -3,8 +3,6 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useRole } from '@/lib/role-context'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
-import { DashboardSidebar } from '@/components/layout/dashboard-sidebar'
 import { DashboardTopbar } from '@/components/layout/dashboard-topbar'
 
 export default function DashboardLayout({
@@ -30,14 +28,13 @@ export default function DashboardLayout({
   }
 
   return (
-    <SidebarProvider>
-      <DashboardSidebar />
-      <SidebarInset>
-        <DashboardTopbar />
-        <main className="flex-1 overflow-auto p-6">
+    <div className="min-h-screen bg-muted/20">
+      <DashboardTopbar />
+      <main className="p-4 sm:p-6">
+        <div className="mx-auto max-w-7xl">
           {children}
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
+        </div>
+      </main>
+    </div>
   )
 }

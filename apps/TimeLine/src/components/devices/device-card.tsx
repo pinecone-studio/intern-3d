@@ -9,12 +9,6 @@ interface DeviceCardProps {
 }
 
 export function DeviceCard({ device, isUserDevice }: DeviceCardProps) {
-  const statusColors = {
-    available: 'text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20',
-    assigned: 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20',
-    maintenance: 'text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20',
-  }
-
   const statusLabels = {
     available: 'Сул',
     assigned: isUserDevice ? 'Танд хуваарилагдсан' : 'Хуваарилагдсан',
@@ -24,14 +18,13 @@ export function DeviceCard({ device, isUserDevice }: DeviceCardProps) {
   return (
     <Card 
       className={cn(
-        'p-3 transition-all',
-        isUserDevice && 'border-emerald-300 dark:border-emerald-500/40 bg-emerald-50 dark:bg-emerald-500/5'
+        'rounded-md border-border p-3 shadow-none',
+        isUserDevice && 'bg-muted'
       )}
     >
       <div className="flex items-start gap-3">
         <div className={cn(
-          'flex h-10 w-10 items-center justify-center rounded-lg border',
-          statusColors[device.status]
+          'flex h-10 w-10 items-center justify-center rounded-md border border-border bg-background text-muted-foreground'
         )}>
           <Monitor className="h-5 w-5" />
         </div>
@@ -41,7 +34,7 @@ export function DeviceCard({ device, isUserDevice }: DeviceCardProps) {
               {device.name}
             </h4>
             {isUserDevice && (
-              <span className="shrink-0 rounded-full bg-emerald-100 dark:bg-emerald-500/20 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30">
+              <span className="shrink-0 rounded-md border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
                 Таных
               </span>
             )}
@@ -52,8 +45,8 @@ export function DeviceCard({ device, isUserDevice }: DeviceCardProps) {
           <div className="mt-1 flex items-center gap-1.5">
             <span className={cn(
               'h-1.5 w-1.5 rounded-full',
-              device.status === 'available' ? 'bg-emerald-500' :
-              device.status === 'assigned' ? 'bg-blue-500' : 'bg-amber-500'
+              device.status === 'available' ? 'bg-foreground' :
+              device.status === 'assigned' ? 'bg-muted-foreground' : 'bg-border'
             )} />
             <span className="text-xs text-muted-foreground">
               {statusLabels[device.status]}

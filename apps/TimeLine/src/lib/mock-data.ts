@@ -171,11 +171,10 @@ export function createRooms(): Room[] {
     { id: 'room-303', number: '303', floor: 3, type: 'lab', devices: generateDevices('room-303', '303', 15) },
     { id: 'room-304', number: '304', floor: 3, type: 'lab', devices: generateDevices('room-304', '304', 10) },
     { id: 'room-305', number: '305', floor: 3, type: 'lab', devices: generateDevices('room-305', '305', 12) },
-    { id: 'room-hall-3', number: 'Үйл явдлын танхим 3', floor: 3, type: 'event-hall', devices: [] },
     { id: 'room-401', number: '401', floor: 4, type: 'lab', devices: generateDevices('room-401', '401', 15) },
     { id: 'room-402', number: '402', floor: 4, type: 'lab', devices: generateDevices('room-402', '402', 12) },
     { id: 'room-403', number: '403', floor: 4, type: 'lab', devices: generateDevices('room-403', '403', 10) },
-    { id: 'room-hall-4', number: 'Үйл явдлын танхим 4', floor: 4, type: 'event-hall', devices: [] },
+    { id: 'room-hall-4', number: 'Event hall', floor: 4, type: 'event-hall', devices: [] },
   ]
 
   return roomDefinitions.map(room => ({

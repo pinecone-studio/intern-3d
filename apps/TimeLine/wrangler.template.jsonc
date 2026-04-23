@@ -1,0 +1,20 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "timeline",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-04-21",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "ACADEMIC_TIMELINE_DB",
+      "database_name": "Academic-TimeLine",
+      "database_id": "__ACADEMIC_TIMELINE_DB_ID__",
+      "preview_database_id": "__ACADEMIC_TIMELINE_DB_PREVIEW_ID__",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

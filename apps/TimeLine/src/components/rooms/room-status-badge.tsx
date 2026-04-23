@@ -20,9 +20,7 @@ export function RoomStatusBadge({ status, size = 'md', className }: RoomStatusBa
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full border font-medium',
-        config.bgColor,
-        config.color,
+        'inline-flex items-center gap-1.5 rounded-md border border-border bg-background font-medium text-foreground',
         sizeClasses[size],
         className
       )}

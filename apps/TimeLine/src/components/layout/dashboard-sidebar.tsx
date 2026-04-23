@@ -40,11 +40,11 @@ export function DashboardSidebar() {
   const navItems = role === 'admin' ? adminNavItems : studentNavItems
 
   return (
-    <Sidebar className="border-r border-sidebar-border">
+    <Sidebar className="border-r border-sidebar-border bg-background">
       <SidebarHeader className="border-b border-sidebar-border p-4">
         <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
-            <Clock className="h-5 w-5 text-primary" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-md border border-sidebar-border bg-muted">
+            <Clock className="h-5 w-5 text-foreground" />
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-semibold text-sidebar-foreground">
@@ -72,7 +72,7 @@ export function DashboardSidebar() {
                     <SidebarMenuButton
                       asChild
                       isActive={isActive}
-                      className="h-10"
+                      className="h-10 rounded-md"
                     >
                       <Link href={item.href}>
                         <item.icon className="h-4 w-4" />
@@ -92,8 +92,8 @@ export function DashboardSidebar() {
               Удирдлага
             </SidebarGroupLabel>
             <SidebarGroupContent>
-              <div className="rounded-lg border border-blue-200 dark:border-blue-500/20 bg-blue-50 dark:bg-blue-500/5 p-3 mx-2">
-                <p className="text-xs text-blue-700 dark:text-blue-400">
+              <div className="mx-2 rounded-md border border-sidebar-border bg-muted p-3">
+                <p className="text-xs text-muted-foreground">
                   Өрөөний хуваарь удирдахын тулд өрөөн дээр дарна уу
                 </p>
               </div>
@@ -107,10 +107,10 @@ export function DashboardSidebar() {
               Таны төхөөрөмж
             </SidebarGroupLabel>
             <SidebarGroupContent>
-              <div className="rounded-lg border border-emerald-200 dark:border-emerald-500/20 bg-emerald-50 dark:bg-emerald-500/5 p-3 mx-2">
+              <div className="mx-2 rounded-md border border-sidebar-border bg-muted p-3">
                 <div className="flex items-center gap-2">
-                  <Monitor className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                  <Monitor className="h-4 w-4 text-foreground" />
+                  <span className="text-sm font-medium text-foreground">
                     {user.assignedDevice.name}
                   </span>
                 </div>
@@ -124,9 +124,9 @@ export function DashboardSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-2">
-        <div className="flex items-center gap-3 rounded-lg p-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 border border-primary/20">
-            <span className="text-xs font-medium text-primary">
+        <div className="flex items-center gap-3 rounded-md border border-sidebar-border bg-muted p-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md border border-sidebar-border bg-background">
+            <span className="text-xs font-medium text-foreground">
               {user?.name?.charAt(0) || 'U'}
             </span>
           </div>
@@ -135,12 +135,8 @@ export function DashboardSidebar() {
               {user?.name || 'Хэрэглэгч'}
             </p>
             <Badge
-              variant="secondary"
-              className={`h-4 text-[10px] ${
-                role === 'admin'
-                  ? 'border-blue-200 bg-blue-100 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/20 dark:text-blue-400'
-                  : 'border-emerald-200 bg-emerald-100 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-400'
-              }`}
+              variant="outline"
+              className="h-5 rounded-md px-1.5 text-[10px]"
             >
               {role === 'admin' ? 'Админ' : 'Сурагч'}
             </Badge>
@@ -149,7 +145,7 @@ export function DashboardSidebar() {
         <Link
           href="/"
           onClick={logout}
-          className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          className="mt-2 flex items-center gap-2 rounded-md px-3 py-2 text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
         >
           <LogOut className="h-4 w-4" />
           <span>Гарах</span>
