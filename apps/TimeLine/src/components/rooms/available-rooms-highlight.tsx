@@ -15,10 +15,10 @@ export function AvailableRoomsHighlight({ rooms }: AvailableRoomsHighlightProps)
 
   if (availableRooms.length === 0) {
     return (
-      <Card className="border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/5">
+      <Card className="rounded-md border-border bg-card shadow-none">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base text-amber-700 dark:text-amber-400">
-            <Sparkles className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-base font-semibold">
+            <Sparkles className="h-4 w-4 text-muted-foreground" />
             яг одоо сул ангиуд
           </CardTitle>
         </CardHeader>
@@ -32,18 +32,16 @@ export function AvailableRoomsHighlight({ rooms }: AvailableRoomsHighlightProps)
   }
 
   return (
-    <Card className="border-emerald-300 dark:border-emerald-500/30 bg-gradient-to-br from-emerald-50 dark:from-emerald-500/10 to-emerald-100/50 dark:to-emerald-500/5">
+    <Card className="rounded-md border-border bg-card shadow-none">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-500/30">
-            <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <span className="text-emerald-700 dark:text-emerald-400">яг одоо сул ангиуд</span>
-          <span className="ml-auto rounded-full bg-emerald-100 dark:bg-emerald-500/20 px-2.5 py-0.5 text-sm font-medium text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30">
+        <CardTitle className="flex items-center gap-2 text-base font-semibold">
+          <Sparkles className="h-4 w-4 text-muted-foreground" />
+          <span>яг одоо сул ангиуд</span>
+          <span className="ml-auto rounded-md border border-border px-2 py-0.5 text-sm font-medium text-muted-foreground">
             {availableRooms.length}
           </span>
         </CardTitle>
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className="mt-1 text-xs text-muted-foreground">
           Эдгээр ангиуд одоо нээлттэй байна (Open Lab болон сул цаг)
         </p>
       </CardHeader>

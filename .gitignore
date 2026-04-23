@@ -58,6 +58,7 @@ test-output
 apps/six7/v0-employee-paperwork-automation/
 .open-next
 apps/TimeLine/.dev.vars
+apps/TimeLine/.env
 apps/TimeLine/.wrangler
 apps/TOM-web/.dev.vars
 apps/TOM-web/.wrangler

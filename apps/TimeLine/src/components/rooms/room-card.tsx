@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { RoomStatusBadge } from './room-status-badge'
 import type { Room } from '@/lib/types'
-import { Monitor, Clock, ArrowRight, ChevronRight } from 'lucide-react'
+import { Monitor, Clock, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { EVENT_TYPE_CONFIG } from '@/lib/constants'
 
@@ -15,7 +15,7 @@ interface RoomCardProps {
   compact?: boolean
 }
 
-export function RoomCard({ room, showDeviceInfo, assignedDeviceName, compact }: RoomCardProps) {
+export function RoomCard({ room, compact }: RoomCardProps) {
   const isAvailable = room.status === 'available'
 
   const cardContent = compact ? (
@@ -24,9 +24,6 @@ export function RoomCard({ room, showDeviceInfo, assignedDeviceName, compact }: 
         <RoomStatusBadge status={room.status} size="sm" />
         <div>
           <span className="font-semibold text-foreground">{room.number}</span>
-          <span className="ml-2 text-xs text-muted-foreground">
-            {room.floor}-р давхар
-          </span>
         </div>
       </div>
       <div className="flex items-center gap-2">
@@ -35,7 +32,9 @@ export function RoomCard({ room, showDeviceInfo, assignedDeviceName, compact }: 
             {room.devices.filter(d => d.status === 'available').length}/{room.devices.length} сул
           </span>
         )}
-        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        <span className="timeline-room-card-hover flex items-center justify-center">
+          <ArrowRight className="h-5 w-5 text-foreground" />
+        </span>
       </div>
     </div>
   ) : (
@@ -44,17 +43,15 @@ export function RoomCard({ room, showDeviceInfo, assignedDeviceName, compact }: 
         <div className="flex items-start justify-between">
           <RoomStatusBadge status={room.status} size="md" />
           <div className="text-right">
-            <h3 className="text-xl font-bold text-foreground">{room.number}</h3>
-            <p className="text-xs text-muted-foreground">{room.floor}-р давхар</p>
+            <h3 className="text-xl font-semibold text-foreground">{room.number}</h3>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
-        {/* Current Event */}
+      <CardContent className="flex flex-1 flex-col gap-3">
         {room.currentEvent ? (
           <div className={cn(
-            'rounded-lg border-l-4 p-3 bg-secondary/50',
-            EVENT_TYPE_CONFIG[room.currentEvent.type]?.borderColor || 'border-l-muted'
+            'rounded-md border p-3',
+            EVENT_TYPE_CONFIG[room.currentEvent.type]?.borderColor || 'border-border'
           )}>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Clock className="h-3 w-3" />
@@ -69,60 +66,54 @@ export function RoomCard({ room, showDeviceInfo, assignedDeviceName, compact }: 
             </p>
           </div>
         ) : (
-          <div className="rounded-lg bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 p-3">
-            <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+          <div className="rounded-md border border-border bg-muted p-3">
+            <p className="text-sm font-medium text-foreground">
               Одоо сул байна
             </p>
           </div>
         )}
 
-        {/* Next Event */}
         {room.nextEvent && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <ArrowRight className="h-3 w-3" />
             <span>
-              Дараа нь: {room.nextEvent.title} ({room.nextEvent.startTime})
+              Up next: {room.nextEvent.title} ({room.nextEvent.startTime})
             </span>
           </div>
         )}
 
-        {/* Device Info */}
-        {showDeviceInfo && assignedDeviceName && (
-          <div className="mt-2 rounded-lg border border-emerald-200 dark:border-emerald-500/20 bg-emerald-50 dark:bg-emerald-500/5 p-2">
-            <div className="flex items-center gap-2">
-              <Monitor className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-              <span className="text-sm text-emerald-700 dark:text-emerald-400">
-                Таны iMac: {assignedDeviceName}
-              </span>
-            </div>
+        {!room.nextEvent && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <ArrowRight className="h-3 w-3" />
+            <span>Up next: None scheduled</span>
           </div>
         )}
 
-        {/* Device Count */}
-        {room.type === 'lab' && room.devices.length > 0 && !showDeviceInfo && (
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Monitor className="h-3 w-3" />
-              <span>
-                {room.devices.filter(d => d.status === 'available').length}/{room.devices.length} iMac сул
-              </span>
-            </div>
-            <ChevronRight className="h-4 w-4" />
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <Monitor className="h-3 w-3" />
+            <span>
+              {room.devices.filter(d => d.status === 'available').length}/{room.devices.length} remaining iMac
+            </span>
           </div>
-        )}
+        </div>
+
+        <div className="mt-auto flex justify-end pt-2">
+          <span className="timeline-room-card-hover flex items-center justify-center">
+            <ArrowRight className="h-5 w-5 text-foreground" />
+          </span>
+        </div>
       </CardContent>
     </>
   )
 
   return (
-    <Link href={`/dashboard/room/${room.id}`}>
+    <Link href={`/dashboard/room/${room.id}`} className="block h-full">
       <Card 
         className={cn(
-          'relative overflow-hidden transition-all hover:border-primary/50 hover:shadow-md cursor-pointer',
-          isAvailable && 'border-emerald-300 dark:border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-500/5',
-          room.status === 'class' && 'border-blue-200 dark:border-blue-500/20',
-          room.status === 'club' && 'border-violet-200 dark:border-violet-500/20',
-          room.status === 'closed' && 'border-rose-200 dark:border-rose-500/20 bg-rose-50/50 dark:bg-rose-500/5',
+          'timeline-room-card flex h-full cursor-pointer flex-col overflow-hidden rounded-md border border-border transition-colors hover:bg-muted/30',
+          isAvailable && 'bg-muted/30',
+          room.status === 'closed' && 'bg-muted/20',
           compact && 'p-3'
         )}
       >

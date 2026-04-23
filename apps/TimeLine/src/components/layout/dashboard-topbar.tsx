@@ -1,13 +1,21 @@
 'use client'
 
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useRole } from '@/lib/role-context'
 import { Badge } from '@/components/ui/badge'
-import { SidebarTrigger } from '@/components/ui/sidebar'
-import { Separator } from '@/components/ui/separator'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { Button } from '@/components/ui/button'
+import { Monitor, LogOut, Orbit } from 'lucide-react'
+
+const adminNavItems = [
+  { title: 'My schedule', href: '/dashboard/my-schedule' },
+]
 
 export function DashboardTopbar() {
-  const { role } = useRole()
+  const pathname = usePathname()
+  const { role, user, logout } = useRole()
+  const navItems = role === 'admin' ? adminNavItems : []
 
   const now = new Date()
   const formattedDate = now.toLocaleDateString('mn-MN', {
@@ -22,32 +30,77 @@ export function DashboardTopbar() {
   })
 
   return (
-    <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
-      <SidebarTrigger className="-ml-1" />
-      <Separator orientation="vertical" className="h-6" />
-      
-      <div className="flex flex-1 items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground">
-            {formattedDate}
-          </span>
-          <Badge variant="outline" className="text-xs font-mono">
-            {formattedTime}
-          </Badge>
+    <header className="sticky top-0 z-10 border-b border-border bg-background">
+      <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <Link href="/dashboard" className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-muted text-foreground">
+              <Orbit className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold leading-none text-foreground">
+                Academic TimeLine
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Room availability
+              </p>
+            </div>
+          </Link>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {navItems.map((item) => {
+              const isActive =
+                pathname === item.href ||
+                (item.href !== '/dashboard' && pathname.startsWith(item.href))
+
+              return (
+                <Button
+                  key={item.href}
+                  asChild
+                  variant={isActive ? 'default' : 'outline'}
+                  size="sm"
+                  className="rounded-md"
+                >
+                  <Link href={item.href}>{item.title}</Link>
+                </Button>
+              )
+            })}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {role === 'student' && user?.assignedDevice && (
+              <Badge variant="outline" className="rounded-full px-3 py-1 text-xs font-medium">
+                <Monitor className="mr-1.5 h-3.5 w-3.5" />
+                Your Imac: {user.assignedDevice.name}
+              </Badge>
+            )}
+            <Badge variant="outline" className="text-xs font-mono">
+              {formattedTime}
+            </Badge>
+            <span className="text-sm text-muted-foreground">
+              {formattedDate}
+            </span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <ThemeToggle />
           <Badge 
-            variant="secondary"
-            className={`${
+            variant="outline"
+            className={`rounded-md px-2 py-1 ${
               role === 'admin' 
-                ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/30' 
-                : 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30'
+                ? 'text-foreground' 
+                : 'text-muted-foreground'
             }`}
           >
             {role === 'admin' ? 'Админ горим' : 'Сурагч горим'}
           </Badge>
+          <Button asChild variant="ghost" size="sm" className="rounded-md">
+            <Link href="/" onClick={logout} className="inline-flex items-center gap-2">
+              <LogOut className="h-4 w-4" />
+              <span>Гарах</span>
+            </Link>
+          </Button>
         </div>
       </div>
     </header>

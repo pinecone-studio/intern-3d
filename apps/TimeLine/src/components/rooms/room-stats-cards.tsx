@@ -16,23 +16,23 @@ export function RoomStatsCards({ rooms }: RoomStatsCardsProps) {
   }
 
   const statItems = [
-    { label: 'Нийт өрөө', value: stats.total, icon: Building2, color: 'text-foreground bg-secondary' },
-    { label: 'Нээлттэй', value: stats.available, icon: DoorOpen, color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-500/10' },
-    { label: 'Хичээлтэй', value: stats.inClass, icon: BookOpen, color: 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-500/10' },
-    { label: 'Клубтэй', value: stats.inClub, icon: Users, color: 'text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-500/10' },
-    { label: 'Хаалттай', value: stats.closed, icon: XCircle, color: 'text-rose-600 dark:text-rose-400 bg-rose-100 dark:bg-rose-500/10' },
+    { label: 'Нийт өрөө', value: stats.total, icon: Building2 },
+    { label: 'Нээлттэй', value: stats.available, icon: DoorOpen },
+    { label: 'Хичээлтэй', value: stats.inClass, icon: BookOpen },
+    { label: 'Клубтэй', value: stats.inClub, icon: Users },
+    { label: 'Хаалттай', value: stats.closed, icon: XCircle },
   ]
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
       {statItems.map((item) => (
-        <Card key={item.label} className="p-4">
+        <Card key={item.label} className="rounded-md border-border p-4 shadow-none">
           <div className="flex items-center gap-3">
-            <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${item.color}`}>
-              <item.icon className="h-5 w-5" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-muted text-muted-foreground">
+              <item.icon className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-foreground">{item.value}</p>
+              <p className="text-2xl font-semibold text-foreground">{item.value}</p>
               <p className="text-xs text-muted-foreground">{item.label}</p>
             </div>
           </div>
