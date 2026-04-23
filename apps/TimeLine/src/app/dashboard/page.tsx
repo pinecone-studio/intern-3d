@@ -1,6 +1,8 @@
 'use client'
 
-import { useDeferredValue, useEffect, useMemo, useState } from 'react'
+import { useDeferredValue, useMemo, useState } from 'react'
+import { gql } from '@apollo/client'
+import { useQuery } from '@apollo/client/react'
 import { RoomCard } from '@/components/rooms/room-card'
 import { RoomFilterBar } from '@/components/rooms/room-filter-bar'
 import { Button } from '@/components/ui/button'
@@ -8,68 +10,74 @@ import { STATUS_CONFIG } from '@/lib/constants'
 import { useRole } from '@/lib/role-context'
 import type { Room, RoomStatus } from '@/lib/types'
 
-type RoomsResponse = {
-  rooms: Room[]
-}
-
-function buildRoomsUrl(floor: 3 | 4, search: string) {
-  const params = new URLSearchParams({ floor: String(floor) })
-  const trimmedSearch = search.trim()
-
-  if (trimmedSearch) {
-    params.set('search', trimmedSearch)
+const GET_DASHBOARD_ROOMS = gql`
+  query GetDashboardRooms($floor: Int, $search: String) {
+    rooms(floor: $floor, search: $search) {
+      id
+      number
+      floor
+      type
+      status
+      currentEvent {
+        id
+        roomId
+        title
+        type
+        startTime
+        endTime
+        dayOfWeek
+        daysOfWeek
+        date
+        isOverride
+        instructor
+        notes
+        validFrom
+        validUntil
+      }
+      nextEvent {
+        id
+        roomId
+        title
+        type
+        startTime
+        endTime
+        dayOfWeek
+        daysOfWeek
+        date
+        isOverride
+        instructor
+        notes
+        validFrom
+        validUntil
+      }
+      devices {
+        id
+        name
+        roomId
+        roomNumber
+        status
+        assignedTo
+      }
+    }
   }
-
-  return `/api/rooms?${params.toString()}`
-}
+`
 
 export default function DashboardPage() {
   const { role, user } = useRole()
+
   const [selectedFloor, setSelectedFloor] = useState<3 | 4>(3)
   const [selectedStatus, setSelectedStatus] = useState<RoomStatus | 'all'>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const deferredSearchQuery = useDeferredValue(searchQuery)
-  const [rooms, setRooms] = useState<Room[]>([])
-  const [isLoadingRooms, setIsLoadingRooms] = useState(true)
-  const [roomsError, setRoomsError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const controller = new AbortController()
+  const { data, loading, error, refetch } = useQuery<{ rooms: Room[] }>(GET_DASHBOARD_ROOMS, {
+    variables: {
+      floor: selectedFloor,
+      search: deferredSearchQuery.trim() || null,
+    },
+  })
 
-    async function loadRooms() {
-      setIsLoadingRooms(true)
-      setRoomsError(null)
-
-      try {
-        const response = await fetch(buildRoomsUrl(selectedFloor, deferredSearchQuery), {
-          signal: controller.signal,
-        })
-
-        if (!response.ok) {
-          throw new Error(`Rooms API failed with ${response.status}`)
-        }
-
-        const data = (await response.json()) as RoomsResponse
-        setRooms(data.rooms)
-      } catch (error) {
-        if (controller.signal.aborted) return
-        setRoomsError(error instanceof Error ? error.message : 'Өрөөнүүдийг ачаалж чадсангүй')
-        setRooms([])
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoadingRooms(false)
-        }
-      }
-    }
-
-    void loadRooms()
-
-    return () => controller.abort()
-  }, [deferredSearchQuery, selectedFloor])
-
-  const floorRooms = useMemo(() => {
-    return rooms.filter(room => room.floor === selectedFloor)
-  }, [rooms, selectedFloor])
+  const floorRooms = data?.rooms ?? []
 
   const filteredRooms = useMemo(() => {
     return floorRooms.filter(room => {
@@ -183,25 +191,28 @@ export default function DashboardPage() {
           })}
         </div>
 
-        {filteredRooms.length > 0 ? (
+        {error ? (
+          <div className="rounded-md border border-destructive/40 bg-destructive/5 p-8 text-center">
+            <p className="font-medium text-destructive">Өрөөнүүдийг ачаалж чадсангүй</p>
+            <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
+            <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => refetch()}>
+              Дахин оролдох
+            </Button>
+          </div>
+        ) : loading && !data ? (
+          <div className="rounded-md border border-dashed border-border bg-background/60 p-8 text-center">
+            <p className="text-muted-foreground">Өрөөнүүдийг ачаалж байна...</p>
+          </div>
+        ) : filteredRooms.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filteredRooms.map(room => (
               <RoomCard
                 key={room.id}
                 room={room}
-                showDeviceInfo={isStudent && userDevice?.roomId === room.id}
-                assignedDeviceName={userDevice?.roomId === room.id ? userDevice.name : undefined}
+                showDeviceInfo={isStudent && userDevice != null && userDevice.roomId === room.id}
+                assignedDeviceName={userDevice != null && userDevice.roomId === room.id ? userDevice.name : undefined}
               />
             ))}
-          </div>
-        ) : isLoadingRooms ? (
-          <div className="rounded-md border border-dashed border-border bg-background/60 p-8 text-center">
-            <p className="text-muted-foreground">Өрөөнүүдийг ачаалж байна...</p>
-          </div>
-        ) : roomsError ? (
-          <div className="rounded-md border border-destructive/40 bg-destructive/5 p-8 text-center">
-            <p className="font-medium text-destructive">Өрөөнүүдийг ачаалж чадсангүй</p>
-            <p className="mt-2 text-sm text-muted-foreground">{roomsError}</p>
           </div>
         ) : (
           <div className="rounded-md border border-dashed border-border bg-background/60 p-8 text-center">

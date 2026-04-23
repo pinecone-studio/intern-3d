@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { RoleProvider } from '@/lib/role-context'
+import { AppApolloProvider } from '@/components/providers/apollo-provider'
 import { ThemeProvider } from '@/components/theme-provider'
 import './globals.css'
 
@@ -46,9 +47,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <RoleProvider>
-            {children}
-          </RoleProvider>
+          <AppApolloProvider>
+            <RoleProvider>
+              {children}
+            </RoleProvider>
+          </AppApolloProvider>
         </ThemeProvider>
       </body>
     </html>
