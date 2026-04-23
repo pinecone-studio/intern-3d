@@ -1,8 +1,23 @@
 import { fallbackDevices, fallbackOverrides, fallbackRooms, fallbackSchedules } from '@/lib/timeline-fallback-data'
 import { mapDeviceAssignmentRow, mapRoomRow, mapScheduleOverrideRow, mapScheduleRow } from '@/lib/timeline-mappers'
 
+const fallbackUserNames: Record<string, string> = {
+  'admin-1': 'Ariun Admin',
+}
+
+function getFallbackUserName(userId: string): string | undefined {
+  return fallbackUserNames[userId]
+}
+
+function matchesInstructor(instructor: string | undefined, search: string): boolean {
+  return instructor?.toLowerCase().includes(search.toLowerCase()) ?? false
+}
+
 function buildFallback(now = new Date()) {
-  const events = [...fallbackSchedules.map(mapScheduleRow), ...fallbackOverrides.map(mapScheduleOverrideRow)].sort((left, right) => {
+  const events = [
+    ...fallbackSchedules.map(schedule => mapScheduleRow(schedule, getFallbackUserName(schedule.createdBy))),
+    ...fallbackOverrides.map(override => mapScheduleOverrideRow(override, getFallbackUserName(override.createdBy))),
+  ].sort((left, right) => {
     if (left.roomId !== right.roomId) return left.roomId.localeCompare(right.roomId)
     return left.startTime.localeCompare(right.startTime)
   })
@@ -51,13 +66,12 @@ export function getFallbackRoomDetail(roomId: string) {
 }
 
 export function listFallbackScheduleEvents(params: { roomId?: string | null; dayOfWeek?: string | null; instructor?: string | null } = {}) {
-  if (params.instructor) return []
-
   const { events } = buildFallback()
 
   return events.filter((event) => {
     if (params.roomId && event.roomId !== params.roomId) return false
     if (params.dayOfWeek && !event.daysOfWeek.includes(Number(params.dayOfWeek))) return false
+    if (params.instructor && !matchesInstructor(event.instructor, params.instructor)) return false
     return true
   })
 }

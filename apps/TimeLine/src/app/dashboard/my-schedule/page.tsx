@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { gql } from '@apollo/client'
+import { useQuery } from '@apollo/client/react'
 import { useRole } from '@/lib/role-context'
-import { scheduleEvents, getAllRooms } from '@/lib/mock-data'
 import { DAYS_OF_WEEK, EVENT_TYPE_CONFIG } from '@/lib/constants'
-import type { ScheduleEvent } from '@/lib/types'
+import type { Room, ScheduleEvent } from '@/lib/types'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   CalendarDays, 
@@ -22,26 +24,61 @@ import Link from 'next/link'
 
 type FilterType = 'today' | 'week' | 'month'
 
+const GET_MY_SCHEDULE = gql`
+  query GetMySchedule($instructor: String) {
+    events(instructor: $instructor) {
+      id
+      roomId
+      title
+      type
+      startTime
+      endTime
+      dayOfWeek
+      daysOfWeek
+      date
+      isOverride
+      instructor
+      notes
+      validFrom
+      validUntil
+    }
+    rooms {
+      id
+      number
+    }
+  }
+`
+
+type MyScheduleQueryResult = {
+  events: ScheduleEvent[]
+  rooms: Array<Pick<Room, 'id' | 'number'>>
+}
+
+function getInstructorSearchName(userName?: string): string {
+  const lastName = userName?.split(' ').pop()
+  return lastName && lastName !== 'Admin' ? lastName : 'Болд'
+}
+
 // Demo date: Tuesday, April 15, 2026
 const DEMO_DATE = new Date(2026, 3, 15) // April 15, 2026
 
 export default function MySchedulePage() {
   const { user, role } = useRole()
   const [filter, setFilter] = useState<FilterType>('today')
-  const rooms = useMemo(() => getAllRooms(), [])
 
   // Get the instructor name from the user
-  const instructorName = user?.name?.split(' ').pop() || 'Болд' // Get the last part of name
-  
-  // Filter events where this admin/teacher is the instructor
-  const myEvents = useMemo(() => {
-    return scheduleEvents.filter(event => {
-      // Match by instructor name (partial match for flexibility)
-      if (!event.instructor) return false
-      return event.instructor.includes(instructorName) || 
-             (user?.name && event.instructor.includes(user.name))
-    })
-  }, [instructorName, user?.name])
+  const instructorName = getInstructorSearchName(user?.name)
+  const { data, loading, error, refetch } = useQuery<MyScheduleQueryResult>(GET_MY_SCHEDULE, {
+    variables: {
+      instructor: instructorName || null,
+    },
+    skip: role !== 'admin',
+  })
+
+  const myEvents = data?.events ?? []
+  const roomNamesById = useMemo(() => {
+    return new Map((data?.rooms ?? []).map(room => [room.id, room.number]))
+  }, [data?.rooms])
 
   // Get date range based on filter
   const dateRange = useMemo(() => {
@@ -113,8 +150,7 @@ export default function MySchedulePage() {
 
   // Get room name from room ID
   const getRoomName = (roomId: string) => {
-    const room = rooms.find(r => r.id === roomId)
-    return room?.number || roomId
+    return roomNamesById.get(roomId) || roomId
   }
 
   // Check if an event is currently happening (for demo time 10:30)
@@ -166,6 +202,26 @@ export default function MySchedulePage() {
         <CalendarDays className="h-16 w-16 text-muted-foreground/50 mb-4" />
         <h1 className="text-xl font-semibold text-foreground mb-2">Зөвхөн багш нарт</h1>
         <p className="text-muted-foreground">Энэ хэсэг нь зөвхөн багш нарын хуваарийг харуулдаг.</p>
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[420px] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
+        <h1 className="text-xl font-bold">Миний хуваарийг ачаалж чадсангүй</h1>
+        <p className="max-w-md text-sm text-muted-foreground">{error.message}</p>
+        <Button type="button" variant="outline" onClick={() => refetch()}>
+          Дахин оролдох
+        </Button>
       </div>
     )
   }

@@ -1,8 +1,21 @@
 import { and, asc, eq, inArray, like } from 'drizzle-orm'
 import { getDrizzleDb } from '@/db/client'
-import { deviceAssignmentsTable, roomsTable, scheduleOverridesTable, schedulesTable } from '@/db/schema'
+import { deviceAssignmentsTable, roomsTable, scheduleOverridesTable, schedulesTable, usersTable } from '@/db/schema'
 import { getFallbackRoomDetail, listFallbackRooms, listFallbackScheduleEvents } from '@/lib/timeline-fallback'
 import { mapDeviceAssignmentRow, mapRoomRow, mapScheduleOverrideRow, mapScheduleRow } from '@/lib/timeline-mappers'
+import type { ScheduleEvent } from '@/lib/types'
+
+const fallbackUserNames: Record<string, string> = {
+  'admin-1': 'Ariun Admin',
+}
+
+function matchesInstructor(event: ScheduleEvent, instructor: string): boolean {
+  return event.instructor?.toLowerCase().includes(instructor.toLowerCase()) ?? false
+}
+
+function getInstructorName(userNamesById: Map<string, string>, userId: string): string | undefined {
+  return userNamesById.get(userId) ?? fallbackUserNames[userId]
+}
 
 export async function listRooms(params: { floor?: string | null; status?: string | null; search?: string | null } = {}) {
   try {
@@ -27,7 +40,13 @@ export async function listRooms(params: { floor?: string | null; status?: string
       db.select().from(deviceAssignmentsTable).where(inArray(deviceAssignmentsTable.roomId, roomIds)).orderBy(asc(deviceAssignmentsTable.deviceName)),
     ])
 
-    const mappedEvents = [...schedules.map(mapScheduleRow), ...overrides.map(mapScheduleOverrideRow)]
+    const users = await db.select().from(usersTable)
+    const userNamesById = new Map(users.map(user => [user.id, user.name]))
+
+    const mappedEvents = [
+      ...schedules.map(schedule => mapScheduleRow(schedule, getInstructorName(userNamesById, schedule.createdBy))),
+      ...overrides.map(override => mapScheduleOverrideRow(override, getInstructorName(userNamesById, override.createdBy))),
+    ]
 
     const mappedRooms = rooms.map((room) => {
       const mappedDevices = devices
@@ -59,7 +78,12 @@ export async function getRoomDetail(roomId: string) {
       db.select().from(deviceAssignmentsTable).where(eq(deviceAssignmentsTable.roomId, roomId)).orderBy(asc(deviceAssignmentsTable.deviceName)),
     ])
 
-    const mappedEvents = [...schedules.map(mapScheduleRow), ...overrides.map(mapScheduleOverrideRow)]
+    const users = await db.select().from(usersTable)
+    const userNamesById = new Map(users.map(user => [user.id, user.name]))
+    const mappedEvents = [
+      ...schedules.map(schedule => mapScheduleRow(schedule, getInstructorName(userNamesById, schedule.createdBy))),
+      ...overrides.map(override => mapScheduleOverrideRow(override, getInstructorName(userNamesById, override.createdBy))),
+    ]
     const mappedDevices = devices.map((device) => mapDeviceAssignmentRow(device, room.name))
 
     return {
@@ -72,8 +96,6 @@ export async function getRoomDetail(roomId: string) {
 }
 
 export async function listScheduleEvents(params: { roomId?: string | null; dayOfWeek?: string | null; instructor?: string | null } = {}) {
-  if (params.instructor) return []
-
   try {
     const db = getDrizzleDb()
     const scheduleFilters = []
@@ -96,16 +118,23 @@ export async function listScheduleEvents(params: { roomId?: string | null; dayOf
       .where(overrideFilters.length > 0 ? and(...overrideFilters) : undefined)
       .orderBy(asc(scheduleOverridesTable.roomId), asc(scheduleOverridesTable.startTime))
 
-    const events = [...schedules.map(mapScheduleRow), ...overrides.map(mapScheduleOverrideRow)].sort((left, right) => {
+    const users = await db.select().from(usersTable)
+    const userNamesById = new Map(users.map(user => [user.id, user.name]))
+
+    const events = [
+      ...schedules.map(schedule => mapScheduleRow(schedule, getInstructorName(userNamesById, schedule.createdBy))),
+      ...overrides.map(override => mapScheduleOverrideRow(override, getInstructorName(userNamesById, override.createdBy))),
+    ].sort((left, right) => {
       if (left.roomId !== right.roomId) return left.roomId.localeCompare(right.roomId)
       return left.startTime.localeCompare(right.startTime)
     })
 
     if (events.length === 0) return listFallbackScheduleEvents(params)
-    if (!params.dayOfWeek) return events
+    const filteredByInstructor = params.instructor ? events.filter(event => matchesInstructor(event, params.instructor ?? '')) : events
+    if (!params.dayOfWeek) return filteredByInstructor
 
     const day = Number(params.dayOfWeek)
-    return events.filter((event) => event.daysOfWeek.includes(day))
+    return filteredByInstructor.filter((event) => event.daysOfWeek.includes(day))
   } catch {
     return listFallbackScheduleEvents(params)
   }
