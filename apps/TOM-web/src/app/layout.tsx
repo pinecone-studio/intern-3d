@@ -1,5 +1,4 @@
 import './global.css';
-import Header from './_features/header';
 
 export const metadata = {
   title: 'Ухаалаг ажлын орчны самбар',
@@ -14,10 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="mn">
-      <body className="min-h-screen bg-[#f4f7fb]">
-        <Header />
-        {children}
-      </body>
+      <body className="min-h-screen bg-[#f4f7fb]">{children}</body>
     </html>
   );
 }

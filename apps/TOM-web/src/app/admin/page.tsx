@@ -214,50 +214,8 @@ export default function AdminDashboard() {
   const spotlightUsers = leaderboard.slice(0, 3);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-gradient-hero text-[color:var(--foreground)]">
-      <div className="absolute left-[-5rem] top-20 h-64 w-64 rounded-full bg-[#c6e7ff]/55 blur-3xl" />
-      <div className="absolute right-[-6rem] top-40 h-72 w-72 rounded-full bg-[#d5e3ff]/35 blur-3xl" />
-      <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-[#d9f2ff]/28 blur-3xl" />
-
-      <div className="relative mx-auto max-w-[1440px] px-0 py-0 sm:px-4 lg:px-8">
-        <header className="dashboard-entrance rounded-b-[36px] border border-[color:var(--border)] border-t-0 bg-white/90 px-4 py-3 shadow-none sm:px-5 sm:py-3.5 lg:px-8">
-          <div className="flex items-center justify-between gap-3 sm:gap-4">
-            <div className="flex min-w-0 items-center gap-2 text-[#5f7697] sm:gap-2.5">
-              <Link
-                href="/"
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-1.5 py-1 text-[0.78rem] font-medium transition hover:bg-[#eef6ff] hover:text-[#2e4e7e] sm:px-2 sm:text-[0.84rem]"
-              >
-                <ArrowLeft className="h-3 w-3" />
-                Home
-              </Link>
-              <span className="h-5 w-px bg-[color:var(--border)]" />
-              <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[14px] bg-[color:var(--primary)] text-white shadow-[0_14px_28px_rgba(79,114,213,0.22)]">
-                  <Sparkles className="h-4 w-4" />
-                </div>
-                <div className="min-w-0">
-                  <h1 className="text-[0.95rem] font-semibold tracking-tight text-[#183153] sm:text-[1rem]">
-                    Admin Panel
-                  </h1>
-                  <p className="text-[0.68rem] text-[#6781a3] sm:text-[0.72rem]">
-                    Full system control
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 sm:gap-2.5">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--primary-soft)] px-3 py-1.5 text-[0.78rem] font-medium text-[#58708f] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] sm:px-4 sm:text-[0.84rem]">
-                <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                Online
-              </span>
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--primary-soft)] text-[0.84rem] font-semibold text-[color:var(--primary)] sm:h-10 sm:w-10">
-                JD
-              </span>
-            </div>
-          </div>
-        </header>
-
+    <main className="relative min-h-screen overflow-hidden text-[color:var(--foreground)]">
+      <div className="relative mx-auto max-w-[1440px] ">
         <section className="dashboard-entrance dashboard-entrance-delay-1 mt-6">
           <div
             className={`rounded-[28px] border px-5 py-4 shadow-soft ${
@@ -1422,7 +1380,9 @@ export default function AdminDashboard() {
                     <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[color:var(--primary-soft)]">
                       <CalendarDays className="h-6 w-6 text-[color:var(--primary)]" />
                     </div>
-                    <p className="mt-4 font-semibold text-[#183153]">Event байхгүй байна</p>
+                    <p className="mt-4 font-semibold text-[#183153]">
+                      Event байхгүй байна
+                    </p>
                     <p className="mt-1 text-sm text-[#6982a2]">
                       Эхний event үүсгэхэд бүх хэрэглэгч автоматаар нэгдэнэ.
                     </p>
