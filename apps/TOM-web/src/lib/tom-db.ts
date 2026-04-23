@@ -11,8 +11,11 @@ import type {
   ClubRequest,
   ClubRequestInput,
   ClubStatus,
+  EventInput,
+  EventStatus,
   ManagedUser,
   RequestStatus,
+  SchoolEvent,
   UserInput,
 } from '@/lib/tom-types'
 
@@ -603,6 +606,150 @@ export async function getDashboardSummary() {
     spamRequests: spamRequestsCount?.count ?? 0,
     thresholdReachedRequests: thresholdReachedCount?.count ?? 0,
   }
+}
+
+type EventRow = {
+  id: string
+  title: string
+  description: string
+  location: string
+  event_date: string
+  start_time: string
+  end_time: string
+  status: EventStatus
+  created_by: string
+  participant_count: number
+  created_at: string
+  updated_at: string
+}
+
+function mapEventRow(row: EventRow): SchoolEvent {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    location: row.location,
+    eventDate: row.event_date,
+    startTime: row.start_time,
+    endTime: row.end_time,
+    status: row.status,
+    createdBy: row.created_by,
+    participantCount: row.participant_count ?? 0,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+function normalizeEvent(input: EventInput, current?: SchoolEvent): SchoolEvent {
+  const now = nowIso()
+
+  return {
+    id: current?.id ?? crypto.randomUUID(),
+    title: input.title,
+    description: input.description ?? current?.description ?? '',
+    location: input.location ?? current?.location ?? '',
+    eventDate: input.eventDate,
+    startTime: input.startTime ?? current?.startTime ?? '',
+    endTime: input.endTime ?? current?.endTime ?? '',
+    status: input.status ?? current?.status ?? 'upcoming',
+    createdBy: input.createdBy ?? current?.createdBy ?? 'admin',
+    participantCount: current?.participantCount ?? 0,
+    createdAt: current?.createdAt ?? now,
+    updatedAt: now,
+  }
+}
+
+export async function listEvents() {
+  const db = getTomDb()
+  const result = await db
+    .prepare(
+      `SELECT e.*, COUNT(ep.id) AS participant_count
+       FROM events e
+       LEFT JOIN event_participants ep ON ep.event_id = e.id
+       GROUP BY e.id
+       ORDER BY e.event_date ASC, e.created_at DESC`
+    )
+    .all<EventRow>()
+
+  return result.results.map(mapEventRow)
+}
+
+export async function getEvent(id: string) {
+  const db = getTomDb()
+  const row = await db
+    .prepare(
+      `SELECT e.*, COUNT(ep.id) AS participant_count
+       FROM events e
+       LEFT JOIN event_participants ep ON ep.event_id = e.id
+       WHERE e.id = ?
+       GROUP BY e.id
+       LIMIT 1`
+    )
+    .bind(id)
+    .first<EventRow>()
+
+  return row ? mapEventRow(row) : null
+}
+
+export async function upsertEvent(input: EventInput, id?: string) {
+  const db = getTomDb()
+  const current = id ? await getEvent(id) : null
+  const event = normalizeEvent(input, current ?? undefined)
+
+  await db
+    .prepare(
+      `INSERT INTO events (id, title, description, location, event_date, start_time, end_time, status, created_by, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET
+         title = excluded.title,
+         description = excluded.description,
+         location = excluded.location,
+         event_date = excluded.event_date,
+         start_time = excluded.start_time,
+         end_time = excluded.end_time,
+         status = excluded.status,
+         created_by = excluded.created_by,
+         updated_at = excluded.updated_at`
+    )
+    .bind(
+      event.id,
+      event.title,
+      event.description,
+      event.location,
+      event.eventDate,
+      event.startTime,
+      event.endTime,
+      event.status,
+      event.createdBy,
+      event.createdAt,
+      event.updatedAt
+    )
+    .run()
+
+  return event
+}
+
+export async function deleteEvent(id: string) {
+  const db = getTomDb()
+  const current = await getEvent(id)
+  if (!current) return false
+
+  await db.prepare('DELETE FROM events WHERE id = ?').bind(id).run()
+  return true
+}
+
+export async function autoJoinAllUsers(eventId: string) {
+  const db = getTomDb()
+  const now = nowIso()
+
+  await db
+    .prepare(
+      `INSERT OR IGNORE INTO event_participants (id, event_id, user_id, joined_at)
+       SELECT lower(hex(randomblob(16))), ?, id, ?
+       FROM users`
+    )
+    .bind(eventId, now)
+    .run()
 }
 
 export async function seedTomDatabase({ reset = false }: { reset?: boolean } = {}) {

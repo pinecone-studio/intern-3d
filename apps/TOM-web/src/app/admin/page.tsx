@@ -26,7 +26,7 @@ import {
 } from './admin-data';
 import { useAdminDashboard } from './useAdminDashboard';
 
-type AdminSection = 'requests' | 'users' | 'clubs' | 'spam';
+type AdminSection = 'requests' | 'users' | 'clubs' | 'spam' | 'events';
 
 const monthLabels = [
   'Jan',
@@ -59,9 +59,14 @@ export default function AdminDashboard() {
     approveRequest,
     banner,
     errorMessage,
+    events,
+    eventForm,
     form,
     handleCreate,
+    handleCreateEvent,
     handleCreateUser,
+    handleDeleteEvent,
+    handleToggleEventStatus,
     isLoading,
     isSaving,
     pendingRequests,
@@ -69,6 +74,7 @@ export default function AdminDashboard() {
     removeSpamClub,
     requests,
     spamQueue,
+    resetEventForm,
     resetUserForm,
     thresholdGoal,
     thresholdReachedCount,
@@ -76,6 +82,7 @@ export default function AdminDashboard() {
     toggleClubStatus,
     toggleUserBan,
     toggleUserRestriction,
+    updateEventField,
     updateUserField,
     updateUserRole,
     updateField,
@@ -114,6 +121,12 @@ export default function AdminDashboard() {
       label: 'Spam',
       count: summary.spamRequests,
       icon: ShieldAlert,
+    },
+    {
+      key: 'events',
+      label: 'Events',
+      count: events.length,
+      icon: CalendarDays,
     },
   ] as const;
 
@@ -564,8 +577,8 @@ export default function AdminDashboard() {
                 {
                   label: 'Create global event',
                   icon: CalendarDays,
-                  action: () => setActiveSection('requests'),
-                  active: activeSection === 'requests',
+                  action: () => setActiveSection('events'),
+                  active: activeSection === 'events',
                 },
                 {
                   label: 'Manage users',
@@ -1218,6 +1231,198 @@ export default function AdminDashboard() {
                   </div>
                 </article>
               ))}
+            </section>
+          ) : null}
+
+          {activeSection === 'events' ? (
+            <section className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+              <form
+                className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft"
+                onSubmit={(e) => { e.preventDefault(); void handleCreateEvent(); }}
+              >
+                <div>
+                  <div className="flex items-center gap-2">
+                    <CalendarDays className="h-4 w-4 text-[color:var(--primary)]" />
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7f93b1]">
+                      Шинэ event
+                    </p>
+                  </div>
+                  <h3 className="mt-2 text-xl font-semibold text-[#183153]">
+                    Сургуулийн event үүсгэх
+                  </h3>
+                  <p className="mt-2 text-sm text-[#6c829f]">
+                    Event үүсгэхэд бүх хэрэглэгч автоматаар нэгддэг.
+                  </p>
+                </div>
+
+                <div className="mt-6 space-y-4">
+                  <label className="block">
+                    <span className={inputLabelClass}>Event гарчиг</span>
+                    <input
+                      type="text"
+                      value={eventForm.title}
+                      onChange={(e) => updateEventField('title', e.target.value)}
+                      placeholder="Жишээ: Сургуулийн тамирын өдөр"
+                      className={fieldClass}
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className={inputLabelClass}>Огноо</span>
+                    <input
+                      type="date"
+                      value={eventForm.eventDate}
+                      onChange={(e) => updateEventField('eventDate', e.target.value)}
+                      className={fieldClass}
+                    />
+                  </label>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <label className="block">
+                      <span className={inputLabelClass}>Эхлэх цаг</span>
+                      <input
+                        type="time"
+                        value={eventForm.startTime}
+                        onChange={(e) => updateEventField('startTime', e.target.value)}
+                        className={fieldClass}
+                      />
+                    </label>
+                    <label className="block">
+                      <span className={inputLabelClass}>Дуусах цаг</span>
+                      <input
+                        type="time"
+                        value={eventForm.endTime}
+                        onChange={(e) => updateEventField('endTime', e.target.value)}
+                        className={fieldClass}
+                      />
+                    </label>
+                  </div>
+
+                  <label className="block">
+                    <span className={inputLabelClass}>Байршил</span>
+                    <input
+                      type="text"
+                      value={eventForm.location}
+                      onChange={(e) => updateEventField('location', e.target.value)}
+                      placeholder="Жишээ: Тамирын заал, 3-р давхар"
+                      className={fieldClass}
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className={inputLabelClass}>Тайлбар</span>
+                    <textarea
+                      rows={3}
+                      value={eventForm.description}
+                      onChange={(e) => updateEventField('description', e.target.value)}
+                      placeholder="Event-ийн дэлгэрэнгүй мэдээлэл..."
+                      className={fieldClass}
+                    />
+                  </label>
+                </div>
+
+                <div className="mt-5 flex flex-wrap items-center gap-3">
+                  <button
+                    type="submit"
+                    disabled={isSaving || !eventForm.title || !eventForm.eventDate}
+                    className="rounded-full bg-[color:var(--primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(79,114,213,0.22)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-[#b5d0f3]"
+                  >
+                    Event үүсгэж auto join хийх
+                  </button>
+                  <button
+                    type="button"
+                    onClick={resetEventForm}
+                    className="rounded-full border border-[color:var(--border)] bg-white px-5 py-2.5 text-sm font-semibold text-[#56708f] transition hover:bg-[color:var(--surface)]"
+                  >
+                    Цэвэрлэх
+                  </button>
+                </div>
+              </form>
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-[color:var(--primary)]" />
+                  <p className="text-lg font-semibold text-[#183153]">
+                    Бүх events ({events.length})
+                  </p>
+                </div>
+
+                {events.length === 0 ? (
+                  <div className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-8 text-center">
+                    <CalendarDays className="mx-auto h-10 w-10 text-[#b5c8e8]" />
+                    <p className="mt-3 text-sm text-[#6982a2]">
+                      Одоогоор event алга байна. Эхний event-ийг үүсгэнэ үү.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {events.map((event) => {
+                      const statusColor =
+                        event.status === 'upcoming' ? 'bg-[#eef4ff] text-[#4f72d5]'
+                        : event.status === 'ongoing' ? 'bg-[#e6fbf0] text-[#1a8f5a]'
+                        : event.status === 'completed' ? 'bg-[#f0f0f0] text-[#6b7280]'
+                        : 'bg-[#fff0f0] text-[#d94f4f]';
+
+                      const nextStatusLabel =
+                        event.status === 'upcoming' ? 'Ongoing болгох'
+                        : event.status === 'ongoing' ? 'Completed болгох'
+                        : 'Upcoming болгох';
+
+                      return (
+                        <article
+                          key={event.id}
+                          className="rounded-[24px] border border-[color:var(--border)] bg-[color:var(--card)] p-4 shadow-soft"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <h3 className="truncate font-semibold text-[#183153]">
+                                {event.title}
+                              </h3>
+                              <p className="mt-0.5 text-xs text-[#6f86a7]">
+                                {event.eventDate}
+                                {event.startTime ? ` · ${event.startTime}` : ''}
+                                {event.location ? ` · ${event.location}` : ''}
+                              </p>
+                            </div>
+                            <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${statusColor}`}>
+                              {event.status}
+                            </span>
+                          </div>
+
+                          {event.description ? (
+                            <p className="mt-2 text-sm leading-5 text-[#60789a]">
+                              {event.description}
+                            </p>
+                          ) : null}
+
+                          <div className="mt-3 flex flex-wrap items-center gap-2">
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--surface)] px-3 py-1 text-xs font-medium text-[#5f7697]">
+                              <Users className="h-3 w-3" />
+                              {event.participantCount} оролцогч
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => void handleToggleEventStatus(event.id)}
+                              disabled={isSaving}
+                              className="rounded-full border border-[color:var(--border)] bg-white px-3 py-1 text-xs font-semibold text-[#183153] transition hover:bg-[color:var(--surface)] disabled:opacity-40"
+                            >
+                              {nextStatusLabel}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void handleDeleteEvent(event.id)}
+                              disabled={isSaving}
+                              className="rounded-full border border-[#ffd2d5] bg-white px-3 py-1 text-xs font-semibold text-[#de4a58] transition hover:bg-[#fff6f7] disabled:opacity-40"
+                            >
+                              Устгах
+                            </button>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </section>
           ) : null}
         </section>

@@ -6,6 +6,7 @@ import type {
   Club as ApiClub,
   ClubRequest as ApiClubRequest,
   ManagedUser as ApiManagedUser,
+  SchoolEvent as ApiEvent,
 } from '@/lib/tom-types';
 
 import {
@@ -33,6 +34,7 @@ type DashboardSnapshot = {
   requests: ClubRequest[];
   clubs: ActiveClub[];
   users: ManagedUser[];
+  events: ApiEvent[];
 };
 
 const defaultBanner =
@@ -139,12 +141,32 @@ function mapUser(user: ApiManagedUser): ManagedUser {
   };
 }
 
+export type EventForm = {
+  title: string;
+  description: string;
+  location: string;
+  eventDate: string;
+  startTime: string;
+  endTime: string;
+};
+
+const initialEventForm: EventForm = {
+  title: '',
+  description: '',
+  location: '',
+  eventDate: '',
+  startTime: '',
+  endTime: '',
+};
+
 export function useAdminDashboard() {
   const [form, setForm] = useState(initialForm);
   const [userForm, setUserForm] = useState(initialUserForm);
+  const [eventForm, setEventForm] = useState<EventForm>(initialEventForm);
   const [requests, setRequests] = useState<ClubRequest[]>([]);
   const [activeClubs, setActiveClubs] = useState<ActiveClub[]>([]);
   const [users, setUsers] = useState<ManagedUser[]>([]);
+  const [events, setEvents] = useState<ApiEvent[]>([]);
   const [summary, setSummary] = useState<DashboardSummary>(emptySummary);
   const [banner, setBanner] = useState(defaultBanner);
   const [errorMessage, setErrorMessage] = useState('');
@@ -174,11 +196,12 @@ export function useAdminDashboard() {
   };
 
   const loadDashboardSnapshot = async (): Promise<DashboardSnapshot> => {
-    const [summaryData, requestData, clubData, userData] = await Promise.all([
+    const [summaryData, requestData, clubData, userData, eventData] = await Promise.all([
       apiRequest<{ summary: DashboardSummary }>('/api/dashboard/summary'),
       apiRequest<{ requests: ApiClubRequest[] }>('/api/club-requests'),
       apiRequest<{ clubs: ApiClub[] }>('/api/clubs'),
       apiRequest<{ users: ApiManagedUser[] }>('/api/users'),
+      apiRequest<{ events: ApiEvent[] }>('/api/events').catch(() => ({ events: [] })),
     ]);
 
     return {
@@ -186,6 +209,7 @@ export function useAdminDashboard() {
       requests: requestData.requests.map(mapRequest),
       clubs: clubData.clubs.map(mapClub),
       users: userData.users.map(mapUser),
+      events: eventData.events,
     };
   };
 
@@ -194,6 +218,7 @@ export function useAdminDashboard() {
     setRequests(snapshot.requests);
     setActiveClubs(snapshot.clubs);
     setUsers(snapshot.users);
+    setEvents(snapshot.events);
     setBanner(nextBanner ?? defaultBanner);
   };
 
@@ -443,6 +468,63 @@ export function useAdminDashboard() {
     }, 'Spam хүсэлтийг устгаж чадсангүй.');
   };
 
+  const updateEventField = (field: keyof EventForm, value: string) => {
+    setEventForm((current) => ({ ...current, [field]: value }));
+  };
+
+  const resetEventForm = () => setEventForm(initialEventForm);
+
+  const handleCreateEvent = async () => {
+    const title = eventForm.title.trim() || 'Нэргүй event';
+
+    await runMutation(async () => {
+      await apiRequest<{ event: ApiEvent }>('/api/events', {
+        method: 'POST',
+        body: JSON.stringify({
+          title,
+          description: eventForm.description,
+          location: eventForm.location,
+          eventDate: eventForm.eventDate,
+          startTime: eventForm.startTime,
+          endTime: eventForm.endTime,
+          createdBy: 'Админ самбар',
+        }),
+      });
+
+      setEventForm(initialEventForm);
+      await refreshDashboard(`"${title}" event үүсгэгдэж бүх хэрэглэгч auto join хийгдлээ.`);
+    }, 'Event үүсгэж чадсангүй.');
+  };
+
+  const handleDeleteEvent = async (eventId: string) => {
+    const event = events.find((e) => e.id === eventId);
+    if (!event) return;
+
+    await runMutation(async () => {
+      await apiRequest<{ ok: boolean }>(`/api/events/${eventId}`, { method: 'DELETE' });
+      await refreshDashboard(`"${event.title}" event устгагдлаа.`);
+    }, 'Event устгаж чадсангүй.');
+  };
+
+  const handleToggleEventStatus = async (eventId: string) => {
+    const event = events.find((e) => e.id === eventId);
+    if (!event) return;
+
+    const nextStatus =
+      event.status === 'upcoming' ? 'ongoing'
+      : event.status === 'ongoing' ? 'completed'
+      : 'upcoming';
+
+    await runMutation(async () => {
+      await apiRequest<{ event: ApiEvent }>(`/api/events/${eventId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: nextStatus }),
+      });
+
+      await refreshDashboard(`"${event.title}" төлөв "${nextStatus}" болов.`);
+    }, 'Event төлөв шинэчилж чадсангүй.');
+  };
+
   const spamQueue = requests.filter((request) => request.clubStatus === 'spam');
   const reviewRequests = requests.filter((request) => request.clubStatus !== 'spam');
   const pendingRequests = reviewRequests.filter(
@@ -457,21 +539,28 @@ export function useAdminDashboard() {
     approveRequest,
     banner,
     errorMessage,
+    events,
+    eventForm,
     form,
     handleCreate,
+    handleCreateEvent,
     handleCreateUser,
+    handleDeleteEvent,
+    handleToggleEventStatus,
     isLoading,
     isSaving,
     pendingRequests,
     rejectRequest,
     removeSpamClub,
     requests: reviewRequests,
+    resetEventForm,
     resetUserForm,
     summary,
     spamQueue,
     thresholdReachedCount,
     thresholdGoal,
     resetForm,
+    updateEventField,
     updateUserField,
     toggleClubStatus,
     toggleUserBan,
