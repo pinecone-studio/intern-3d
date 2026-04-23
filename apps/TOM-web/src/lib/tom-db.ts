@@ -779,6 +779,27 @@ export async function getEventParticipants(eventId: string) {
   }))
 }
 
+export async function joinEvent(eventId: string, userId: string) {
+  const db = getTomDb()
+  const now = nowIso()
+
+  await db
+    .prepare(
+      `INSERT OR IGNORE INTO event_participants (id, event_id, user_id, joined_at)
+       VALUES (lower(hex(randomblob(16))), ?, ?, ?)`
+    )
+    .bind(eventId, userId, now)
+    .run()
+}
+
+export async function leaveEvent(eventId: string, userId: string) {
+  const db = getTomDb()
+  await db
+    .prepare('DELETE FROM event_participants WHERE event_id = ? AND user_id = ?')
+    .bind(eventId, userId)
+    .run()
+}
+
 export async function autoJoinAllUsers(eventId: string) {
   const db = getTomDb()
   const now = nowIso()
