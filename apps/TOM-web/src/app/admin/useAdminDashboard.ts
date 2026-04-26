@@ -547,6 +547,20 @@ export function useAdminDashboard(options: TomFormOptions) {
     }, 'Event төлөв шинэчилж чадсангүй.');
   };
 
+  const handleCancelEvent = async (eventId: string) => {
+    const event = events.find((e) => e.id === eventId);
+    if (!event) return;
+
+    await runMutation(async () => {
+      await apiRequest<{ event: ApiEvent }>(`/api/events/${eventId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'cancelled' }),
+      });
+
+      await refreshDashboard(`"${event.title}" event цуцлагдлаа.`);
+    }, 'Event цуцалж чадсангүй.');
+  };
+
   const spamQueue = requests.filter((request) => request.clubStatus === 'spam');
   const reviewRequests = requests.filter((request) => request.clubStatus !== 'spam');
   const pendingRequests = reviewRequests.filter(
@@ -566,6 +580,7 @@ export function useAdminDashboard(options: TomFormOptions) {
     form,
     handleCreate,
     handleCreateEvent,
+    handleCancelEvent,
     handleCreateUser,
     handleDeleteEvent,
     handleToggleEventStatus,

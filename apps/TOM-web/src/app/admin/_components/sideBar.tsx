@@ -6,16 +6,45 @@ import {
   LayoutDashboard,
   Users,
   CalendarDays,
-  ListCheck,
+  ShieldAlert,
+  LayoutGrid,
   GraduationCap,
   LogOut,
 } from 'lucide-react';
 
 const navItems = [
-  { href: '/admin', label: 'Admin Panel', icon: LayoutDashboard },
-  { href: '/admin/clubs', label: 'Clubs', icon: Users },
-  { href: '/admin/teacher', label: 'Teacher Panel', icon: CalendarDays },
-  { href: '/admin/analytics', label: 'Analytics', icon: ListCheck },
+  { key: 'admin', href: '/admin', label: 'Admin Panel', icon: LayoutDashboard },
+  {
+    key: 'requests',
+    href: '/admin/requests',
+    label: 'Requests',
+    icon: CalendarDays,
+  },
+  {
+    key: 'club-status',
+    href: '/admin/club-status',
+    label: 'Club Status',
+    icon: LayoutGrid,
+  },
+  {
+    key: 'spam',
+    href: '/admin/spam',
+    label: 'Spam',
+    icon: ShieldAlert,
+  },
+  {
+    key: 'events',
+    href: '/admin/events',
+    label: 'Events',
+    icon: CalendarDays,
+  },
+  { key: 'clubs', href: '/admin/clubs', label: 'Clubs', icon: Users },
+  {
+    key: 'teacher',
+    href: '/admin/teacher',
+    label: 'Teacher Panel',
+    icon: CalendarDays,
+  },
 ];
 
 export default function AdminLayout() {
@@ -24,12 +53,12 @@ export default function AdminLayout() {
     pathname !== '/' && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
   const activeHref =
     navItems.find(({ href }) => normalizedPathname === href)?.href ??
-    navItems
-      .filter(
-        ({ href }) =>
-          href !== '/admin' && normalizedPathname.startsWith(`${href}/`)
-      )
-      .sort((left, right) => right.href.length - left.href.length)[0]?.href;
+        navItems
+          .filter(
+            ({ href }) =>
+              href !== '/admin' && normalizedPathname.startsWith(`${href}/`)
+          )
+          .sort((left, right) => right.href.length - left.href.length)[0]?.href;
 
   return (
     <div className="flex h-full w-56 flex-col border-r border-[#e2eaf5] bg-white shadow-[2px_0_12px_rgba(20,50,100,0.06)]">

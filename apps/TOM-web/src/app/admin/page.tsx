@@ -1,17 +1,13 @@
 'use client';
 
-import { useState } from 'react';
 import {
   BadgeAlert,
   CalendarDays,
   ChartColumnIncreasing,
-  LayoutGrid,
   Sparkles,
   ShieldAlert,
   ShieldCheck,
-  Settings2,
   Trophy,
-  UserCog,
   Users,
 } from 'lucide-react';
 
@@ -22,7 +18,7 @@ import {
 } from './admin-data';
 import { useAdminDashboard } from './useAdminDashboard';
 
-type AdminSection = 'requests' | 'users' | 'clubs' | 'spam' | 'events';
+export type AdminSection = 'requests' | 'users' | 'clubs' | 'spam' | 'events';
 
 const monthLabels = [
   'Jan',
@@ -47,13 +43,16 @@ const panelClass =
 
 const inputLabelClass = 'mb-2 block text-sm font-semibold text-[#5f7697]';
 
-export default function AdminDashboard() {
+export function AdminDashboardContent({
+  activeSection,
+}: {
+  activeSection: AdminSection | null;
+}) {
   const {
     options,
     isLoading: isOptionsLoading,
     errorMessage: optionsErrorMessage,
   } = useTomOptions();
-  const [activeSection, setActiveSection] = useState<AdminSection>('requests');
   const {
     activeClubs,
     activeCount,
@@ -62,6 +61,7 @@ export default function AdminDashboard() {
     errorMessage,
     events,
     eventForm,
+    handleCancelEvent,
     handleCreateEvent,
     handleCreateUser,
     handleDeleteEvent,
@@ -88,39 +88,6 @@ export default function AdminDashboard() {
     userForm,
     users,
   } = useAdminDashboard(options);
-
-  const sectionItems = [
-    {
-      key: 'requests',
-      label: 'Requests',
-      count: pendingRequests.length,
-      icon: CalendarDays,
-    },
-    {
-      key: 'users',
-      label: 'Users',
-      count: summary.totalUsers,
-      icon: UserCog,
-    },
-    {
-      key: 'clubs',
-      label: 'Clubs',
-      count: activeClubs.length,
-      icon: LayoutGrid,
-    },
-    {
-      key: 'spam',
-      label: 'Spam',
-      count: summary.spamRequests,
-      icon: ShieldAlert,
-    },
-    {
-      key: 'events',
-      label: 'Events',
-      count: events.length,
-      icon: CalendarDays,
-    },
-  ] as const;
 
   const summaryCards = [
     {
@@ -204,18 +171,57 @@ export default function AdminDashboard() {
 
   const spotlightClubs = requests.slice(0, 3);
   const spotlightUsers = leaderboard.slice(0, 3);
+  const activeClubStatusCount = activeClubs.filter(
+    (club) => club.clubStatus === 'active'
+  ).length;
+  const pausedClubStatusCount = activeClubs.length - activeClubStatusCount;
+  const teacherCount = users.filter((user) => user.role === 'teacher').length;
+  const restrictedUsers = users.filter(
+    (user) => user.accountStatus === 'restricted'
+  ).length;
+  const bannedUsers = users.filter((user) => user.accountStatus === 'banned').length;
+  const upcomingEvents = events.filter((event) => event.status === 'upcoming').length;
+  const totalEventParticipants = events.reduce(
+    (total, event) => total + event.participantCount,
+    0
+  );
+  const analyticsMaxMetric = Math.max(
+    summary.totalUsers,
+    activeClubs.length,
+    requests.length,
+    events.length,
+    1
+  );
+  const analyticsBars = [
+    ['Users', summary.totalUsers],
+    ['Clubs', activeClubs.length],
+    ['Requests', requests.length],
+    ['Events', events.length],
+  ] as const;
+  const upcomingEventCount = upcomingEvents;
+  const ongoingEventCount = events.filter(
+    (event) => event.status === 'ongoing'
+  ).length;
+  const completedEventCount = events.filter(
+    (event) => event.status === 'completed'
+  ).length;
+  const cancelledEventCount = events.filter(
+    (event) => event.status === 'cancelled'
+  ).length;
 
   return (
     <main className="relative min-h-screen overflow-hidden text-[color:var(--foreground)]">
       <div className="relative mx-auto max-w-[1440px] ">
-        <section className="dashboard-entrance dashboard-entrance-delay-1 mt-6">
-          <div
-            className={`rounded-[28px] border px-5 py-4 shadow-soft ${
-              errorMessage
-                ? 'border-[#ffd2d5] bg-[#fff7f8] text-[#b23a49]'
-                : 'border-[color:var(--border)] bg-white/85 text-[#56708f]'
-            }`}
-          >
+        {!activeSection ? (
+          <>
+            <section className="dashboard-entrance dashboard-entrance-delay-1 mt-6">
+              <div
+                className={`rounded-[28px] border px-5 py-4 shadow-soft ${
+                  errorMessage
+                    ? 'border-[#ffd2d5] bg-[#fff7f8] text-[#b23a49]'
+                    : 'border-[color:var(--border)] bg-white/85 text-[#56708f]'
+                }`}
+              >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em]">
@@ -253,9 +259,9 @@ export default function AdminDashboard() {
               </span>
             </div>
           </div>
-        </section>
+            </section>
 
-        <section className="dashboard-entrance dashboard-entrance-delay-2 mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <section className="dashboard-entrance dashboard-entrance-delay-2 mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {summaryCards.map((card) => {
             const Icon = card.icon;
 
@@ -286,9 +292,9 @@ export default function AdminDashboard() {
               </article>
             );
           })}
-        </section>
+            </section>
 
-        <section className="dashboard-entrance dashboard-entrance-delay-3 mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.95fr)_minmax(340px,0.9fr)]">
+            <section className="dashboard-entrance dashboard-entrance-delay-3 mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.95fr)_minmax(340px,0.9fr)]">
           <article className={`${panelClass} min-h-[430px]`}>
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
@@ -446,233 +452,204 @@ export default function AdminDashboard() {
               ))}
             </div>
           </article>
-        </section>
+            </section>
 
-        <section className="dashboard-entrance dashboard-entrance-delay-4 mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.95fr)_minmax(340px,0.9fr)]">
-          <article className={panelClass}>
-            <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <BadgeAlert className="h-4 w-4 text-[color:var(--primary)]" />
-                  <p className="text-lg font-semibold text-[#183153]">
-                    Club requests
-                  </p>
+            <section className="dashboard-entrance dashboard-entrance-delay-4 mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+              <article className={panelClass}>
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <ChartColumnIncreasing className="h-4 w-4 text-[color:var(--primary)]" />
+                      <p className="text-lg font-semibold text-[#183153]">
+                        Analytics overview
+                      </p>
+                    </div>
+                    <p className="mt-2 text-sm text-[#6c829f]">
+                      Users, clubs, requests, and events are now summarized
+                      directly inside the Admin Panel.
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-[color:var(--primary-soft)] px-4 py-2 text-sm font-semibold text-[#365f91]">
+                    Live data
+                  </span>
                 </div>
-                <p className="mt-2 text-sm text-[#6c829f]">
-                  Requests are reviewed against the interest threshold before a
-                  club can go live.
-                </p>
-              </div>
 
-              <StatusBadge type="review" text="review mode" />
-            </div>
-
-            <div className="overflow-hidden rounded-[26px] border border-[color:var(--border)] bg-[color:var(--surface-strong)]">
-              <div className="grid grid-cols-[1.2fr_0.95fr_0.8fr_0.8fr] gap-4 border-b border-[color:var(--border)] px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#7f93b1]">
-                <span>Club</span>
-                <span>Interest</span>
-                <span>Status</span>
-                <span className="text-right">Action</span>
-              </div>
-
-              <div className="divide-y divide-[#e7eef9]">
-                {requests.map((club) => {
-                  const thresholdReached = club.interestCount >= thresholdGoal;
-
-                  return (
-                    <div
-                      key={club.id}
-                      className="grid items-center gap-4 px-4 py-4 transition hover:bg-[color:var(--surface)] sm:grid-cols-[1.2fr_0.95fr_0.8fr_0.8fr]"
-                    >
-                      <div>
-                        <p className="font-semibold text-[#183153]">
-                          {club.clubName}
-                        </p>
-                        <p className="mt-1 text-sm text-[#6f86a7]">
-                          {club.teacher} · {club.gradeRange}
-                        </p>
+                <div className="mt-6 space-y-5">
+                  {analyticsBars.map(([label, value]) => (
+                    <div key={label}>
+                      <div className="mb-2 flex items-center justify-between text-sm">
+                        <span className="font-semibold text-[#183153]">
+                          {label}
+                        </span>
+                        <span className="text-[#6c829f]">{value}</span>
                       </div>
-
-                      <div className="flex items-center gap-3">
-                        <CapacityBar
-                          current={club.interestCount}
-                          total={thresholdGoal}
+                      <div className="h-3 overflow-hidden rounded-full bg-[color:var(--surface)]">
+                        <div
+                          className="h-full rounded-full bg-[color:var(--primary)]"
+                          style={{
+                            width: `${Math.max(
+                              8,
+                              (value / analyticsMaxMetric) * 100
+                            )}%`,
+                          }}
                         />
                       </div>
-
-                      <StatusBadge
-                        type={
-                          club.requestStatus === 'approved'
-                            ? 'approved'
-                            : club.requestStatus === 'rejected'
-                            ? 'rejected'
-                            : thresholdReached
-                            ? 'approved'
-                            : 'pending'
-                        }
-                        text={
-                          club.requestStatus === 'approved'
-                            ? 'approved'
-                            : club.requestStatus === 'rejected'
-                            ? 'rejected'
-                            : thresholdReached
-                            ? 'ready'
-                            : 'below threshold'
-                        }
-                      />
-
-                      <div className="flex items-center justify-end gap-3">
-                        <button
-                          type="button"
-                          onClick={() => void rejectRequest(club.id)}
-                          disabled={
-                            club.requestStatus !== 'pending' || isSaving
-                          }
-                          className="rounded-full px-3 py-2 text-sm font-semibold text-[#ff5c5c] transition hover:bg-[#fff1f2] hover:text-[#e33f3f] disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                          Reject
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => void approveRequest(club.id)}
-                          disabled={
-                            club.requestStatus !== 'pending' || isSaving
-                          }
-                          className="rounded-full bg-[color:var(--primary)] px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(79,114,213,0.22)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-[#b5d0f3]"
-                        >
-                          Approve
-                        </button>
-                      </div>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-          </article>
+                  ))}
+                </div>
+              </article>
 
-          <article className={panelClass}>
-            <div className="flex items-center gap-2">
-              <Settings2 className="h-4 w-4 text-[color:var(--primary)]" />
-              <p className="text-lg font-semibold text-[#183153]">
-                System controls
-              </p>
-            </div>
+              <article className={panelClass}>
+                <div className="flex items-center gap-2">
+                  <CalendarDays className="h-4 w-4 text-[color:var(--primary)]" />
+                  <p className="text-lg font-semibold text-[#183153]">
+                    Health metrics
+                  </p>
+                </div>
 
-            <div className="mt-5 space-y-3">
-              {[
-                {
-                  label: 'Create global event',
-                  icon: CalendarDays,
-                  action: () => setActiveSection('events'),
-                  active: activeSection === 'events',
-                },
-                {
-                  label: 'Manage users',
-                  icon: Users,
-                  action: () => setActiveSection('users'),
-                  active: activeSection === 'users',
-                },
-                {
-                  label: 'XP & badge settings',
-                  icon: Trophy,
-                  action: () => setActiveSection('clubs'),
-                  active: activeSection === 'clubs',
-                },
-                {
-                  label: 'Review flagged clubs',
-                  icon: ShieldAlert,
-                  action: () => setActiveSection('spam'),
-                  active: activeSection === 'spam',
-                },
-              ].map((item, index) => {
-                const Icon = item.icon;
-
-                return (
-                  <button
-                    key={item.label}
-                    type="button"
-                    onClick={item.action}
-                    aria-pressed={item.active}
-                    className={`flex w-full items-center gap-3 rounded-full border px-4 py-3.5 text-left transition ${
-                      item.active
-                        ? 'border-[color:var(--primary)] bg-[color:var(--primary)] text-white shadow-[0_16px_28px_rgba(79,114,213,0.22)]'
-                        : index === 3
-                        ? 'border-[#ffd6d8] bg-white text-[#ff4b57] hover:bg-[#fff5f5]'
-                        : 'border-[color:var(--border)] bg-white text-[#183153] hover:border-[#b8cef0] hover:bg-[color:var(--surface)]'
-                    }`}
-                  >
-                    <span
-                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                        item.active
-                          ? 'bg-white/15'
-                          : index === 3
-                          ? 'bg-[#fff1f2]'
-                          : 'bg-[#eef4fb]'
-                      }`}
+                <div className="mt-5 grid gap-3">
+                  {[
+                    ['Teachers', teacherCount],
+                    ['Active clubs', activeClubStatusCount],
+                    ['Paused clubs', pausedClubStatusCount],
+                    ['Upcoming events', upcomingEvents],
+                    ['Event participants', totalEventParticipants],
+                    ['Restricted users', restrictedUsers],
+                    ['Banned users', bannedUsers],
+                  ].map(([label, value]) => (
+                    <div
+                      key={label}
+                      className="flex items-center justify-between rounded-2xl bg-[color:var(--surface)] px-4 py-3"
                     >
-                      <Icon className="h-4 w-4 shrink-0" />
-                    </span>
-                    <span className="text-sm font-semibold">{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </article>
-        </section>
+                      <span className="text-sm font-medium text-[#5f7697]">
+                        {label}
+                      </span>
+                      <span className="font-semibold text-[#183153]">
+                        {value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </article>
+            </section>
 
-        <section
-          className={`${panelClass} dashboard-entrance dashboard-entrance-delay-5 mt-6 rounded-[30px] border-[color:var(--border)] bg-[color:var(--card)] px-5 py-5`}
-        >
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7c92b0]">
-                Management sections
-              </p>
-              <h2 className="mt-2 text-[1.9rem] font-semibold tracking-tight text-[#183153]">
-                One visual system for every admin task
-              </h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6d829f]">
-                Switch between approvals, user access, club status, and spam
-                cleanup without leaving the dashboard.
-              </p>
-            </div>
+          </>
+        ) : null}
 
-            <div className="flex flex-wrap gap-2 sm:gap-3">
-              {sectionItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeSection === item.key;
-
-                return (
-                  <button
-                    key={item.key}
-                    type="button"
-                    onClick={() => setActiveSection(item.key)}
-                    className={`inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition ${
-                      isActive
-                        ? 'bg-[color:var(--primary)] text-white shadow-[0_14px_24px_rgba(79,114,213,0.2)]'
-                        : 'border border-[color:var(--border)] bg-white text-[#5d7491] hover:bg-[color:var(--surface)]'
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{item.label}</span>
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
-                        isActive
-                          ? 'bg-white/15 text-white'
-                          : 'bg-[#eef4fb] text-[#6b83a3]'
-                      }`}
-                    >
-                      {item.count}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
+        {activeSection ? (
+          <section
+            className={`${panelClass} dashboard-entrance dashboard-entrance-delay-5 mt-6 rounded-[30px] border-[color:var(--border)] bg-[color:var(--card)] px-5 py-5`}
+          >
           {activeSection === 'requests' ? (
             <>
-              <div className="mt-6 grid gap-6 xl:grid-cols-2">
+              <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.85fr)]">
+                <article className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft">
+                  <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <BadgeAlert className="h-4 w-4 text-[color:var(--primary)]" />
+                        <p className="text-lg font-semibold text-[#183153]">
+                          Club requests
+                        </p>
+                      </div>
+                      <p className="mt-2 text-sm text-[#6c829f]">
+                        Review pending club requests and approve or reject them
+                        from this queue.
+                      </p>
+                    </div>
+
+                    <StatusBadge type="review" text={`${pendingRequests.length} pending`} />
+                  </div>
+
+                  <div className="overflow-hidden rounded-[26px] border border-[color:var(--border)] bg-[color:var(--surface-strong)]">
+                    <div className="grid gap-4 border-b border-[color:var(--border)] px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#7f93b1] sm:grid-cols-[1.2fr_0.95fr_0.8fr_0.8fr]">
+                      <span>Club</span>
+                      <span>Interest</span>
+                      <span>Status</span>
+                      <span className="text-right">Action</span>
+                    </div>
+
+                    <div className="divide-y divide-[#e7eef9]">
+                      {requests.length === 0 ? (
+                        <div className="px-4 py-8 text-center text-sm text-[#6f86a7]">
+                          Шалгах club request одоогоор байхгүй байна.
+                        </div>
+                      ) : (
+                        requests.map((club) => {
+                          const thresholdReached = club.interestCount >= thresholdGoal;
+
+                          return (
+                            <div
+                              key={club.id}
+                              className="grid items-center gap-4 px-4 py-4 transition hover:bg-[color:var(--surface)] sm:grid-cols-[1.2fr_0.95fr_0.8fr_0.8fr]"
+                            >
+                              <div>
+                                <p className="font-semibold text-[#183153]">
+                                  {club.clubName}
+                                </p>
+                                <p className="mt-1 text-sm text-[#6f86a7]">
+                                  {club.teacher} · {club.gradeRange}
+                                </p>
+                              </div>
+
+                              <div className="flex items-center gap-3">
+                                <CapacityBar
+                                  current={club.interestCount}
+                                  total={thresholdGoal}
+                                />
+                              </div>
+
+                              <StatusBadge
+                                type={
+                                  club.requestStatus === 'approved'
+                                    ? 'approved'
+                                    : club.requestStatus === 'rejected'
+                                    ? 'rejected'
+                                    : thresholdReached
+                                    ? 'approved'
+                                    : 'pending'
+                                }
+                                text={
+                                  club.requestStatus === 'approved'
+                                    ? 'approved'
+                                    : club.requestStatus === 'rejected'
+                                    ? 'rejected'
+                                    : thresholdReached
+                                    ? 'ready'
+                                    : 'below threshold'
+                                }
+                              />
+
+                              <div className="flex items-center justify-end gap-3">
+                                <button
+                                  type="button"
+                                  onClick={() => void rejectRequest(club.id)}
+                                  disabled={
+                                    club.requestStatus !== 'pending' || isSaving
+                                  }
+                                  className="rounded-full px-3 py-2 text-sm font-semibold text-[#ff5c5c] transition hover:bg-[#fff1f2] hover:text-[#e33f3f] disabled:cursor-not-allowed disabled:opacity-40"
+                                >
+                                  Reject
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => void approveRequest(club.id)}
+                                  disabled={
+                                    club.requestStatus !== 'pending' || isSaving
+                                  }
+                                  className="rounded-full bg-[color:var(--primary)] px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(79,114,213,0.22)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-[#b5d0f3]"
+                                >
+                                  Approve
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                </article>
+
                 <aside className="space-y-5">
                   <section className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft">
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7f93b1]">
@@ -961,113 +938,251 @@ export default function AdminDashboard() {
           ) : null}
 
           {activeSection === 'clubs' ? (
-            <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {activeClubs.map((club) => (
-                <article
-                  key={club.id}
-                  className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="text-lg font-semibold text-[#183153]">
-                        {club.clubName}
-                      </h3>
-                      <p className="mt-1 text-sm text-[#6f86a7]">
-                        {club.teacher}
-                      </p>
+            <section className="mt-6 space-y-5">
+              <div className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="h-5 w-5 text-[color:var(--primary)]" />
+                      <h2 className="text-2xl font-bold text-[#183153]">
+                        Club Status
+                      </h2>
                     </div>
-                    <StatusBadge
-                      type={club.clubStatus}
-                      text={club.clubStatus}
-                    />
+                    <p className="mt-2 text-sm text-[#6c829f]">
+                      Идэвхтэй болон pause төлөвтэй club-уудыг эндээс
+                      удирдана.
+                    </p>
                   </div>
 
-                  <div className="mt-4 space-y-3 text-sm text-[#60789a]">
-                    <p>{club.note}</p>
-                    <p>
-                      {club.allowedDays} · {club.gradeRange}
-                    </p>
-                    <p>
-                      {club.startDate} - {club.endDate}
-                    </p>
-                    <CapacityBar
-                      current={club.interestCount}
-                      total={club.studentLimit}
-                    />
+                  <div className="grid grid-cols-3 gap-3 text-center">
+                    {[
+                      ['Total', activeClubs.length],
+                      [
+                        'Active',
+                        activeClubs.filter((club) => club.clubStatus === 'active')
+                          .length,
+                      ],
+                      [
+                        'Paused',
+                        activeClubs.filter((club) => club.clubStatus === 'paused')
+                          .length,
+                      ],
+                    ].map(([label, value]) => (
+                      <div
+                        key={label}
+                        className="rounded-2xl bg-[color:var(--surface)] px-4 py-3"
+                      >
+                        <p className="text-xl font-semibold text-[#183153]">
+                          {value}
+                        </p>
+                        <p className="text-xs text-[#6f86a7]">{label}</p>
+                      </div>
+                    ))}
                   </div>
+                </div>
+              </div>
 
-                  <div className="mt-4 flex flex-wrap items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => void toggleClubStatus(club.id)}
-                      disabled={isSaving}
-                      className="rounded-full bg-[color:var(--primary)] px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+              {activeClubs.length === 0 ? (
+                <div className="rounded-[28px] border border-dashed border-[color:var(--border)] bg-[color:var(--surface)] p-10 text-center">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[color:var(--primary-soft)]">
+                    <ShieldCheck className="h-6 w-6 text-[color:var(--primary)]" />
+                  </div>
+                  <p className="mt-4 font-semibold text-[#183153]">
+                    Club status хоосон байна
+                  </p>
+                  <p className="mt-1 text-sm text-[#6982a2]">
+                    Request approve хийсний дараа active club энд харагдана.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {activeClubs.map((club) => (
+                    <article
+                      key={club.id}
+                      className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft"
                     >
-                      {club.clubStatus === 'active'
-                        ? 'Pause club'
-                        : 'Activate club'}
-                    </button>
-                    <StatusBadge
-                      type={
-                        club.interestCount >= thresholdGoal
-                          ? 'approved'
-                          : 'pending'
-                      }
-                      text={formatThresholdLabel(club.interestCount)}
-                    />
-                  </div>
-                </article>
-              ))}
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h3 className="text-lg font-semibold text-[#183153]">
+                            {club.clubName}
+                          </h3>
+                          <p className="mt-1 text-sm text-[#6f86a7]">
+                            {club.teacher}
+                          </p>
+                        </div>
+                        <StatusBadge
+                          type={club.clubStatus}
+                          text={club.clubStatus}
+                        />
+                      </div>
+
+                      <div className="mt-4 space-y-3 text-sm text-[#60789a]">
+                        <p>{club.note}</p>
+                        <p>
+                          {club.allowedDays} · {club.gradeRange}
+                        </p>
+                        <p>
+                          {club.startDate} - {club.endDate}
+                        </p>
+                        <CapacityBar
+                          current={club.interestCount}
+                          total={club.studentLimit}
+                        />
+                      </div>
+
+                      <div className="mt-4 flex flex-wrap items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => void toggleClubStatus(club.id)}
+                          disabled={isSaving}
+                          className="rounded-full bg-[color:var(--primary)] px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+                        >
+                          {club.clubStatus === 'active'
+                            ? 'Pause club'
+                            : 'Activate club'}
+                        </button>
+                        <StatusBadge
+                          type={
+                            club.interestCount >= thresholdGoal
+                              ? 'approved'
+                              : 'pending'
+                          }
+                          text={formatThresholdLabel(club.interestCount)}
+                        />
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
             </section>
           ) : null}
 
           {activeSection === 'spam' ? (
-            <section className="mt-6 grid gap-4 md:grid-cols-2">
-              {spamQueue.map((club) => (
-                <article
-                  key={club.id}
-                  className="rounded-[28px] border border-[#ffd2d5] bg-[#fff7f8] p-5 shadow-soft"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="text-lg font-semibold text-[#183153]">
-                        {club.clubName}
-                      </h3>
-                      <p className="mt-1 text-sm text-[#6f86a7]">
-                        {club.teacher}
-                      </p>
+            <section className="mt-6 space-y-5">
+              <div className="rounded-[28px] border border-[#ffd2d5] bg-[#fff7f8] p-5 shadow-soft">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <ShieldAlert className="h-5 w-5 text-[#de4a58]" />
+                      <h2 className="text-2xl font-bold text-[#183153]">
+                        Spam Review
+                      </h2>
                     </div>
-                    <StatusBadge type="spam" text="flagged" />
+                    <p className="mt-2 text-sm text-[#8a5c64]">
+                      Сэжигтэй эсвэл spam гэж тэмдэглэгдсэн club request-уудыг
+                      эндээс цэвэрлэнэ.
+                    </p>
                   </div>
 
-                  <p className="mt-3 text-sm leading-6 text-[#60789a]">
-                    {club.note}
-                  </p>
-                  <p className="mt-3 rounded-[22px] bg-white/90 p-3 text-sm leading-6 text-[#cc4d57] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
-                    {club.flaggedReason}
-                  </p>
+                  <span className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#de4a58]">
+                    {spamQueue.length} flagged
+                  </span>
+                </div>
+              </div>
 
-                  <div className="mt-4 flex flex-wrap items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => void removeSpamClub(club.id)}
-                      disabled={isSaving}
-                      className="rounded-full bg-[#ff5c6b] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#e44757]"
+              {spamQueue.length === 0 ? (
+                <div className="rounded-[28px] border border-dashed border-[#ffd2d5] bg-white p-10 text-center">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#fff1f2]">
+                    <ShieldAlert className="h-6 w-6 text-[#de4a58]" />
+                  </div>
+                  <p className="mt-4 font-semibold text-[#183153]">
+                    Spam request байхгүй байна
+                  </p>
+                  <p className="mt-1 text-sm text-[#8a5c64]">
+                    Flagged club гарвал энд жагсаагдаж remove хийх боломжтой.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {spamQueue.map((club) => (
+                    <article
+                      key={club.id}
+                      className="rounded-[28px] border border-[#ffd2d5] bg-[#fff7f8] p-5 shadow-soft"
                     >
-                      Remove spam club
-                    </button>
-                    <span className="text-xs text-[#8a5c64]">
-                      {club.createdBy}
-                    </span>
-                  </div>
-                </article>
-              ))}
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h3 className="text-lg font-semibold text-[#183153]">
+                            {club.clubName}
+                          </h3>
+                          <p className="mt-1 text-sm text-[#6f86a7]">
+                            {club.teacher}
+                          </p>
+                        </div>
+                        <StatusBadge type="spam" text="flagged" />
+                      </div>
+
+                      <p className="mt-3 text-sm leading-6 text-[#60789a]">
+                        {club.note}
+                      </p>
+                      <p className="mt-3 rounded-[22px] bg-white/90 p-3 text-sm leading-6 text-[#cc4d57] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
+                        {club.flaggedReason || 'Flagged for admin review.'}
+                      </p>
+
+                      <div className="mt-4 flex flex-wrap items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => void removeSpamClub(club.id)}
+                          disabled={isSaving}
+                          className="rounded-full bg-[#ff5c6b] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#e44757] disabled:opacity-50"
+                        >
+                          Remove spam club
+                        </button>
+                        <span className="text-xs text-[#8a5c64]">
+                          {club.createdBy}
+                        </span>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
             </section>
           ) : null}
 
           {activeSection === 'events' ? (
-            <section className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-              <form
+            <section className="mt-6 space-y-5">
+              <div className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <CalendarDays className="h-5 w-5 text-[color:var(--primary)]" />
+                      <h2 className="text-2xl font-bold text-[#183153]">
+                        School Events
+                      </h2>
+                    </div>
+                    <p className="mt-2 text-sm text-[#6c829f]">
+                      Сургуулийн event үүсгэхэд бүх хэрэглэгч автоматаар
+                      оролцогч болж нэмэгдэнэ.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-center sm:grid-cols-5">
+                    {[
+                      ['Total', events.length],
+                      ['Upcoming', upcomingEventCount],
+                      ['Ongoing', ongoingEventCount],
+                      ['Completed', completedEventCount],
+                      ['Cancelled', cancelledEventCount],
+                    ].map(([label, value]) => (
+                      <div
+                        key={label}
+                        className="rounded-2xl bg-[color:var(--surface)] px-4 py-3"
+                      >
+                        <p className="text-xl font-semibold text-[#183153]">
+                          {value}
+                        </p>
+                        <p className="text-xs text-[#6f86a7]">{label}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-4 rounded-2xl bg-[color:var(--primary-soft)] px-4 py-3 text-sm font-semibold text-[#365f91]">
+                  Нийт auto-joined оролцогч: {totalEventParticipants}
+                </div>
+              </div>
+
+              <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+                <form
                 className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft"
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -1085,7 +1200,8 @@ export default function AdminDashboard() {
                     Сургуулийн event үүсгэх
                   </h3>
                   <p className="mt-2 text-sm text-[#6c829f]">
-                    Event үүсгэхэд бүх хэрэглэгч автоматаар нэгддэг.
+                    Гарчиг болон огноо заавал оруулна. Үүссэний дараа бүх user
+                    автоматаар event-д нэгдэнэ.
                   </p>
                 </div>
 
@@ -1272,6 +1388,14 @@ export default function AdminDashboard() {
                             </button>
                             <button
                               type="button"
+                              onClick={() => void handleCancelEvent(event.id)}
+                              disabled={isSaving || event.status === 'cancelled'}
+                              className="rounded-full border border-[#ffe1a8] bg-white px-3 py-1 text-xs font-semibold text-[#b7791f] transition hover:bg-[#fff8e8] disabled:opacity-40"
+                            >
+                              Цуцлах
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => void handleDeleteEvent(event.id)}
                               disabled={isSaving}
                               className="rounded-full border border-[#ffd2d5] bg-white px-3 py-1 text-xs font-semibold text-[#de4a58] transition hover:bg-[#fff6f7] disabled:opacity-40"
@@ -1285,10 +1409,16 @@ export default function AdminDashboard() {
                   </div>
                 )}
               </div>
+              </div>
             </section>
           ) : null}
-        </section>
+          </section>
+        ) : null}
       </div>
     </main>
   );
+}
+
+export default function AdminDashboard() {
+  return <AdminDashboardContent activeSection={null} />;
 }
