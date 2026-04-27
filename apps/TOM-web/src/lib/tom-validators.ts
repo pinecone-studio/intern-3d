@@ -4,6 +4,11 @@ function asString(value: unknown) {
   return typeof value === 'string' ? value.trim() : ''
 }
 
+function asOptionalString(value: unknown) {
+  const str = asString(value)
+  return str ? str : undefined
+}
+
 function asNumber(value: unknown, fallback = 0) {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback
 }
@@ -18,19 +23,19 @@ export function parseClubInput(body: Record<string, unknown>) {
 
   const input: ClubInput = {
     name,
-    description: asString(body.description),
-    teacherName: asString(body.teacherName ?? body.teacher),
-    createdBy: asString(body.createdBy),
+    description: asOptionalString(body.description),
+    teacherName: asOptionalString(body.teacherName ?? body.teacher),
+    createdBy: asOptionalString(body.createdBy),
     interestCount: asNumber(body.interestCount),
     studentLimit: asNumber(body.studentLimit ?? body.memberLimit, 20),
     memberCount: asNumber(body.memberCount),
-    gradeRange: asString(body.gradeRange),
-    allowedDays: asString(body.allowedDays),
-    startDate: asString(body.startDate),
-    endDate: asString(body.endDate),
-    note: asString(body.note),
-    status: asString(body.status) as ClubInput['status'],
-    category: asString(body.category),
+    gradeRange: asOptionalString(body.gradeRange),
+    allowedDays: asOptionalString(body.allowedDays),
+    startDate: asOptionalString(body.startDate),
+    endDate: asOptionalString(body.endDate),
+    note: asOptionalString(body.note),
+    status: asOptionalString(body.status) as ClubInput['status'],
+    category: asOptionalString(body.category),
     verified: asBoolean(body.verified),
   }
 
@@ -43,17 +48,17 @@ export function parseClubRequestInput(body: Record<string, unknown>) {
 
   const input: ClubRequestInput = {
     clubName,
-    teacherName: asString(body.teacherName ?? body.teacher),
-    createdBy: asString(body.createdBy),
+    teacherName: asOptionalString(body.teacherName ?? body.teacher),
+    createdBy: asOptionalString(body.createdBy),
     interestCount: asNumber(body.interestCount),
     studentLimit: asNumber(body.studentLimit ?? body.memberLimit, 20),
-    gradeRange: asString(body.gradeRange),
-    allowedDays: asString(body.allowedDays),
-    startDate: asString(body.startDate),
-    endDate: asString(body.endDate),
-    note: asString(body.note),
-    requestStatus: asString(body.requestStatus ?? body.status) as ClubRequestInput['requestStatus'],
-    clubStatus: asString(body.clubStatus) as ClubRequestInput['clubStatus'],
+    gradeRange: asOptionalString(body.gradeRange),
+    allowedDays: asOptionalString(body.allowedDays),
+    startDate: asOptionalString(body.startDate),
+    endDate: asOptionalString(body.endDate),
+    note: asOptionalString(body.note),
+    requestStatus: asOptionalString(body.requestStatus ?? body.status) as ClubRequestInput['requestStatus'],
+    clubStatus: asOptionalString(body.clubStatus) as ClubRequestInput['clubStatus'],
     flaggedReason: asString(body.flaggedReason) || null,
   }
 

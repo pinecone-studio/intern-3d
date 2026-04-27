@@ -25,7 +25,13 @@ export async function POST(request: Request) {
     const input = parseClubRequestInput(body)
     if (!input) return badRequest('Club request name is required.')
 
-    const clubRequest = await upsertClubRequest(input)
+    const clubRequest = await upsertClubRequest({
+      ...input,
+      createdBy: input.createdBy ?? 'Сурагч',
+      requestStatus: 'pending',
+      clubStatus: 'pending',
+      flaggedReason: null,
+    })
     return ok({ request: clubRequest }, { status: 201 })
   } catch (error) {
     return serverError('Failed to create club request.', String(error))
