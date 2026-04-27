@@ -85,9 +85,9 @@ export const initialUserForm: UserForm = {
 export const initialRequests: ClubRequest[] = [
   {
     id: 'club-robotics',
-    clubName: 'Robotics Club',
+    clubName: 'Роботик клуб',
     teacher: 'Багш Сараа Ким',
-    createdBy: 'STEM баг',
+    createdBy: 'СТЕМ баг',
     interestCount: 11,
     studentLimit: 14,
     gradeRange: '6A - 7B анги',
@@ -209,7 +209,7 @@ export const initialManagedUsers: ManagedUser[] = [
     reason: 'Ердийн идэвхтэй сурагчийн бүртгэл.',
     lastActive: '2026-04-21',
     clubCount: 3,
-    notes: 'Robotics болон Art клубт оролцож байсан.',
+    notes: 'Роботик болон Урлагийн клубт оролцож байсан.',
   },
   {
     id: 'user-teacher-1',
@@ -220,7 +220,7 @@ export const initialManagedUsers: ManagedUser[] = [
     reason: 'Клуб удирдах эрхтэй багш.',
     lastActive: '2026-04-20',
     clubCount: 4,
-    notes: 'STEM, Debate клубүүдийн админ.',
+    notes: 'СТЕМ, Мэтгэлцээний клубүүдийн админ.',
   },
   {
     id: 'user-student-2',
@@ -264,7 +264,7 @@ export const initialManagedUsers: ManagedUser[] = [
     reason: 'Ердийн идэвхтэй сурагчийн бүртгэл.',
     lastActive: '2026-04-21',
     clubCount: 1,
-    notes: 'Robotics клубт шинээр элссэн.',
+    notes: 'Роботик клубт шинээр элссэн.',
   },
   {
     id: 'user-student-5',
@@ -390,11 +390,11 @@ export const createManagedUser = (form: UserForm): ManagedUser => ({
 export const formatAccountStatusLabel = (status: UserAccountStatus) => {
   switch (status) {
     case 'active':
-      return 'active';
+      return 'Идэвхтэй';
     case 'restricted':
-      return 'restricted';
+      return 'Хязгаарласан';
     case 'banned':
-      return 'banned';
+      return 'Хориглосон';
     default:
       return status;
   }

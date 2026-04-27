@@ -13,36 +13,36 @@ import {
 } from 'lucide-react';
 
 const navItems = [
-  { key: 'admin', href: '/admin', label: 'Admin Panel', icon: LayoutDashboard },
+  { key: 'admin', href: '/admin', label: 'Админ самбар', icon: LayoutDashboard },
   {
     key: 'requests',
     href: '/admin/requests',
-    label: 'Requests',
+    label: 'Хүсэлтүүд',
     icon: CalendarDays,
   },
   {
     key: 'club-status',
     href: '/admin/club-status',
-    label: 'Club Status',
+    label: 'Клубын төлөв',
     icon: LayoutGrid,
   },
   {
     key: 'spam',
     href: '/admin/spam',
-    label: 'Spam',
+    label: 'Спам',
     icon: ShieldAlert,
   },
   {
     key: 'events',
     href: '/admin/events',
-    label: 'Events',
+    label: 'Арга хэмжээ',
     icon: CalendarDays,
   },
-  { key: 'clubs', href: '/admin/clubs', label: 'Clubs', icon: Users },
+  { key: 'clubs', href: '/admin/clubs', label: 'Клубүүд', icon: Users },
   {
     key: 'teacher',
     href: '/admin/teacher',
-    label: 'Teacher Panel',
+    label: 'Багшийн самбар',
     icon: CalendarDays,
   },
 ];
@@ -68,8 +68,10 @@ export default function AdminLayout() {
             <GraduationCap />
           </div>
           <div>
-            <p className="text-sm font-semibold text-[#1a3560]">School Clubs</p>
-            <p className="text-xs text-[#7a90af]">Admin view</p>
+            <p className="text-sm font-semibold text-[#1a3560]">
+              Сургуулийн клубүүд
+            </p>
+            <p className="text-xs text-[#7a90af]">Админы харагдац</p>
           </div>
         </div>
       </Link>
@@ -100,7 +102,7 @@ export default function AdminLayout() {
           className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[#4a6080] transition-colors hover:bg-[#eef4ff] hover:text-[#1a3560]"
         >
           <LogOut className="h-4 w-4 shrink-0" />
-          Log out
+          Гарах
         </Link>
       </div>
     </div>

@@ -35,7 +35,7 @@ export default function ClubsPage() {
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#183153]">Clubs</h1>
+          <h1 className="text-2xl font-bold text-[#183153]">Клубүүд</h1>
           <p className="mt-1 text-sm text-[#6a819f]">
             Бүх идэвхтэй болон түр зогсоосон клубүүд
           </p>
@@ -46,7 +46,7 @@ export default function ClubsPage() {
           className="flex items-center gap-2 rounded-2xl bg-[#1a3560] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(26,53,96,0.25)] transition hover:opacity-90"
         >
           <Plus className="h-4 w-4" />
-          New Club
+          Шинэ клуб
         </button>
       </div>
 
@@ -75,6 +75,11 @@ export default function ClubsPage() {
       ) : (
         <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {clubs.map((club) => (
+            (() => {
+              const clubStatusLabel =
+                club.clubStatus === 'active' ? 'Идэвхтэй' : 'Түр зогссон';
+
+              return (
             <article
               key={club.id}
               className="rounded-[28px] border border-[#e2eaf5] bg-white p-5 shadow-sm"
@@ -84,7 +89,7 @@ export default function ClubsPage() {
                   <h3 className="text-lg font-semibold text-[#183153]">{club.clubName}</h3>
                   <p className="mt-1 text-sm text-[#6f86a7]">{club.teacher}</p>
                 </div>
-                <StatusBadge type={club.clubStatus} text={club.clubStatus} />
+                <StatusBadge type={club.clubStatus} text={clubStatusLabel} />
               </div>
 
               <div className="mt-4 space-y-2 text-sm text-[#60789a]">
@@ -105,7 +110,7 @@ export default function ClubsPage() {
                   disabled={isSaving}
                   className="rounded-full bg-[#1a3560] px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
                 >
-                  {club.clubStatus === 'active' ? 'Pause club' : 'Activate club'}
+                  {club.clubStatus === 'active' ? 'Түр зогсоох' : 'Идэвхжүүлэх'}
                 </button>
                 <StatusBadge
                   type={club.interestCount >= thresholdGoal ? 'approved' : 'pending'}
@@ -113,6 +118,8 @@ export default function ClubsPage() {
                 />
               </div>
             </article>
+              );
+            })()
           ))}
         </section>
       )}
@@ -129,10 +136,10 @@ export default function ClubsPage() {
             <div className="mb-4 flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7f93b1]">
-                  Create request
+                  Хүсэлт үүсгэх
                 </p>
                 <h2 className="mt-1 text-[1.05rem] font-semibold text-[#183153]">
-                  New club request form
+                  Шинэ клубийн хүсэлтийн маягт
                 </h2>
               </div>
               <button
@@ -153,18 +160,18 @@ export default function ClubsPage() {
             >
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="block">
-                  <span className={inputLabelClass}>Club name</span>
+                  <span className={inputLabelClass}>Клубын нэр</span>
                   <input
                     type="text"
                     value={form.clubName}
                     onChange={(e) => updateField('clubName', e.target.value)}
-                    placeholder="Example: English Club"
+                    placeholder="Жишээ: Англи хэлний клуб"
                     className={fieldClass}
                   />
                 </label>
 
                 <label className="block">
-                  <span className={inputLabelClass}>Teacher</span>
+                  <span className={inputLabelClass}>Багш</span>
                   <select
                     value={form.teacher}
                     onChange={(e) => updateField('teacher', e.target.value)}
@@ -177,7 +184,7 @@ export default function ClubsPage() {
                 </label>
 
                 <label className="block">
-                  <span className={inputLabelClass}>Start date</span>
+                  <span className={inputLabelClass}>Эхлэх огноо</span>
                   <input
                     type="date"
                     value={form.startDate}
@@ -187,7 +194,7 @@ export default function ClubsPage() {
                 </label>
 
                 <label className="block">
-                  <span className={inputLabelClass}>End date</span>
+                  <span className={inputLabelClass}>Дуусах огноо</span>
                   <input
                     type="date"
                     value={form.endDate}
@@ -197,7 +204,7 @@ export default function ClubsPage() {
                 </label>
 
                 <label className="block">
-                  <span className={inputLabelClass}>Allowed days</span>
+                  <span className={inputLabelClass}>Өдрүүд</span>
                   <select
                     value={form.allowedDays}
                     onChange={(e) => updateField('allowedDays', e.target.value)}
@@ -210,7 +217,7 @@ export default function ClubsPage() {
                 </label>
 
                 <label className="block">
-                  <span className={inputLabelClass}>Grade range</span>
+                  <span className={inputLabelClass}>Ангийн хүрээ</span>
                   <select
                     value={form.gradeRange}
                     onChange={(e) => updateField('gradeRange', e.target.value)}
@@ -223,7 +230,7 @@ export default function ClubsPage() {
                 </label>
 
                 <label className="block">
-                  <span className={inputLabelClass}>Student cap</span>
+                  <span className={inputLabelClass}>Сурагчийн дээд тоо</span>
                   <input
                     type="number"
                     min="1"
@@ -235,7 +242,7 @@ export default function ClubsPage() {
                 </label>
 
                 <label className="block">
-                  <span className={inputLabelClass}>Current interest</span>
+                  <span className={inputLabelClass}>Одоогийн сонирхол</span>
                   <input
                     type="number"
                     min="0"
@@ -248,12 +255,12 @@ export default function ClubsPage() {
               </div>
 
               <label className="block">
-                <span className={inputLabelClass}>Admin note</span>
+                <span className={inputLabelClass}>Админы тэмдэглэл</span>
                 <textarea
                   rows={3}
                   value={form.note}
                   onChange={(e) => updateField('note', e.target.value)}
-                  placeholder="Why this club matters, what to review, and any approval notes."
+                  placeholder="Энэ клуб яагаад чухал, юуг шалгах, батлахтай холбоотой тэмдэглэл."
                   className={fieldClass}
                 />
               </label>
@@ -264,17 +271,19 @@ export default function ClubsPage() {
                   disabled={isSaving}
                   className="rounded-full bg-[color:var(--primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(79,114,213,0.22)] transition hover:opacity-90 disabled:opacity-50"
                 >
-                  {isSaving ? 'Saving...' : 'Create request'}
+                  {isSaving ? 'Хадгалж байна...' : 'Хүсэлт үүсгэх'}
                 </button>
                 <button
                   type="button"
                   onClick={closeDialog}
                   className="rounded-full border border-[color:var(--border)] bg-white px-5 py-2.5 text-sm font-semibold text-[#56708f] transition hover:bg-[color:var(--surface)]"
                 >
-                  Cancel
+                  Цуцлах
                 </button>
                 <span className="text-sm text-[#6982a2]">
-                  {form.clubName ? `Ready to queue: ${form.clubName}` : 'Start with a new club request'}
+                  {form.clubName
+                    ? `Дараалалд бэлэн: ${form.clubName}`
+                    : 'Шинэ клубийн хүсэлтээр эхлээрэй'}
                 </span>
               </div>
             </form>
