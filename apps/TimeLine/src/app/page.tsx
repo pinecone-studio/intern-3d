@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useRole } from '@/lib/role-context'
 import { Button } from '@/components/ui/button'
@@ -8,11 +9,25 @@ import { GraduationCap, ShieldCheck, Clock, Monitor } from 'lucide-react'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { setRole } = useRole()
+  const { isReady, role, setRole } = useRole()
+
+  useEffect(() => {
+    if (isReady && role) {
+      router.replace('/dashboard')
+    }
+  }, [isReady, role, router])
 
   const handleRoleSelect = (role: 'admin' | 'student') => {
     setRole(role)
     router.push('/dashboard')
+  }
+
+  if (!isReady) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    )
   }
 
   return (

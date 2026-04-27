@@ -1,7 +1,8 @@
 import { sql } from 'drizzle-orm'
 import { getDrizzleDb } from '@/db/client'
 import { deviceAssignmentsTable, roomsTable, scheduleOverridesTable, schedulesTable, usersTable } from '@/db/schema'
-import { createRooms, demoUsers, scheduleEvents } from '@/lib/mock-data'
+import { demoUsers } from '@/lib/demo-users'
+import { createRooms, scheduleEvents } from '@/lib/mock-data'
 import type { EventType, Room, ScheduleEvent } from '@/lib/types'
 
 const ADMIN_USER_ID = 'admin-1'
@@ -9,7 +10,6 @@ const EVENT_HALL_CAPACITY = 80
 const DEFAULT_START_DATE = '2026-04-01'
 const DEFAULT_END_DATE = '2026-06-15'
 const INSERT_CHUNK_SIZE = 8
-
 const missingMockRooms: Room[] = [
   {
     id: 'room-hall-3',
