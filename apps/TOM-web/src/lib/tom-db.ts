@@ -72,6 +72,7 @@ type UserRow = {
   full_name: string
   email: string
   role: ManagedUser['role']
+  teacher_profile_name: string
   account_status: ManagedUser['accountStatus']
   reason: string
   last_active: string
@@ -155,6 +156,7 @@ function mapUserRow(row: UserRow): ManagedUser {
     name: row.full_name,
     email: row.email,
     role: row.role,
+    teacherProfileName: row.teacher_profile_name || undefined,
     accountStatus: row.account_status,
     reason: row.reason,
     lastActive: row.last_active,
@@ -257,6 +259,7 @@ function normalizeUser(input: UserInput, current?: ManagedUser): ManagedUser {
     name: input.name,
     email: input.email,
     role: input.role ?? current?.role ?? 'student',
+    teacherProfileName: input.teacherProfileName ?? current?.teacherProfileName ?? '',
     accountStatus: input.accountStatus ?? current?.accountStatus ?? 'active',
     reason: input.reason ?? current?.reason ?? '',
     lastActive: input.lastActive ?? current?.lastActive ?? defaultDate,
@@ -705,12 +708,13 @@ export async function upsertUser(input: UserInput, id?: string) {
   await db
     .prepare(
       `INSERT INTO users (
-        id, full_name, email, role, account_status, reason, last_active, club_count, notes, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        id, full_name, email, role, teacher_profile_name, account_status, reason, last_active, club_count, notes, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         full_name = excluded.full_name,
         email = excluded.email,
         role = excluded.role,
+        teacher_profile_name = excluded.teacher_profile_name,
         account_status = excluded.account_status,
         reason = excluded.reason,
         last_active = excluded.last_active,
@@ -723,6 +727,7 @@ export async function upsertUser(input: UserInput, id?: string) {
       user.name,
       user.email,
       user.role,
+      user.teacherProfileName ?? '',
       user.accountStatus,
       user.reason,
       user.lastActive,
@@ -1229,6 +1234,7 @@ export async function seedTomDatabase({ reset = false }: { reset?: boolean } = {
       name: user.name,
       email: user.email,
       role: user.role,
+      teacherProfileName: user.teacherProfileName,
       accountStatus: user.accountStatus,
       reason: user.reason,
       lastActive: user.lastActive,

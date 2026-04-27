@@ -87,6 +87,7 @@ export type ManagedUser = {
   name: string
   email: string
   role: UserRole
+  teacherProfileName?: string
   accountStatus: UserAccountStatus
   reason: string
   lastActive: string

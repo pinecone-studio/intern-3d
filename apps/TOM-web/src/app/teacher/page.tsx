@@ -12,14 +12,20 @@ import {
   XCircle,
 } from 'lucide-react';
 
-import type { Club, ClubRequest } from '@/lib/tom-types';
+import { useTomSession } from '@/app/_providers/tom-session-provider';
+import type { Club, ClubRequest, TomCurrentUser } from '@/lib/tom-types';
 
 type Summary = {
-  totalUsers: number;
-  activeClubs: number;
   pendingRequests: number;
-  spamRequests: number;
   thresholdReachedRequests: number;
+};
+
+type TeacherDashboardResponse = {
+  user: TomCurrentUser;
+  teacherScopeName: string;
+  requests: ClubRequest[];
+  clubs: Club[];
+  summary: Summary;
 };
 
 async function readJson<T>(response: Response) {
@@ -48,15 +54,14 @@ async function apiRequest<T>(input: string, init?: RequestInit) {
 }
 
 export default function TeacherDashboard() {
+  const { user } = useTomSession();
   const [requests, setRequests] = useState<ClubRequest[]>([]);
   const [clubs, setClubs] = useState<Club[]>([]);
   const [summary, setSummary] = useState<Summary>({
-    totalUsers: 0,
-    activeClubs: 0,
     pendingRequests: 0,
-    spamRequests: 0,
     thresholdReachedRequests: 0,
   });
+  const [teacherScopeName, setTeacherScopeName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState(
@@ -65,18 +70,13 @@ export default function TeacherDashboard() {
   const [errorMessage, setErrorMessage] = useState('');
 
   const loadData = async (nextMessage?: string) => {
-    const [summaryData, requestData, clubData] = await Promise.all([
-      apiRequest<{ summary: Summary }>('/api/dashboard/summary'),
-      apiRequest<{ requests: ClubRequest[] }>(
-        '/api/club-requests?requestStatus=pending'
-      ),
-      apiRequest<{ clubs: Club[] }>('/api/clubs'),
-    ]);
+    const data = await apiRequest<TeacherDashboardResponse>('/api/teacher/dashboard');
 
-    setSummary(summaryData.summary);
-    setRequests(requestData.requests);
-    setClubs(clubData.clubs);
-    setMessage(nextMessage || 'Багшийн самбарын шууд өгөгдөлд холбогдлоо.');
+    setSummary(data.summary);
+    setRequests(data.requests);
+    setClubs(data.clubs);
+    setTeacherScopeName(data.teacherScopeName);
+    setMessage(nextMessage || `${data.teacherScopeName} нэрээр багшийн өгөгдлийг ачааллаа.`);
   };
 
   useEffect(() => {
@@ -242,21 +242,21 @@ export default function TeacherDashboard() {
                   ? 'Өөрчлөлт хадгалж байна'
                   : 'Холбогдсон'}
               </p>
-              <p className="mt-1 text-sm">
-                {errorMessage ||
-                  (isLoading
-                    ? 'Cloudflare D1 дээрх хүсэлт, клуб, статистик өгөгдлийг ачаалж байна.'
-                    : isSaving
-                    ? 'Сүүлд хийсэн багшийн үйлдлийг хадгалж байна.'
-                    : message)}
-              </p>
-            </div>
+            <p className="mt-1 text-sm">
+              {errorMessage ||
+                (isLoading
+                  ? 'Cloudflare D1 дээрх таны клуб, хүсэлтийн өгөгдлийг ачаалж байна.'
+                  : isSaving
+                  ? 'Сүүлд хийсэн багшийн үйлдлийг хадгалж байна.'
+                  : message)}
+            </p>
+          </div>
             <Link
-              href="/admin"
+              href="/teacher/clubs"
               className="inline-flex items-center gap-2 rounded-full bg-[color:var(--primary)] px-4 py-2 text-sm font-medium text-[color:var(--primary-foreground)] shadow transition-colors hover:opacity-90"
             >
               <Plus className="h-4 w-4" />
-              Админы хэрэгсэл нээх
+              Клубүүд рүү очих
             </Link>
           </div>
         </section>
@@ -291,8 +291,13 @@ export default function TeacherDashboard() {
         <section className="grid gap-6 lg:grid-cols-3">
           <div className="shadow-soft lg:col-span-2 rounded-3xl border border-[color:var(--border)] bg-[color:var(--card)] text-[color:var(--card-foreground)]">
             <div className="flex flex-row items-center justify-between p-6">
-              <div className="text-base font-semibold leading-none tracking-tight">
-                Клуб үүсгэх хүсэлтүүд
+              <div>
+                <div className="text-base font-semibold leading-none tracking-tight">
+                  Клуб үүсгэх хүсэлтүүд
+                </div>
+                <p className="mt-1 text-xs text-[color:var(--muted-foreground)]">
+                  {teacherScopeName || user?.teacherProfileName || user?.name || 'Багш'} нэр дээр ирсэн хүсэлтүүд
+                </p>
               </div>
               <div className="rounded-full border border-transparent bg-[color:var(--secondary)] px-2.5 py-0.5 text-xs font-semibold text-[color:var(--secondary-foreground)]">
                 {requests.length} хүлээгдэж байна
@@ -349,10 +354,10 @@ export default function TeacherDashboard() {
             </div>
             <div className="space-y-3 p-6 pt-0">
               <Link
-                href="/admin"
+                href="/teacher/events"
                 className="inline-flex w-full items-center justify-start gap-2 rounded-full bg-[color:var(--primary)] px-4 py-2 text-sm font-medium text-[color:var(--primary-foreground)] shadow transition-colors hover:opacity-90"
               >
-                <Plus className="h-4 w-4" /> Шинэ клуб үүсгэх
+                <Plus className="h-4 w-4" /> Арга хэмжээ рүү очих
               </Link>
               <button
                 disabled

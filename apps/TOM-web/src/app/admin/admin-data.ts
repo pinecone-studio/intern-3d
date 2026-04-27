@@ -49,6 +49,7 @@ export type ManagedUser = {
   name: string;
   email: string;
   role: UserRole;
+  teacherProfileName?: string;
   accountStatus: UserAccountStatus;
   reason: string;
   lastActive: string;
@@ -227,6 +228,7 @@ export const initialManagedUsers: ManagedUser[] = [
     name: 'Бат-Очир Төмөр',
     email: 'bat-ochir@school.mn',
     role: 'teacher',
+    teacherProfileName: 'Бат-Эрдэнэ багш',
     accountStatus: 'active',
     reason: 'Клуб удирдах эрхтэй багш.',
     lastActive: '2026-04-20',
@@ -249,6 +251,7 @@ export const initialManagedUsers: ManagedUser[] = [
     name: 'Саруул Намуун',
     email: 'saruul.namuun@school.mn',
     role: 'teacher',
+    teacherProfileName: 'Нараа багш',
     accountStatus: 'banned',
     reason: 'Зөрчил илэрсэн тул түр хаасан.',
     lastActive: '2026-04-12',
@@ -293,6 +296,7 @@ export const initialManagedUsers: ManagedUser[] = [
     name: 'Оюунцэцэг Дорж',
     email: 'oyuuntsetseg.dorj@school.mn',
     role: 'teacher',
+    teacherProfileName: 'Багш Сараа Ким',
     accountStatus: 'active',
     reason: 'Клуб удирдах эрхтэй багш.',
     lastActive: '2026-04-23',
@@ -304,6 +308,7 @@ export const initialManagedUsers: ManagedUser[] = [
     name: 'Эрдэнэбаяр Ганбаатар',
     email: 'erdenebayar.ganbaatar@school.mn',
     role: 'teacher',
+    teacherProfileName: 'Темүүлэн багш',
     accountStatus: 'active',
     reason: 'Клуб удирдах эрхтэй багш.',
     lastActive: '2026-04-22',
@@ -315,6 +320,7 @@ export const initialManagedUsers: ManagedUser[] = [
     name: 'Тунгалаг Нарантуяа',
     email: 'tungalag.narantuya@school.mn',
     role: 'teacher',
+    teacherProfileName: 'Багш Сараа Ким',
     accountStatus: 'active',
     reason: 'Клуб удирдах эрхтэй багш.',
     lastActive: '2026-04-20',
@@ -326,6 +332,7 @@ export const initialManagedUsers: ManagedUser[] = [
     name: 'Болормаа Хишигтогтох',
     email: 'bolormaa.khishigtokh@school.mn',
     role: 'teacher',
+    teacherProfileName: 'Бат-Эрдэнэ багш',
     accountStatus: 'active',
     reason: 'Клуб удирдах эрхтэй багш.',
     lastActive: '2026-04-19',
@@ -337,6 +344,7 @@ export const initialManagedUsers: ManagedUser[] = [
     name: 'Жаргалмаа Цэдэнбал',
     email: 'jargalmaa.tsedenbal@school.mn',
     role: 'teacher',
+    teacherProfileName: 'Нараа багш',
     accountStatus: 'restricted',
     reason: 'Гэрчилгээ шинэчлэлт дуустал хязгаарласан.',
     lastActive: '2026-04-10',

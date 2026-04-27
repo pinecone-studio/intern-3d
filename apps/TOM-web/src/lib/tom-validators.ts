@@ -74,6 +74,7 @@ export function parseUserInput(body: Record<string, unknown>) {
     name,
     email,
     role: asString(body.role) as UserInput['role'],
+    teacherProfileName: asOptionalString(body.teacherProfileName),
     accountStatus: asString(body.accountStatus) as UserInput['accountStatus'],
     reason: asString(body.reason),
     lastActive: asString(body.lastActive),
