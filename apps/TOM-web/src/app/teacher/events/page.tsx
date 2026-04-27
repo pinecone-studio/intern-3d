@@ -13,6 +13,12 @@ const eventStatuses: EventStatus[] = [
   'completed',
   'cancelled',
 ];
+const eventStatusLabels: Record<EventStatus, string> = {
+  upcoming: 'Удахгүй',
+  ongoing: 'Явагдаж буй',
+  completed: 'Дууссан',
+  cancelled: 'Цуцлагдсан',
+};
 
 type EventForm = {
   title: string;
@@ -69,9 +75,7 @@ export default function EventsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [message, setMessage] = useState(
-    'Teacher events page event мэдээллийг ачааллаа.'
-  );
+  const [message, setMessage] = useState('Арга хэмжээний мэдээллийг ачааллаа.');
 
   useEffect(() => {
     setForm((current) => ({
@@ -97,7 +101,7 @@ export default function EventsPage() {
     );
 
     setEvents(eventData.events);
-    setMessage(nextMessage || 'Teacher events page жагсаалтыг шинэчиллээ.');
+    setMessage(nextMessage || 'Арга хэмжээний жагсаалтыг шинэчиллээ.');
   };
 
   useEffect(() => {
@@ -114,7 +118,7 @@ export default function EventsPage() {
           setErrorMessage(
             error instanceof Error
               ? error.message
-              : 'Teacher events page ачаалж чадсангүй.'
+              : 'Багшийн арга хэмжээний хуудсыг ачаалж чадсангүй.'
           );
         }
       } finally {
@@ -154,8 +158,8 @@ export default function EventsPage() {
         ...emptyForm,
         createdBy: options.teachers[0] ?? '',
       });
-      await loadData(`${form.title} event үүслээ.`);
-    }, 'Event үүсгэж чадсангүй.');
+      await loadData(`${form.title} арга хэмжээ үүслээ.`);
+    }, 'Арга хэмжээ үүсгэж чадсангүй.');
   };
 
   const updateEventStatus = async (event: SchoolEvent, status: EventStatus) => {
@@ -165,7 +169,7 @@ export default function EventsPage() {
         body: JSON.stringify({ status }),
       });
       await loadData(`${event.title} төлөв ${status} боллоо.`);
-    }, 'Event төлөв шинэчилж чадсангүй.');
+    }, 'Арга хэмжээний төлөв шинэчилж чадсангүй.');
   };
 
   const deleteEvent = async (event: SchoolEvent) => {
@@ -173,8 +177,8 @@ export default function EventsPage() {
       await apiRequest(`/api/events/${event.id}`, {
         method: 'DELETE',
       });
-      await loadData(`${event.title} event устлаа.`);
-    }, 'Event устгаж чадсангүй.');
+      await loadData(`${event.title} арга хэмжээ устлаа.`);
+    }, 'Арга хэмжээ устгаж чадсангүй.');
   };
 
   const summary = useMemo(
@@ -201,30 +205,30 @@ export default function EventsPage() {
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em]">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em]">
               {errorMessage
-                ? 'Sync error'
+                ? 'Синк алдаа'
                 : isLoading
-                ? 'Loading events'
+                ? 'Арга хэмжээнүүд ачаалж байна'
                 : isSaving
-                ? 'Saving changes'
-                : 'Teacher events'}
-            </p>
+                ? 'Өөрчлөлт хадгалж байна'
+                : 'Багшийн арга хэмжээнүүд'}
+              </p>
             <p className="mt-1 text-sm">
               {optionsError ||
                 errorMessage ||
                 (isLoading
-                  ? 'Event option болон schedule-ийг ачаалж байна.'
+                  ? 'Арга хэмжээний сонголт болон хуваарийг ачаалж байна.'
                   : isOptionsLoading
-                  ? 'Event list болон schedule-ийг ачаалж байна.'
+                  ? 'Арга хэмжээний жагсаалт болон хуваарийг ачаалж байна.'
                   : isSaving
-                  ? 'Event өөрчлөлтийг хадгалж байна.'
+                  ? 'Арга хэмжээний өөрчлөлтийг хадгалж байна.'
                   : message)}
-            </p>
+              </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <label className="rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm text-[#4a6080]">
-              <span className="mr-2 font-semibold">Status</span>
+              <span className="mr-2 font-semibold">Төлөв</span>
               <select
                 value={statusFilter}
                 onChange={(event) =>
@@ -232,10 +236,10 @@ export default function EventsPage() {
                 }
                 className="bg-transparent outline-none"
               >
-                <option value="all">All</option>
+                <option value="all">Бүгд</option>
                 {eventStatuses.map((status) => (
                   <option key={status} value={status}>
-                    {status}
+                    {eventStatusLabels[status]}
                   </option>
                 ))}
               </select>
@@ -245,7 +249,7 @@ export default function EventsPage() {
               <input
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Search events"
+                placeholder="Арга хэмжээ хайх"
                 className="w-36 bg-transparent outline-none placeholder:text-[#8aa0be]"
               />
             </label>
@@ -255,10 +259,10 @@ export default function EventsPage() {
 
       <section className="grid gap-4 md:grid-cols-4">
         {[
-          { label: 'Total events', value: summary.total },
-          { label: 'Upcoming', value: summary.upcoming },
-          { label: 'Live now', value: summary.live },
-          { label: 'Total seats joined', value: summary.attendance },
+          { label: 'Нийт арга хэмжээ', value: summary.total },
+          { label: 'Удахгүй болох', value: summary.upcoming },
+          { label: 'Одоо явагдаж буй', value: summary.live },
+          { label: 'Нийт оролцогч', value: summary.attendance },
         ].map((item) => (
           <article
             key={item.label}
@@ -275,9 +279,9 @@ export default function EventsPage() {
           <div className="flex items-center gap-3">
             <Plus className="h-5 w-5 text-[#1a3560]" />
             <div>
-              <h2 className="text-xl font-semibold text-[#17304f]">Create event</h2>
+              <h2 className="text-xl font-semibold text-[#17304f]">Арга хэмжээ үүсгэх</h2>
               <p className="mt-1 text-sm text-[#6e84a3]">
-                Teacher schedule дээр шууд шинэ event нэмнэ.
+                Багшийн хуваариас шууд шинэ арга хэмжээ нэмнэ.
               </p>
             </div>
           </div>
@@ -288,7 +292,7 @@ export default function EventsPage() {
               onChange={(event) =>
                 setForm((current) => ({ ...current, title: event.target.value }))
               }
-              placeholder="Event title"
+              placeholder="Арга хэмжээний нэр"
               className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
             />
             <textarea
@@ -299,7 +303,7 @@ export default function EventsPage() {
                   description: event.target.value,
                 }))
               }
-              placeholder="Description"
+              placeholder="Тайлбар"
               rows={4}
               className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
             />
@@ -312,7 +316,7 @@ export default function EventsPage() {
                     location: event.target.value,
                   }))
                 }
-                placeholder="Location"
+                placeholder="Байршил"
                 className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
               />
               <select
@@ -375,7 +379,7 @@ export default function EventsPage() {
               className="inline-flex items-center justify-center gap-2 rounded-full bg-[#1a3560] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#24478a] disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Plus className="h-4 w-4" />
-              Create event
+              Арга хэмжээ үүсгэх
             </button>
           </div>
         </article>
@@ -384,9 +388,9 @@ export default function EventsPage() {
           <div className="flex items-center gap-3">
             <CalendarDays className="h-5 w-5 text-[#1a3560]" />
             <div>
-              <h2 className="text-xl font-semibold text-[#17304f]">Event schedule</h2>
+              <h2 className="text-xl font-semibold text-[#17304f]">Арга хэмжээний хуваарь</h2>
               <p className="mt-1 text-sm text-[#6e84a3]">
-                Teacher талаас event-ийн явц, статус, attendance-ийг удирдана.
+                Багшийн талаас арга хэмжээний явц, төлөв, ирцийг удирдана.
               </p>
             </div>
           </div>
@@ -394,7 +398,7 @@ export default function EventsPage() {
           <div className="mt-5 space-y-4">
             {events.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-[#d6e1ef] px-4 py-10 text-center text-sm text-[#7d93b2]">
-                Event олдсонгүй.
+                Арга хэмжээ олдсонгүй.
               </div>
             ) : (
               events.map((event) => (
@@ -410,7 +414,7 @@ export default function EventsPage() {
                         </h3>
                         <StatusBadge
                           type={event.status === 'cancelled' ? 'rejected' : event.status}
-                          text={event.status.toUpperCase()}
+                          text={eventStatusLabels[event.status]}
                         />
                       </div>
                       <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-[#6e84a3]">
@@ -420,7 +424,7 @@ export default function EventsPage() {
                         </span>
                         <span className="inline-flex items-center gap-1">
                           <MapPin className="h-4 w-4" />
-                          {event.location || 'Location TBD'}
+                          {event.location || 'Байршил тодорхойгүй'}
                         </span>
                       </div>
                     </div>
@@ -431,12 +435,12 @@ export default function EventsPage() {
                       className="inline-flex items-center gap-2 rounded-full border border-[#ffd7da] px-4 py-2 text-sm font-semibold text-[#b84553] transition hover:bg-[#fff3f4] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <Trash2 className="h-4 w-4" />
-                      Delete
+                      Устгах
                     </button>
                   </div>
 
                   <p className="mt-4 text-sm leading-6 text-[#526987]">
-                    {event.description || 'Энэ event-д тайлбар хараахан ороогүй.'}
+                    {event.description || 'Энэ арга хэмжээнд тайлбар хараахан ороогүй.'}
                   </p>
 
                   <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
@@ -452,7 +456,7 @@ export default function EventsPage() {
                             : 'border border-[#d8e4f4] text-[#17304f] hover:bg-[#eef4ff]'
                         } disabled:cursor-not-allowed disabled:opacity-50`}
                       >
-                        {status}
+                        {eventStatusLabels[status]}
                       </button>
                     ))}
                   </div>
@@ -461,7 +465,7 @@ export default function EventsPage() {
                     <span className="font-semibold text-[#17304f]">
                       {event.participantCount}
                     </span>{' '}
-                    participant joined · created by {event.createdBy}
+                    оролцогч бүртгүүлсэн · үүсгэсэн: {event.createdBy}
                   </div>
                 </div>
               ))

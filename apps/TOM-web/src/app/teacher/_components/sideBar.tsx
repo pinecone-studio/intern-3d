@@ -12,10 +12,10 @@ import {
 } from 'lucide-react';
 
 const navItems = [
-  { href: '/teacher', label: 'Teacher Panel', icon: LayoutDashboard },
-  { href: '/teacher/clubs', label: 'Clubs', icon: Users },
-  { href: '/teacher/events', label: 'Events', icon: CalendarDays },
-  { href: '/teacher/club-detail', label: 'Club Detail', icon: ListCheck },
+  { href: '/teacher', label: 'Багшийн самбар', icon: LayoutDashboard },
+  { href: '/teacher/clubs', label: 'Клубүүд', icon: Users },
+  { href: '/teacher/events', label: 'Арга хэмжээнүүд', icon: CalendarDays },
+  { href: '/teacher/club-detail', label: 'Клубийн дэлгэрэнгүй', icon: ListCheck },
 ];
 
 export default function TeacherLayout() {
@@ -39,8 +39,8 @@ export default function TeacherLayout() {
             <GraduationCap />
           </div>
           <div>
-            <p className="text-sm font-semibold text-[#1a3560]">School Clubs</p>
-            <p className="text-xs text-[#7a90af]">Teacher view</p>
+            <p className="text-sm font-semibold text-[#1a3560]">Сургуулийн клубүүд</p>
+            <p className="text-xs text-[#7a90af]">Багшийн хэсэг</p>
           </div>
         </div>
       </Link>
@@ -71,7 +71,7 @@ export default function TeacherLayout() {
           className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[#4a6080] transition-colors hover:bg-[#eef4ff] hover:text-[#1a3560]"
         >
           <LogOut className="h-4 w-4 shrink-0" />
-          Log out
+          Гарах
         </Link>
       </div>
     </div>
