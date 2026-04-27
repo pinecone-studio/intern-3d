@@ -1,7 +1,7 @@
 import { getTomDb } from '@/lib/d1'
 import type { TomCurrentUser, TomSession } from '@/lib/tom-types'
 
-const DEFAULT_SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7
+export const DEFAULT_SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7
 
 type SessionRow = {
   id: string

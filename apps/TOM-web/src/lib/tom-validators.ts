@@ -83,3 +83,10 @@ export function parseUserInput(body: Record<string, unknown>) {
 
   return input
 }
+
+export function parseSessionLoginInput(body: Record<string, unknown>) {
+  const userId = asString(body.userId)
+  if (!userId) return null
+
+  return { userId }
+}
