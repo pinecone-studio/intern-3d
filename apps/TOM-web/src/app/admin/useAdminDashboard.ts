@@ -135,7 +135,7 @@ function mapUser(user: ApiManagedUser): ManagedUser {
     id: user.id,
     name: user.name,
     email: user.email,
-    role: user.role === 'teacher' ? 'teacher' : 'student',
+    role: user.role,
     accountStatus: user.accountStatus,
     reason: user.reason,
     lastActive: user.lastActive,

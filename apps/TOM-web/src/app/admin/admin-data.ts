@@ -40,7 +40,7 @@ export type ClubForm = {
   note: string;
 };
 
-export type UserRole = (typeof userRoleOptions)[number];
+export type UserRole = 'student' | 'teacher' | 'admin';
 
 export type UserAccountStatus = (typeof userAccountStatusOptions)[number];
 
@@ -200,6 +200,17 @@ export const initialActiveClubs: ActiveClub[] = [
 ];
 
 export const initialManagedUsers: ManagedUser[] = [
+  {
+    id: 'user-admin-1',
+    name: 'Насанжаргал Баярхүү',
+    email: 'nasanjargalbayrhvv@gmail.com',
+    role: 'admin',
+    accountStatus: 'active',
+    reason: 'TOM системийн үндсэн админ хэрэглэгч.',
+    lastActive: '2026-04-27',
+    clubCount: 0,
+    notes: 'Админ самбар болон moderation flow-ийг эзэмшинэ.',
+  },
   {
     id: 'user-student-1',
     name: 'Анударь Ням',
