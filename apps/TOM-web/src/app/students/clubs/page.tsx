@@ -1,148 +1,502 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Plus, X } from 'lucide-react';
 
-const mockClubs = [
-  {
-    id: '1',
-    name: 'Роботик клуб',
-    status: 'active',
-    memberCount: 18,
-    teacherName: 'Түвшин 3 · 250 XP',
-    interestCount: 6,
-    studentLimit: 7,
-  },
-  {
-    id: '2',
-    name: 'Мэтгэлцээний клуб',
-    status: 'active',
-    memberCount: 24,
-    teacherName: 'Бүгдэд нээлттэй',
-    interestCount: 7,
-    studentLimit: 7,
-  },
-  {
-    id: '3',
-    name: 'Гэрэл зургийн клуб',
-    status: 'idea',
-    memberCount: 5,
-    teacherName: 'Санал болгосон: Alex',
-    interestCount: 3,
-    studentLimit: 10,
-  },
-  {
-    id: '4',
-    name: 'Шатрын клуб',
-    status: 'idea',
-    memberCount: 8,
-    teacherName: 'Санал болгосон: Sam',
-    interestCount: 5,
-    studentLimit: 12,
-  },
-];
+import { CapacityBar } from '@/app/_components';
+import { useTomOptions } from '@/app/_hooks/useTomOptions';
+import type { Club, TomFormOptions } from '@/lib/tom-types';
+
+type ClubRequestForm = {
+  clubName: string;
+  teacherName: string;
+  startDate: string;
+  endDate: string;
+  allowedDays: string;
+  gradeRange: string;
+  studentLimit: string;
+  note: string;
+};
+
+const fieldClass =
+  'w-full rounded-[18px] border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-3 text-sm text-[color:var(--text)] outline-none transition placeholder:text-[#8aa0be] focus:border-[color:var(--primary)] focus:bg-white focus:ring-4 focus:ring-[color:var(--primary-soft)]';
+
+const inputLabelClass = 'mb-2 block text-sm font-semibold text-[#5f7697]';
+
+const joinedClubsStorageKey = 'tom.joined-clubs.v1';
+
+function createInitialForm(options: TomFormOptions): ClubRequestForm {
+  return {
+    clubName: '',
+    teacherName: options.teachers[0] ?? '',
+    startDate: '2025-09-01',
+    endDate: '2025-12-20',
+    allowedDays: options.allowedDays[0] ?? '',
+    gradeRange: options.gradeRanges[0] ?? '',
+    studentLimit: '12',
+    note: '',
+  };
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) return error.message;
+  return fallback;
+}
+
+async function readJson<T>(response: Response) {
+  const data = (await response.json().catch(() => null)) as
+    | ({ error?: string } & T)
+    | null;
+
+  if (!response.ok) {
+    throw new Error(data?.error || `Хүсэлт амжилтгүй боллоо (код: ${response.status}).`);
+  }
+
+  return data as T;
+}
+
+async function apiRequest<T>(input: string, init?: RequestInit) {
+  const headers = new Headers(init?.headers);
+
+  if (init?.body && !headers.has('content-type')) {
+    headers.set('content-type', 'application/json');
+  }
+
+  const response = await fetch(input, { ...init, headers });
+  return readJson<T>(response);
+}
+
+function loadJoinedClubIds() {
+  if (typeof window === 'undefined') return [];
+
+  try {
+    const raw = window.localStorage.getItem(joinedClubsStorageKey);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((value) => typeof value === 'string');
+  } catch {
+    return [];
+  }
+}
+
+function saveJoinedClubIds(ids: string[]) {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(joinedClubsStorageKey, JSON.stringify(ids));
+}
 
 export default function ClubsPage() {
-  const [activeTab, setActiveTab] = useState<'active' | 'ideas'>('active');
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const { options } = useTomOptions();
 
-  const filteredClubs = mockClubs.filter((c) =>
-    activeTab === 'active' ? c.status === 'active' : c.status === 'idea'
+  const [clubs, setClubs] = useState<Club[]>([]);
+  const [activeTab, setActiveTab] = useState<'mine' | 'other'>('mine');
+  const [joinedClubIds, setJoinedClubIds] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [banner, setBanner] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [dialogError, setDialogError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [form, setForm] = useState<ClubRequestForm>(() => createInitialForm(options));
+
+  useEffect(() => {
+    setJoinedClubIds(loadJoinedClubIds());
+  }, []);
+
+  useEffect(() => {
+    setForm((current) => ({
+      ...current,
+      teacherName: current.teacherName || options.teachers[0] || current.teacherName,
+      allowedDays: current.allowedDays || options.allowedDays[0] || current.allowedDays,
+      gradeRange: current.gradeRange || options.gradeRanges[0] || current.gradeRange,
+    }));
+  }, [options.allowedDays, options.gradeRanges, options.teachers]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const run = async () => {
+      setIsLoading(true);
+      setErrorMessage('');
+
+      try {
+        const data = await apiRequest<{ clubs: Club[] }>('/api/clubs?status=active');
+        if (!cancelled) setClubs(data.clubs);
+      } catch (error) {
+        if (!cancelled) {
+          setErrorMessage(getErrorMessage(error, 'Клубуудын жагсаалтыг ачаалж чадсангүй.'));
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    };
+
+    void run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const joinedSet = useMemo(() => new Set(joinedClubIds), [joinedClubIds]);
+
+  const myClubs = useMemo(
+    () =>
+      clubs
+        .filter((club) => joinedSet.has(club.id))
+        .sort((left, right) => left.name.localeCompare(right.name)),
+    [clubs, joinedSet]
   );
+
+  const otherClubs = useMemo(
+    () =>
+      clubs
+        .filter((club) => !joinedSet.has(club.id))
+        .sort((left, right) => left.name.localeCompare(right.name)),
+    [clubs, joinedSet]
+  );
+
+  const displayedClubs = activeTab === 'mine' ? myClubs : otherClubs;
+
+  const openDialog = () => {
+    setDialogError('');
+    setForm(createInitialForm(options));
+    setIsDialogOpen(true);
+  };
+
+  const closeDialog = () => {
+    setIsDialogOpen(false);
+    setDialogError('');
+    setIsSubmitting(false);
+  };
+
+  const updateForm = (field: keyof ClubRequestForm, value: string) => {
+    setForm((current) => ({ ...current, [field]: value }));
+  };
+
+  const joinClub = (clubId: string) => {
+    setBanner('');
+    setErrorMessage('');
+
+    setJoinedClubIds((current) => {
+      if (current.includes(clubId)) return current;
+      const next = [...current, clubId];
+      saveJoinedClubIds(next);
+      return next;
+    });
+
+    setBanner('Клубт амжилттай нэгдлээ.');
+  };
+
+  const handleSubmitRequest = async () => {
+    const clubName = form.clubName.trim();
+    if (!clubName) {
+      setDialogError('Клубын нэрээ оруулна уу.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setDialogError('');
+    setBanner('');
+    setErrorMessage('');
+
+    try {
+      await apiRequest('/api/club-requests', {
+        method: 'POST',
+        body: JSON.stringify({
+          clubName,
+          teacher: form.teacherName,
+          createdBy: 'Сурагч',
+          startDate: form.startDate,
+          endDate: form.endDate,
+          allowedDays: form.allowedDays,
+          gradeRange: form.gradeRange,
+          studentLimit: Number(form.studentLimit) || 12,
+          interestCount: 0,
+          note: form.note,
+        }),
+      });
+
+      closeDialog();
+      setBanner('Клуб үүсгэх хүсэлтийг админ руу илгээлээ.');
+      setActiveTab('other');
+    } catch (error) {
+      setDialogError(getErrorMessage(error, 'Хүсэлтийг илгээж чадсангүй.'));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="rounded-2xl border border-[#e2eaf5] bg-white p-8 shadow-sm">
-      {/* Header */}
-      <h1 className="text-2xl font-bold text-[#0f1f3d]">Клубүүд</h1>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold text-[#0f1f3d]">Клубууд</h1>
 
-      {/* Tabs */}
+        <button
+          type="button"
+          onClick={openDialog}
+          className="inline-flex items-center gap-2 rounded-2xl bg-[#1a3560] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(26,53,96,0.25)] transition hover:opacity-90"
+        >
+          <Plus className="h-4 w-4" />
+          + Клуб үүсгэх
+        </button>
+      </div>
+
+      {(banner || errorMessage) && (
+        <div
+          className={`mt-5 rounded-[20px] border px-5 py-3.5 text-sm ${
+            errorMessage
+              ? 'border-[#ffd2d5] bg-[#fff7f8] text-[#b23a49]'
+              : 'border-[#c8e6c9] bg-[#f1f8f1] text-[#2e7d32]'
+          }`}
+        >
+          {errorMessage || banner}
+        </div>
+      )}
+
       <div className="mt-5 inline-flex rounded-xl border border-[#e2eaf5] bg-white p-1">
-        {(['active', 'ideas'] as const).map((tab) => (
+        {([
+          { key: 'mine', label: 'Миний клубууд' },
+          { key: 'other', label: 'Бусад клубууд' },
+        ] as const).map((tab) => (
           <button
-            key={tab}
-            onClick={() => {
-              setActiveTab(tab);
-              setSelectedId(null);
-            }}
+            key={tab.key}
+            type="button"
+            onClick={() => setActiveTab(tab.key)}
             className={`rounded-lg px-5 py-2 text-sm font-semibold transition-colors ${
-              activeTab === tab
+              activeTab === tab.key
                 ? 'bg-white text-[#0f1f3d] shadow-sm ring-1 ring-[#e2eaf5]'
                 : 'text-[#7a90af] hover:text-[#0f1f3d]'
-          }`}
+            }`}
           >
-            {tab === 'active' ? 'Миний клубүүд' : 'Бусад клубүүд'}
+            {tab.label}
           </button>
         ))}
       </div>
 
-      {/* Club cards */}
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
-        {filteredClubs.map((club) => {
-          const ratio = Math.min(club.interestCount / club.studentLimit, 1);
-          const isSelected = selectedId === club.id;
-          const statusLabel =
-            club.status === 'active'
-              ? 'Идэвхтэй'
-              : club.status === 'idea'
-              ? 'Санаа'
-              : club.status;
+      {isLoading ? (
+        <p className="mt-6 text-sm text-[#6b7fa3]">Клубуудыг ачаалж байна...</p>
+      ) : displayedClubs.length === 0 ? (
+        <div className="mt-6 rounded-2xl border border-[#e2eaf5] bg-white p-8 text-center">
+          <p className="text-sm text-[#6b7fa3]">
+            {activeTab === 'mine'
+              ? 'Одоогоор таны нэгдсэн клуб алга байна.'
+              : 'Одоогоор бусад клуб алга байна.'}
+          </p>
+        </div>
+      ) : (
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          {displayedClubs.map((club) => {
+            const isJoined = joinedSet.has(club.id);
+            return (
+              <div
+                key={club.id}
+                className="rounded-xl border border-[#e2eaf5] bg-white p-5 text-left transition-all hover:border-[#b8cef0]"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-base font-bold text-[#0f1f3d]">{club.name}</h3>
+                    <p className="mt-1.5 text-sm text-[#6b7fa3]">
+                      {club.teacherName || 'Тодорхойгүй багш'}
+                    </p>
+                  </div>
 
-          return (
-            <button
-              key={club.id}
-              onClick={() => setSelectedId(isSelected ? null : club.id)}
-              className={`rounded-xl border p-5 text-left transition-all ${
-                isSelected
-                  ? 'border-[#1a3560] ring-2 ring-[#1a3560]/20'
-                  : 'border-[#e2eaf5] hover:border-[#b8cef0]'
-              }`}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <h3 className="text-base font-bold text-[#0f1f3d]">
-                  {club.name}
-                </h3>
-                <span className="rounded-md border border-[#86c78a] px-2 py-0.5 text-xs font-semibold text-[#3a8a3e]">
-                  {statusLabel}
-                </span>
-              </div>
-
-              <p className="mt-1.5 text-sm text-[#6b7fa3]">
-                {club.memberCount} гишүүн · {club.teacherName}
-              </p>
-
-              <div className="mt-4">
-                <div className="flex items-center justify-between text-xs text-[#6b7fa3]">
-                  <span>Сонирхол</span>
-                  <span>
-                    {club.interestCount}/{club.studentLimit}
-                  </span>
+                  {isJoined ? (
+                    <span className="rounded-md border border-[#86c78a] px-2 py-0.5 text-xs font-semibold text-[#3a8a3e]">
+                      Нэгдсэн
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => joinClub(club.id)}
+                      className="rounded-full bg-[#1a3560] px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+                    >
+                      Нэгдэх
+                    </button>
+                  )}
                 </div>
-                <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-[#e8eef8]">
-                  <div
-                    className="h-full rounded-full bg-[#3b6de8] transition-all"
-                    style={{ width: `${ratio * 100}%` }}
+
+                <div className="mt-4 space-y-2 text-sm text-[#60789a]">
+                  {club.note ? <p>{club.note}</p> : null}
+                  <p>
+                    {club.allowedDays}
+                    {club.gradeRange ? ` · ${club.gradeRange}` : ''}
+                  </p>
+                  {club.startDate && club.endDate ? (
+                    <p>
+                      {club.startDate} – {club.endDate}
+                    </p>
+                  ) : null}
+                  <CapacityBar current={club.interestCount} total={club.studentLimit} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {isDialogOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-6">
+          <div className="w-full max-w-2xl rounded-[28px] bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-[#e2eaf5] px-6 py-4">
+              <div>
+                <h2 className="text-lg font-bold text-[#183153]">Клуб үүсгэх</h2>
+                <p className="mt-1 text-sm text-[#6f86a7]">
+                  Клубын мэдээллээ бөглөөд админд илгээнэ үү.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={closeDialog}
+                className="rounded-full p-2 text-[#6f86a7] transition hover:bg-[#f4f7fb] hover:text-[#183153]"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="px-6 py-5">
+              {dialogError ? (
+                <div className="mb-4 rounded-[18px] border border-[#ffd2d5] bg-[#fff7f8] px-4 py-3 text-sm text-[#b23a49]">
+                  {dialogError}
+                </div>
+              ) : null}
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="block md:col-span-2">
+                  <span className={inputLabelClass}>Клубын нэр</span>
+                  <input
+                    type="text"
+                    value={form.clubName}
+                    onChange={(e) => updateForm('clubName', e.target.value)}
+                    placeholder="Жишээ: Роботик клуб"
+                    className={fieldClass}
                   />
-                </div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
+                </label>
 
-      {/* Actions */}
-      <div className="mt-6 flex gap-3">
-        <button
-          disabled={!selectedId}
-          className="rounded-xl bg-[#1a3560] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#24478a] disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          Сонгосон клубт нэгдэх
-        </button>
-        <button
-          disabled={!selectedId}
-          className="rounded-xl border border-[#e2eaf5] px-6 py-3 text-sm font-semibold text-[#0f1f3d] transition hover:bg-[#f4f7fb] disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          Шаардлага харах
-        </button>
-      </div>
+                <label className="block">
+                  <span className={inputLabelClass}>Багш</span>
+                  <select
+                    value={form.teacherName}
+                    onChange={(e) => updateForm('teacherName', e.target.value)}
+                    className={fieldClass}
+                  >
+                    {options.teachers.length > 0 ? (
+                      options.teachers.map((teacher) => (
+                        <option key={teacher} value={teacher}>
+                          {teacher}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="">Сонгох боломжгүй</option>
+                    )}
+                  </select>
+                </label>
+
+                <label className="block">
+                  <span className={inputLabelClass}>Сурагчийн дээд тоо</span>
+                  <input
+                    type="number"
+                    min="1"
+                    max="99"
+                    value={form.studentLimit}
+                    onChange={(e) => updateForm('studentLimit', e.target.value)}
+                    className={fieldClass}
+                  />
+                </label>
+
+                <label className="block">
+                  <span className={inputLabelClass}>Эхлэх огноо</span>
+                  <input
+                    type="date"
+                    value={form.startDate}
+                    onChange={(e) => updateForm('startDate', e.target.value)}
+                    className={fieldClass}
+                  />
+                </label>
+
+                <label className="block">
+                  <span className={inputLabelClass}>Дуусах огноо</span>
+                  <input
+                    type="date"
+                    value={form.endDate}
+                    onChange={(e) => updateForm('endDate', e.target.value)}
+                    className={fieldClass}
+                  />
+                </label>
+
+                <label className="block">
+                  <span className={inputLabelClass}>Өдрүүд</span>
+                  <select
+                    value={form.allowedDays}
+                    onChange={(e) => updateForm('allowedDays', e.target.value)}
+                    className={fieldClass}
+                  >
+                    {options.allowedDays.length > 0 ? (
+                      options.allowedDays.map((days) => (
+                        <option key={days} value={days}>
+                          {days}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="">Сонгох боломжгүй</option>
+                    )}
+                  </select>
+                </label>
+
+                <label className="block">
+                  <span className={inputLabelClass}>Ангийн хүрээ</span>
+                  <select
+                    value={form.gradeRange}
+                    onChange={(e) => updateForm('gradeRange', e.target.value)}
+                    className={fieldClass}
+                  >
+                    {options.gradeRanges.length > 0 ? (
+                      options.gradeRanges.map((grade) => (
+                        <option key={grade} value={grade}>
+                          {grade}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="">Сонгох боломжгүй</option>
+                    )}
+                  </select>
+                </label>
+
+                <label className="block md:col-span-2">
+                  <span className={inputLabelClass}>Тайлбар</span>
+                  <textarea
+                    rows={4}
+                    value={form.note}
+                    onChange={(e) => updateForm('note', e.target.value)}
+                    placeholder="Клубын зорилго, хийх зүйлс, шаардлага..."
+                    className={fieldClass}
+                  />
+                </label>
+              </div>
+
+              <div className="mt-5 flex flex-wrap items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={closeDialog}
+                  className="rounded-full border border-[color:var(--border)] bg-white px-5 py-2.5 text-sm font-semibold text-[#56708f] transition hover:bg-[color:var(--surface)]"
+                >
+                  Болих
+                </button>
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => void handleSubmitRequest()}
+                  className="rounded-full bg-[color:var(--primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(79,114,213,0.22)] transition hover:opacity-90 disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Илгээж байна...' : 'Илгээх'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
+
