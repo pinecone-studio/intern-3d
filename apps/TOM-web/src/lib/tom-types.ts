@@ -96,6 +96,19 @@ export type ManagedUser = {
   updatedAt: string
 }
 
+export type TomSession = {
+  id: string
+  userId: string
+  createdAt: string
+  updatedAt: string
+  expiresAt: string
+}
+
+export type TomCurrentUser = ManagedUser & {
+  sessionId: string
+  sessionExpiresAt: string
+}
+
 export type EventStatus = 'upcoming' | 'ongoing' | 'completed' | 'cancelled'
 
 export type SchoolEvent = {
