@@ -42,9 +42,7 @@ export default function ClubsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [message, setMessage] = useState(
-    'Teacher clubs page клубийн мэдээллийг D1-ээс ачааллаа.'
-  );
+  const [message, setMessage] = useState('Клубийн мэдээллийг D1-ээс ачааллаа.');
 
   const loadData = async (nextMessage?: string) => {
     const query = new URLSearchParams();
@@ -70,7 +68,7 @@ export default function ClubsPage() {
 
     setClubs(clubData.clubs);
     setRequests(requestData.requests);
-    setMessage(nextMessage || 'Teacher clubs page клубийн мэдээллийг шинэчиллээ.');
+    setMessage(nextMessage || 'Клубийн мэдээллийг шинэчиллээ.');
   };
 
   useEffect(() => {
@@ -87,7 +85,7 @@ export default function ClubsPage() {
           setErrorMessage(
             error instanceof Error
               ? error.message
-              : 'Teacher clubs page ачаалж чадсангүй.'
+              : 'Багшийн клубийн хуудсыг ачаалж чадсангүй.'
           );
         }
       } finally {
@@ -161,6 +159,15 @@ export default function ClubsPage() {
     () => clubs.filter((club) => club.status === 'paused'),
     [clubs]
   );
+  const clubStatusLabel = (status: Club['status']) =>
+    ({
+      active: 'Идэвхтэй',
+      paused: 'Түр зогссон',
+      pending: 'Хүлээгдэж буй',
+      draft: 'Ноорог',
+      archived: 'Архивласан',
+      spam: 'Спам',
+    })[status] ?? status;
 
   return (
     <div className="space-y-6">
@@ -173,15 +180,15 @@ export default function ClubsPage() {
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em]">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em]">
               {errorMessage
-                ? 'Sync error'
+                ? 'Синк алдаа'
                 : isLoading
-                ? 'Loading clubs'
+                ? 'Клубүүд ачаалж байна'
                 : isSaving
-                ? 'Saving changes'
-                : 'Teacher clubs'}
-            </p>
+                ? 'Өөрчлөлт хадгалж байна'
+                : 'Багшийн клубүүд'}
+              </p>
             <p className="mt-1 text-sm">
               {optionsError ||
                 errorMessage ||
@@ -196,13 +203,13 @@ export default function ClubsPage() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <label className="rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm text-[#4a6080]">
-              <span className="mr-2 font-semibold">Teacher</span>
+              <span className="mr-2 font-semibold">Багш</span>
               <select
                 value={selectedTeacher}
                 onChange={(event) => setSelectedTeacher(event.target.value)}
                 className="bg-transparent outline-none"
               >
-                <option value="all">All teachers</option>
+                <option value="all">Бүх багш</option>
                 {options.teachers.map((teacher) => (
                   <option key={teacher} value={teacher}>
                     {teacher}
@@ -215,7 +222,7 @@ export default function ClubsPage() {
               <input
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Search clubs"
+                placeholder="Клуб хайх"
                 className="w-36 bg-transparent outline-none placeholder:text-[#8aa0be]"
               />
             </label>
@@ -226,19 +233,19 @@ export default function ClubsPage() {
       <section className="grid gap-4 md:grid-cols-3">
         {[
           {
-            label: 'Total clubs',
+            label: 'Нийт клуб',
             value: clubs.length,
-            caption: 'Teacher view дээр харагдаж буй клубүүд',
+            caption: 'Багшийн хэсэгт харагдаж буй клубүүд',
           },
           {
-            label: 'Active clubs',
+            label: 'Идэвхтэй клуб',
             value: activeClubs.length,
             caption: 'Одоогоор ажиллаж байгаа клубүүд',
           },
           {
-            label: 'Pending requests',
+            label: 'Хүлээгдэж буй хүсэлт',
             value: requests.length,
-            caption: 'Teacher approval хүлээж буй санал',
+            caption: 'Багшийн баталгаажуулалт хүлээж буй санал',
           },
         ].map((item) => (
           <article
@@ -256,7 +263,7 @@ export default function ClubsPage() {
         <article className="rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-6 shadow-soft">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-xl font-semibold text-[#17304f]">Managed clubs</h2>
+              <h2 className="text-xl font-semibold text-[#17304f]">Удирдаж буй клубүүд</h2>
               <p className="mt-1 text-sm text-[#6e84a3]">
                 Клубийн хүчин чадал, төлөв, багшийн мэдээллийг эндээс харж удирдана.
               </p>
@@ -265,8 +272,8 @@ export default function ClubsPage() {
               type={pausedClubs.length > 0 ? 'paused' : 'active'}
               text={
                 pausedClubs.length > 0
-                  ? `${pausedClubs.length} paused`
-                  : 'All live'
+                  ? `${pausedClubs.length} түр зогссон`
+                  : 'Бүгд идэвхтэй'
               }
             />
           </div>
@@ -290,15 +297,15 @@ export default function ClubsPage() {
                         </h3>
                         <StatusBadge
                           type={club.status}
-                          text={club.status.toUpperCase()}
+                          text={clubStatusLabel(club.status)}
                         />
                         {club.verified ? (
-                          <StatusBadge type="approved" text="Verified" />
+                          <StatusBadge type="approved" text="Баталгаажсан" />
                         ) : null}
                       </div>
                       <p className="mt-2 text-sm text-[#6e84a3]">
-                        {club.teacherName} · {club.gradeRange || 'Grade not set'} ·{' '}
-                        {club.allowedDays || 'Days not set'}
+                        {club.teacherName} · {club.gradeRange || 'Анги тохируулаагүй'} ·{' '}
+                        {club.allowedDays || 'Өдөр тохируулаагүй'}
                       </p>
                     </div>
                     <button
@@ -307,14 +314,14 @@ export default function ClubsPage() {
                       disabled={isSaving}
                       className="rounded-full border border-[#d8e4f4] px-4 py-2 text-sm font-semibold text-[#17304f] transition hover:bg-[#eef4ff] disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      {club.status === 'active' ? 'Pause club' : 'Activate club'}
+                      {club.status === 'active' ? 'Клуб түр зогсоох' : 'Клуб идэвхжүүлэх'}
                     </button>
                   </div>
 
                   <div className="mt-4 grid gap-4 md:grid-cols-2">
                     <div>
                       <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7a90af]">
-                        Capacity
+                        Багтаамж
                       </p>
                       <CapacityBar
                         current={club.memberCount}
@@ -324,7 +331,7 @@ export default function ClubsPage() {
                     <div className="grid grid-cols-2 gap-3 text-sm text-[#5f7697]">
                       <div className="rounded-2xl bg-[#f4f8fd] px-4 py-3">
                         <p className="text-xs uppercase tracking-[0.14em] text-[#7d91ae]">
-                          Interest
+                          Сонирхол
                         </p>
                         <p className="mt-1 text-lg font-semibold text-[#17304f]">
                           {club.interestCount}
@@ -332,10 +339,10 @@ export default function ClubsPage() {
                       </div>
                       <div className="rounded-2xl bg-[#f4f8fd] px-4 py-3">
                         <p className="text-xs uppercase tracking-[0.14em] text-[#7d91ae]">
-                          Window
+                          Хугацаа
                         </p>
                         <p className="mt-1 text-sm font-semibold text-[#17304f]">
-                          {club.startDate || 'TBD'} - {club.endDate || 'TBD'}
+                          {club.startDate || 'Тодорхойгүй'} - {club.endDate || 'Тодорхойгүй'}
                         </p>
                       </div>
                     </div>
@@ -354,7 +361,7 @@ export default function ClubsPage() {
           <div className="flex items-center gap-3">
             <ShieldCheck className="h-5 w-5 text-[#1a3560]" />
             <div>
-              <h2 className="text-xl font-semibold text-[#17304f]">Pending proposals</h2>
+              <h2 className="text-xl font-semibold text-[#17304f]">Хүлээгдэж буй саналууд</h2>
               <p className="mt-1 text-sm text-[#6e84a3]">
                 Хүсэлтийг хурдан батлах эсвэл буцаах хэсэг.
               </p>
@@ -364,7 +371,7 @@ export default function ClubsPage() {
           <div className="mt-5 space-y-4">
             {requests.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-[#d6e1ef] px-4 py-10 text-center text-sm text-[#7d93b2]">
-                Pending хүсэлт алга.
+                Хүлээгдэж буй хүсэлт алга.
               </div>
             ) : (
               requests.map((request) => (
@@ -381,13 +388,13 @@ export default function ClubsPage() {
                         {request.teacherName} · {request.createdBy}
                       </p>
                     </div>
-                    <StatusBadge type="pending" text="Pending" />
+                    <StatusBadge type="pending" text="Хүлээгдэж буй" />
                   </div>
 
                   <div className="mt-4 grid gap-3 text-sm text-[#5f7697]">
                     <div className="rounded-2xl bg-[#f4f8fd] px-4 py-3">
                       <p className="text-xs uppercase tracking-[0.14em] text-[#7d91ae]">
-                        Schedule
+                        Хуваарь
                       </p>
                       <p className="mt-1 font-semibold text-[#17304f]">
                         {request.allowedDays} · {request.gradeRange}
@@ -395,7 +402,7 @@ export default function ClubsPage() {
                     </div>
                     <div className="rounded-2xl bg-[#f4f8fd] px-4 py-3">
                       <p className="text-xs uppercase tracking-[0.14em] text-[#7d91ae]">
-                        Interested students
+                        Сонирхсон сурагчид
                       </p>
                       <p className="mt-1 font-semibold text-[#17304f]">
                         {request.interestCount} / {request.studentLimit}
@@ -415,7 +422,7 @@ export default function ClubsPage() {
                       className="inline-flex items-center gap-2 rounded-full bg-[#1a3560] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#24478a] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <CheckCircle2 className="h-4 w-4" />
-                      Approve
+                      Батлах
                     </button>
                     <button
                       type="button"
@@ -424,7 +431,7 @@ export default function ClubsPage() {
                       className="inline-flex items-center gap-2 rounded-full border border-[#d8e4f4] px-4 py-2 text-sm font-semibold text-[#17304f] transition hover:bg-[#fff3f4] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <XCircle className="h-4 w-4" />
-                      Reject
+                      Татгалзах
                     </button>
                   </div>
                 </div>
