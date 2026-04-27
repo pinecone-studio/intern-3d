@@ -14,12 +14,12 @@ import {
 } from 'lucide-react';
 
 const navItems = [
-  { href: '/students', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/students/clubs', label: 'Clubs', icon: Users },
-  { href: '/students/create-club', label: 'Create Club', icon: PlusCircle },
-  { href: '/students/events', label: 'Events', icon: CalendarDays },
-  { href: '/students/detail', label: 'Club Detail', icon: BookOpen },
-  { href: '/students/gamification', label: 'Gamification', icon: Trophy },
+  { href: '/students', label: 'Хяналтын самбар', icon: LayoutDashboard },
+  { href: '/students/clubs', label: 'Клубүүд', icon: Users },
+  { href: '/students/create-club', label: 'Клуб нээх', icon: PlusCircle },
+  { href: '/students/events', label: 'Арга хэмжээ', icon: CalendarDays },
+  { href: '/students/detail', label: 'Клубын дэлгэрэнгүй', icon: BookOpen },
+  { href: '/students/gamification', label: 'Тоглоомжуулалт', icon: Trophy },
 ];
 
 export default function StudentLayout() {
@@ -43,8 +43,10 @@ export default function StudentLayout() {
             <GraduationCap />
           </div>
           <div>
-            <p className="text-sm font-semibold text-[#1a3560]">School Clubs</p>
-            <p className="text-xs text-[#7a90af]">Student view</p>
+            <p className="text-sm font-semibold text-[#1a3560]">
+              Сургуулийн клубүүд
+            </p>
+            <p className="text-xs text-[#7a90af]">Сурагчийн харагдац</p>
           </div>
         </div>
       </Link>
@@ -75,7 +77,7 @@ export default function StudentLayout() {
           className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[#4a6080] transition-colors hover:bg-[#eef4ff] hover:text-[#1a3560]"
         >
           <LogOut className="h-4 w-4 shrink-0" />
-          Log out
+          Гарах
         </Link>
       </div>
     </div>

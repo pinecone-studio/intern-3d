@@ -3,7 +3,7 @@
 export default function GamificationPage() {
   return (
     <div className="rounded-2xl border border-[#e2eaf5] bg-white p-8 shadow-sm">
-      Still in process{' '}
+      Хөгжүүлэлт хийгдэж байна.
     </div>
   );
 }

@@ -5,37 +5,37 @@ import { useState } from 'react';
 const mockClubs = [
   {
     id: '1',
-    name: 'Robotics Club',
+    name: 'Роботик клуб',
     status: 'active',
     memberCount: 18,
-    teacherName: 'Level 3 · 250 XP',
+    teacherName: 'Түвшин 3 · 250 XP',
     interestCount: 6,
     studentLimit: 7,
   },
   {
     id: '2',
-    name: 'Debate Society',
+    name: 'Мэтгэлцээний клуб',
     status: 'active',
     memberCount: 24,
-    teacherName: 'Open to all',
+    teacherName: 'Бүгдэд нээлттэй',
     interestCount: 7,
     studentLimit: 7,
   },
   {
     id: '3',
-    name: 'Photography Club',
+    name: 'Гэрэл зургийн клуб',
     status: 'idea',
     memberCount: 5,
-    teacherName: 'Proposed by Alex',
+    teacherName: 'Санал болгосон: Alex',
     interestCount: 3,
     studentLimit: 10,
   },
   {
     id: '4',
-    name: 'Chess Club',
+    name: 'Шатрын клуб',
     status: 'idea',
     memberCount: 8,
-    teacherName: 'Proposed by Sam',
+    teacherName: 'Санал болгосон: Sam',
     interestCount: 5,
     studentLimit: 12,
   },
@@ -52,9 +52,10 @@ export default function ClubsPage() {
   return (
     <div className="rounded-2xl border border-[#e2eaf5] bg-white p-8 shadow-sm">
       {/* Header */}
-      <h1 className="text-2xl font-bold text-[#0f1f3d]">Clubs</h1>
+      <h1 className="text-2xl font-bold text-[#0f1f3d]">Клубүүд</h1>
       <p className="mt-1 text-sm text-[#6b7fa3]">
-        Browse active clubs or support new interest-based ideas.
+        Идэвхтэй клубүүдийг үзэж танилцах эсвэл сонирхолд суурилсан шинэ санааг
+        дэмжих.
       </p>
 
       {/* Tabs */}
@@ -72,7 +73,7 @@ export default function ClubsPage() {
                 : 'text-[#7a90af] hover:text-[#0f1f3d]'
             }`}
           >
-            {tab === 'active' ? 'Active Clubs' : 'New Ideas'}
+            {tab === 'active' ? 'Идэвхтэй клубүүд' : 'Шинэ санаа'}
           </button>
         ))}
       </div>
@@ -82,6 +83,12 @@ export default function ClubsPage() {
         {filteredClubs.map((club) => {
           const ratio = Math.min(club.interestCount / club.studentLimit, 1);
           const isSelected = selectedId === club.id;
+          const statusLabel =
+            club.status === 'active'
+              ? 'Идэвхтэй'
+              : club.status === 'idea'
+              ? 'Санаа'
+              : club.status;
 
           return (
             <button
@@ -98,17 +105,17 @@ export default function ClubsPage() {
                   {club.name}
                 </h3>
                 <span className="rounded-md border border-[#86c78a] px-2 py-0.5 text-xs font-semibold text-[#3a8a3e]">
-                  {club.status}
+                  {statusLabel}
                 </span>
               </div>
 
               <p className="mt-1.5 text-sm text-[#6b7fa3]">
-                {club.memberCount} members · {club.teacherName}
+                {club.memberCount} гишүүн · {club.teacherName}
               </p>
 
               <div className="mt-4">
                 <div className="flex items-center justify-between text-xs text-[#6b7fa3]">
-                  <span>Interest</span>
+                  <span>Сонирхол</span>
                   <span>
                     {club.interestCount}/{club.studentLimit}
                   </span>
@@ -131,13 +138,13 @@ export default function ClubsPage() {
           disabled={!selectedId}
           className="rounded-xl bg-[#1a3560] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#24478a] disabled:cursor-not-allowed disabled:opacity-40"
         >
-          Join selected club
+          Сонгосон клубт нэгдэх
         </button>
         <button
           disabled={!selectedId}
           className="rounded-xl border border-[#e2eaf5] px-6 py-3 text-sm font-semibold text-[#0f1f3d] transition hover:bg-[#f4f7fb] disabled:cursor-not-allowed disabled:opacity-40"
         >
-          View requirements
+          Шаардлага харах
         </button>
       </div>
     </div>

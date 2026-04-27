@@ -16,30 +16,30 @@ import {
 
 import type { Club, ClubRequest } from '@/lib/tom-types';
 
-const tabs = ['Browse', 'Feed', 'Events', 'Create'];
+const tabs = ['Үзэх', 'Урсгал', 'Арга хэмжээ', 'Үүсгэх'];
 
 const badges = [
   {
-    name: 'First Club',
-    description: 'Joined your first community',
+    name: 'Анхны клуб',
+    description: 'Анхны нийгэмлэгтээ нэгдлээ',
     icon: Star,
     color: 'from-[#8db8ff] to-[#7aa8f4]',
   },
   {
-    name: 'Event Hero',
-    description: 'Attended 5 events',
+    name: 'Арга хэмжээний баатар',
+    description: '5 арга хэмжээнд оролцлоо',
     icon: CalendarDays,
     color: 'from-[#6ad0dc] to-[#63bfd8]',
   },
   {
-    name: 'Top Voter',
-    description: 'Supported club decisions',
+    name: 'Шилдэг санал өгөгч',
+    description: 'Клубын шийдвэрийг дэмжсэн',
     icon: Heart,
     color: 'from-[#7898ef] to-[#6388e7]',
   },
   {
-    name: 'Streaker',
-    description: 'Active every week',
+    name: 'Тогтмол оролцогч',
+    description: 'Долоо хоног бүр идэвхтэй',
     icon: Sparkles,
     color: 'from-[#73c7e9] to-[#62afd8]',
   },
@@ -49,20 +49,21 @@ const badgeRail = [...badges, ...badges];
 
 const quickActions = [
   {
-    title: 'Start a new club',
-    description: 'Send a club proposal with your idea, advisor, and mission.',
+    title: 'Шинэ клуб нээх',
+    description: 'Санаа, зөвлөх багш, зорилготойгоо хамт клубын саналаа илгээнэ үү.',
     icon: PlusCircle,
     accent: 'bg-[#e9f5ff] text-[#3f7ad8]',
-    cta: 'Submit request',
+    cta: 'Хүсэлт илгээх',
     href: '/students/create-club',
   },
 
   {
-    title: 'Jump into events',
-    description: 'RSVP for workshops, game nights, and club meetups this week.',
+    title: 'Арга хэмжээнд оролцох',
+    description:
+      'Энэ долоо хоногийн воркшоп, тоглоомын үдэш, клубын уулзалтад бүртгүүлээрэй.',
     icon: CalendarDays,
     accent: 'bg-[#eef1ff] text-[#5f79d8]',
-    cta: 'See events',
+    cta: 'Арга хэмжээ үзэх',
     href: '/students/events',
   },
 ];
@@ -81,7 +82,8 @@ async function readJson<T>(response: Response) {
 
   if (!response.ok) {
     throw new Error(
-      data?.error || `Request failed with status ${response.status}.`
+      data?.error ||
+        `Хүсэлт амжилтгүй боллоо (код: ${response.status}).`
     );
   }
 
@@ -105,7 +107,7 @@ export default function StudentDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState(
-    'Student dashboard live clubs-ийг харуулж байна.'
+    'Сурагчийн хяналтын самбар клубүүдийн мэдээллийг харуулж байна.'
   );
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -124,7 +126,8 @@ export default function StudentDashboard() {
     setClubs(clubData.clubs);
     setRequests(requestData.requests);
     setMessage(
-      nextMessage || 'Student dashboard live clubs-ийг харуулж байна.'
+      nextMessage ||
+        'Сурагчийн хяналтын самбар клубүүдийн мэдээллийг харуулж байна.'
     );
   };
 
@@ -142,7 +145,7 @@ export default function StudentDashboard() {
           setErrorMessage(
             error instanceof Error
               ? error.message
-              : 'Student dashboard data ачаалж чадсангүй.'
+              : 'Сурагчийн хяналтын самбарын өгөгдлийг ачаалж чадсангүй.'
           );
         }
       } finally {
@@ -207,7 +210,7 @@ export default function StudentDashboard() {
     await updateClubMetrics(
       club,
       { interestCount: club.interestCount + 1 },
-      `${club.name} клубд сонирхол илэрхийллээ.`
+      `${club.name} клубт сонирхол илэрхийллээ.`
     );
   };
 
@@ -241,12 +244,12 @@ export default function StudentDashboard() {
     return [
       nextRequest
         ? {
-            title: 'Club creation request ready',
-            detail: `${nextRequest.clubName} request ${nextRequest.interestCount} сонирхолтой байна.`,
+            title: 'Клуб нээх хүсэлт',
+            detail: `${nextRequest.clubName} хүсэлтэд ${nextRequest.interestCount} сонирхол бүртгэгдсэн байна.`,
           }
         : {
-            title: 'Club creation request ready',
-            detail: 'Одоогоор pending request алга байна.',
+            title: 'Клуб нээх хүсэлт',
+            detail: 'Одоогоор хүлээгдэж буй хүсэлт алга байна.',
           },
       activeClub
         ? {
@@ -254,16 +257,16 @@ export default function StudentDashboard() {
             detail: `${activeClub.teacherName} удирдаж байна. ${activeClub.memberCount} гишүүнтэй.`,
           }
         : {
-            title: 'Active club update',
+            title: 'Идэвхтэй клубын мэдээлэл',
             detail: 'Идэвхтэй клуб одоогоор алга байна.',
           },
       biggestClub
         ? {
-            title: 'Most active club',
+            title: 'Хамгийн идэвхтэй клуб',
             detail: `${biggestClub.name} хамгийн олон ${biggestClub.memberCount} гишүүнтэй байна.`,
           }
         : {
-            title: 'Most active club',
+            title: 'Хамгийн идэвхтэй клуб',
             detail: 'Клубийн өгөгдөл одоогоор хоосон байна.',
           },
     ];
@@ -279,10 +282,10 @@ export default function StudentDashboard() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-sm font-semibold text-white/80">
-                      Welcome back, Tselmeg
+                      Дахин тавтай морил, Tselmeg
                     </p>
                     <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-[2rem]">
-                      Level 7 · Club Explorer
+                      Түвшин 7 · Клуб судлаач
                     </h1>
                   </div>
                   <div className="rounded-2xl border border-white/20 bg-white/10 p-3">
@@ -302,7 +305,7 @@ export default function StudentDashboard() {
                     />
                   </div>
                   <p className="mt-3 text-sm text-white/85">
-                    260 XP to Level 8
+                    8-р түвшин хүртэл 260 XP
                   </p>
                 </div>
               </section>
@@ -310,7 +313,7 @@ export default function StudentDashboard() {
               <aside className="dashboard-entrance dashboard-entrance-delay-2 w-60 shrink-0 rounded-[30px] border border-[#dbe7f8] bg-white/95 p-6 ">
                 <div className="flex items-center gap-2 text-[#1d355b]">
                   <Trophy className="h-5 w-5 text-blue-950" />
-                  <h2 className="text-lg font-semibold">Badges</h2>
+                  <h2 className="text-lg font-semibold">Тэмдгүүд</h2>
                 </div>
 
                 <div className="badge-marquee mt-6">
@@ -347,24 +350,24 @@ export default function StudentDashboard() {
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6f86a7]">
                     {errorMessage
-                      ? 'Sync error'
+                      ? 'Синхрончлолын алдаа'
                       : isLoading
-                      ? 'Loading live data'
+                      ? 'Шууд өгөгдөл ачаалж байна'
                       : isSaving
-                      ? 'Saving changes'
-                      : 'Connected'}
+                      ? 'Өөрчлөлт хадгалж байна'
+                      : 'Холбогдсон'}
                   </p>
                   <p className="mt-1 text-sm text-[#58708f]">
                     {errorMessage ||
                       (isLoading
-                        ? 'Cloudflare D1 дээрх клуб, хүсэлтийн өгөгдлийг student page дээр ачаалж байна.'
+                        ? 'Cloudflare D1 дээрх клуб, хүсэлтийн өгөгдлийг сурагчийн хуудсанд ачаалж байна.'
                         : isSaving
-                        ? 'Клуб дээр хийсэн student action-ийг хадгалж байна.'
+                        ? 'Клуб дээр хийсэн сурагчийн үйлдлийг хадгалж байна.'
                         : message)}
                   </p>
                 </div>
                 <div className="rounded-full bg-[#eef5ff] px-4 py-2 text-sm font-semibold text-[#4f6b8d]">
-                  {clubs.length} live clubs
+                  Нийт {clubs.length} клуб
                 </div>
               </div>
             </section>
@@ -413,24 +416,24 @@ export default function StudentDashboard() {
                 <div className="flex items-center gap-2">
                   <Swords className="h-5 w-5 text-[#6f8fe3]" />
                   <h3 className="text-lg font-semibold text-[#223b5f]">
-                    Activity Quest
+                    Үйл ажиллагааны даалгавар
                   </h3>
                 </div>
 
                 <div className="mt-5 space-y-3">
                   <div className="rounded-2xl bg-[#eef6ff] p-4">
                     <p className="text-sm font-semibold text-[#224064]">
-                      Show interest in a club
+                      Клубт сонирхол илэрхийлэх
                     </p>
                   </div>
                   <div className="rounded-2xl bg-[#eefcfb] p-4">
                     <p className="text-sm font-semibold text-[#224064]">
-                      Join an active community
+                      Идэвхтэй нийгэмлэгт нэгдэх
                     </p>
                   </div>
                   <div className="rounded-2xl bg-[#f2f1ff] p-4">
                     <p className="text-sm font-semibold text-[#224064]">
-                      Track pending club ideas
+                      Хүлээгдэж буй клубын санааг хянах
                     </p>
                   </div>
                 </div>
@@ -443,15 +446,15 @@ export default function StudentDashboard() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7c92b0]">
-                Student Space
+                Сурагчийн орон зай
               </p>
               <h2 className="mt-2 text-2xl font-semibold text-[#183255] sm:text-3xl">
-                Browse clubs, join communities, and stay active
+                Клубүүдийг үзэж, нийгэмлэгт нэгдэж, идэвхтэй байгаарай
               </h2>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-[#7086a5] sm:text-base">
-                Discover clubs from the live TOM database, follow interest
-                levels, and update the visible membership momentum right from
-                this page.
+                TOM-ийн өгөгдлийн сан дахь клубүүдийг нээж үзээд, сонирхлын
+                түвшинг дагаж, гишүүнчлэлийн өөрчлөлтийг энэ хуудсаас шууд
+                шинэчлээрэй.
               </p>
             </div>
 
@@ -493,11 +496,11 @@ export default function StudentDashboard() {
                       {club.verified ? (
                         <span className="inline-flex items-center gap-1 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-[#5c8bd9]">
                           <Sparkles className="h-3.5 w-3.5" />
-                          Verified
+                          Баталгаажсан
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white/90">
-                          New club
+                          Шинэ клуб
                         </span>
                       )}
                     </div>
@@ -512,10 +515,10 @@ export default function StudentDashboard() {
                         </h3>
                         <div className="mt-2 flex items-center gap-2 text-sm text-[#7f94b0]">
                           <Users className="h-4 w-4" />
-                          <span>{club.memberCount} members</span>
+                          <span>{club.memberCount} гишүүн</span>
                         </div>
                         <p className="mt-2 text-xs text-[#7f94b0]">
-                          Interest {club.interestCount} · {club.teacherName}
+                          Сонирхол {club.interestCount} · {club.teacherName}
                         </p>
                       </div>
                       <span className="rounded-full bg-[#eef5ff] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#5c7ea5]">
@@ -530,14 +533,14 @@ export default function StudentDashboard() {
                         className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[#d6e1f2] px-4 py-2.5 text-sm font-semibold text-[#4f6587] transition hover:bg-[#f6f9ff] disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         <Heart className="h-4 w-4" />
-                        Interested
+                        Сонирхох
                       </button>
                       <button
                         disabled={isSaving}
                         onClick={() => void joinClub(club)}
                         className="inline-flex flex-1 items-center justify-center rounded-full bg-[#67a2ea] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#568fd8] disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        Join
+                        Нэгдэх
                       </button>
                     </div>
                   </div>
@@ -548,7 +551,7 @@ export default function StudentDashboard() {
             <aside className="space-y-5">
               <section className="rounded-[28px] border border-[#dce7f8] bg-white p-5 ">
                 <h3 className="text-lg font-semibold text-[#223b5f]">
-                  Live activity
+                  Шууд идэвхжил
                 </h3>
                 <div className="mt-4 space-y-3">
                   {activityItems.map((item) => (
