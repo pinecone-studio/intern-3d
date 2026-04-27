@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useRole } from '@/lib/role-context'
 import {
   Sidebar,
@@ -32,12 +32,16 @@ const adminNavItems = [
   { title: 'Хянах самбар', href: '/dashboard', icon: LayoutDashboard },
   { title: 'Миний хуваарь', href: '/dashboard/my-schedule', icon: CalendarDays },
 ]
-
 export function DashboardSidebar() {
+  const router = useRouter()
   const pathname = usePathname()
   const { user, role, logout } = useRole()
 
   const navItems = role === 'admin' ? adminNavItems : studentNavItems
+  const handleLogout = async () => {
+    await logout()
+    router.push('/')
+  }
 
   return (
     <Sidebar className="border-r border-sidebar-border bg-background">
@@ -142,14 +146,14 @@ export function DashboardSidebar() {
             </Badge>
           </div>
         </div>
-        <Link
-          href="/"
-          onClick={logout}
+        <button
+          type="button"
+          onClick={() => void handleLogout()}
           className="mt-2 flex items-center gap-2 rounded-md px-3 py-2 text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
         >
           <LogOut className="h-4 w-4" />
           <span>Гарах</span>
-        </Link>
+        </button>
       </SidebarFooter>
     </Sidebar>
   )

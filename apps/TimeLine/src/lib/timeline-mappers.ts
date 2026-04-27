@@ -29,7 +29,8 @@ export function mapScheduleRow(schedule: ScheduleRow, instructor?: string): Sche
     dayOfWeek: daysOfWeek[0] ?? 0,
     daysOfWeek,
     isOverride: false,
-    instructor,
+    instructor: schedule.instructor ?? instructor,
+    notes: schedule.notes ?? undefined,
     validFrom: schedule.startDate,
     validUntil: schedule.endDate,
   }
@@ -49,7 +50,8 @@ export function mapScheduleOverrideRow(override: ScheduleOverrideRow, instructor
     daysOfWeek: [dayOfWeek],
     date: override.date,
     isOverride: true,
-    instructor,
+    instructor: override.instructor ?? instructor,
+    notes: override.notes ?? undefined,
   }
 }
 

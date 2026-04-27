@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { buildSchema, graphql } from 'graphql'
 import { createScheduleEvent, deleteScheduleEvent, getRoomDetail, listRooms, listScheduleEvents, updateScheduleEvent } from '@/lib/timeline-rest'
+import { getTimelineSessionUserIdFromRequest } from '@/lib/session'
 import type { ScheduleEventInput } from '@/lib/timeline-mutations'
 
 const schema = buildSchema(`
@@ -13,6 +14,8 @@ const schema = buildSchema(`
     daysOfWeek: [Int!]!
     date: String
     isOverride: Boolean
+    instructor: String
+    notes: String
     validFrom: String
     validUntil: String
   }
@@ -86,35 +89,37 @@ type MutationArgs = {
   input?: ScheduleEventInput
 }
 
-const root = {
-  rooms: async ({ floor, status, search }: QueryArgs) =>
-    listRooms({
-      floor: floor != null ? String(floor) : null,
-      status: status ?? null,
-      search: search ?? null,
-    }),
-  events: async ({ roomId, dayOfWeek, instructor }: QueryArgs) =>
-    listScheduleEvents({
-      roomId: roomId ?? null,
-      dayOfWeek: dayOfWeek != null ? String(dayOfWeek) : null,
-      instructor: instructor ?? null,
-    }),
-  room: async ({ roomId }: QueryArgs) => {
-    if (!roomId) return null
-    return getRoomDetail(roomId)
-  },
-  createScheduleEvent: async ({ input }: MutationArgs) => {
-    if (!input) return null
-    return createScheduleEvent(input)
-  },
-  updateScheduleEvent: async ({ id, input }: MutationArgs) => {
-    if (!id || !input) return null
-    return updateScheduleEvent(id, input)
-  },
-  deleteScheduleEvent: async ({ id }: MutationArgs) => {
-    if (!id) return false
-    return deleteScheduleEvent(id)
-  },
+function createRoot(currentUserId: string | null) {
+  return {
+    rooms: async ({ floor, status, search }: QueryArgs) =>
+      listRooms({
+        floor: floor != null ? String(floor) : null,
+        status: status ?? null,
+        search: search ?? null,
+      }),
+    events: async ({ roomId, dayOfWeek, instructor }: QueryArgs) =>
+      listScheduleEvents({
+        roomId: roomId ?? null,
+        dayOfWeek: dayOfWeek != null ? String(dayOfWeek) : null,
+        instructor: instructor ?? null,
+      }),
+    room: async ({ roomId }: QueryArgs) => {
+      if (!roomId) return null
+      return getRoomDetail(roomId)
+    },
+    createScheduleEvent: async ({ input }: MutationArgs) => {
+      if (!input) return null
+      return createScheduleEvent(input, currentUserId)
+    },
+    updateScheduleEvent: async ({ id, input }: MutationArgs) => {
+      if (!id || !input) return null
+      return updateScheduleEvent(id, input, currentUserId)
+    },
+    deleteScheduleEvent: async ({ id }: MutationArgs) => {
+      if (!id) return false
+      return deleteScheduleEvent(id, currentUserId)
+    },
+  }
 }
 
 type GraphQLRequestBody = {
@@ -125,6 +130,7 @@ type GraphQLRequestBody = {
 
 export async function POST(request: Request) {
   let payload: GraphQLRequestBody
+  const currentUserId = getTimelineSessionUserIdFromRequest(request)
 
   try {
     payload = (await request.json()) as GraphQLRequestBody
@@ -139,7 +145,7 @@ export async function POST(request: Request) {
   const result = await graphql({
     schema,
     source: payload.query,
-    rootValue: root,
+    rootValue: createRoot(currentUserId),
     variableValues: payload.variables,
     operationName: payload.operationName,
   })

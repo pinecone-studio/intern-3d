@@ -3,7 +3,9 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useRole } from '@/lib/role-context'
+import { DashboardSidebar } from '@/components/layout/dashboard-sidebar'
 import { DashboardTopbar } from '@/components/layout/dashboard-topbar'
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 
 export default function DashboardLayout({
   children,
@@ -11,15 +13,15 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
-  const { isReady, role } = useRole()
+  const { role, loading } = useRole()
 
   useEffect(() => {
-    if (isReady && !role) {
+    if (!loading && !role) {
       router.replace('/')
     }
-  }, [isReady, role, router])
+  }, [loading, role, router])
 
-  if (!isReady || !role) {
+  if (loading || !role) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -28,13 +30,16 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-muted/20">
-      <DashboardTopbar />
-      <main className="p-4 sm:p-6">
-        <div className="mx-auto max-w-7xl">
-          {children}
-        </div>
-      </main>
-    </div>
+    <SidebarProvider className="bg-muted/20">
+      <DashboardSidebar />
+      <SidebarInset>
+        <DashboardTopbar />
+        <main className="p-4 sm:p-6">
+          <div className="mx-auto max-w-7xl">
+            {children}
+          </div>
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }

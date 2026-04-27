@@ -1,22 +1,14 @@
 import { fallbackDevices, fallbackOverrides, fallbackRooms, fallbackSchedules } from '@/lib/timeline-fallback-data'
 import { mapDeviceAssignmentRow, mapRoomRow, mapScheduleOverrideRow, mapScheduleRow } from '@/lib/timeline-mappers'
 
-const fallbackUserNames: Record<string, string> = {
-  'admin-1': 'Ariun Admin',
-}
-
-function getFallbackUserName(userId: string): string | undefined {
-  return fallbackUserNames[userId]
-}
-
 function matchesInstructor(instructor: string | undefined, search: string): boolean {
   return instructor?.toLowerCase().includes(search.toLowerCase()) ?? false
 }
 
 function buildFallback(now = new Date()) {
   const events = [
-    ...fallbackSchedules.map(schedule => mapScheduleRow(schedule, getFallbackUserName(schedule.createdBy))),
-    ...fallbackOverrides.map(override => mapScheduleOverrideRow(override, getFallbackUserName(override.createdBy))),
+    ...fallbackSchedules.map((schedule) => mapScheduleRow(schedule)),
+    ...fallbackOverrides.map((override) => mapScheduleOverrideRow(override)),
   ].sort((left, right) => {
     if (left.roomId !== right.roomId) return left.roomId.localeCompare(right.roomId)
     return left.startTime.localeCompare(right.startTime)
