@@ -7,6 +7,7 @@ import { RoomCard } from '@/components/rooms/room-card'
 import { RoomFilterBar } from '@/components/rooms/room-filter-bar'
 import { Button } from '@/components/ui/button'
 import { STATUS_CONFIG } from '@/lib/constants'
+import { useTimelineLiveUpdates } from '@/lib/use-timeline-live-updates'
 import { useRole } from '@/lib/role-context'
 import type { Room, RoomStatus } from '@/lib/types'
 
@@ -75,6 +76,11 @@ export default function DashboardPage() {
       floor: selectedFloor,
       search: deferredSearchQuery.trim() || null,
     },
+  })
+
+  useTimelineLiveUpdates({
+    enabled: !loading,
+    onEventsChanged: () => refetch(),
   })
 
   const floorRooms = data?.rooms ?? []

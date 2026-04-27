@@ -6,6 +6,7 @@ import { useQuery } from '@apollo/client/react'
 import { useRole } from '@/lib/role-context'
 import { DAYS_OF_WEEK, EVENT_TYPE_CONFIG } from '@/lib/constants'
 import { useTimelineClock } from '@/lib/use-timeline-clock'
+import { useTimelineLiveUpdates } from '@/lib/use-timeline-live-updates'
 import type { Room, ScheduleEvent } from '@/lib/types'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -74,6 +75,11 @@ export default function MySchedulePage() {
   const instructorName = getInstructorSearchName(user?.name)
   const { data, loading, error, refetch } = useQuery<MyScheduleQueryResult>(GET_MY_SCHEDULE, {
     skip: role !== 'admin',
+  })
+
+  useTimelineLiveUpdates({
+    enabled: role === 'admin' && !loading,
+    onEventsChanged: () => refetch(),
   })
 
   const myEvents = useMemo(() => {

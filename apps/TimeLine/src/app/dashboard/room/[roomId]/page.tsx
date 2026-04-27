@@ -7,6 +7,7 @@ import { useMutation, useQuery } from '@apollo/client/react'
 import { useRole } from '@/lib/role-context'
 import { getDefaultSelectedDay } from '@/lib/timeline-clock'
 import { useTimelineClock } from '@/lib/use-timeline-clock'
+import { useTimelineLiveUpdates } from '@/lib/use-timeline-live-updates'
 import { DAYS_OF_WEEK, EVENT_TYPE_CONFIG, STATUS_CONFIG } from '@/lib/constants'
 import type { ScheduleEvent, EventType, Room } from '@/lib/types'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -226,6 +227,12 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
   const [deleteScheduleEvent, { loading: deletingEvent }] = useMutation(DELETE_SCHEDULE_EVENT)
   const room = data?.room?.room
   const roomEvents = data?.room?.events ?? []
+
+  useTimelineLiveUpdates({
+    enabled: !loading,
+    roomId,
+    onEventsChanged: () => refetch(),
+  })
   
   const [selectedDay, setSelectedDay] = useState(() => getDefaultSelectedDay(clock))
   const [editDialogOpen, setEditDialogOpen] = useState(false)
