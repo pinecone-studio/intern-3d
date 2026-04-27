@@ -18,6 +18,7 @@ type CurrentUserRow = {
   full_name: string
   email: string
   role: TomCurrentUser['role']
+  teacher_profile_name: string
   account_status: TomCurrentUser['accountStatus']
   reason: string
   last_active: string
@@ -55,6 +56,7 @@ function mapCurrentUserRow(row: CurrentUserRow): TomCurrentUser {
     name: row.full_name,
     email: row.email,
     role: row.role,
+    teacherProfileName: row.teacher_profile_name || undefined,
     accountStatus: row.account_status,
     reason: row.reason,
     lastActive: row.last_active,
@@ -112,6 +114,7 @@ export async function getCurrentUserFromSession(sessionId: string): Promise<TomC
          u.full_name,
          u.email,
          u.role,
+         u.teacher_profile_name,
          u.account_status,
          u.reason,
          u.last_active,
