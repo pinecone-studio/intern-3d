@@ -1,4 +1,4 @@
-import SideBar from './_components/sideBar';
+import StudentHeader from './_components/header';
 
 export default function StudentsLayout({
   children,
@@ -7,11 +7,10 @@ export default function StudentsLayout({
 }) {
   return (
     <div className="min-h-screen bg-[#f4f7fb]">
-      <aside className="fixed left-0 top-0 z-[60] h-screen w-56">
-        <SideBar />
-      </aside>
-
-      <main className="ml-56 min-h-screen min-w-0 p-10">{children}</main>
+      <div className="mx-auto max-w-6xl p-10">
+        <StudentHeader />
+        <main className="mt-6 min-w-0">{children}</main>
+      </div>
     </div>
   );
 }

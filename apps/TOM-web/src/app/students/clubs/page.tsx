@@ -53,10 +53,6 @@ export default function ClubsPage() {
     <div className="rounded-2xl border border-[#e2eaf5] bg-white p-8 shadow-sm">
       {/* Header */}
       <h1 className="text-2xl font-bold text-[#0f1f3d]">Клубүүд</h1>
-      <p className="mt-1 text-sm text-[#6b7fa3]">
-        Идэвхтэй клубүүдийг үзэж танилцах эсвэл сонирхолд суурилсан шинэ санааг
-        дэмжих.
-      </p>
 
       {/* Tabs */}
       <div className="mt-5 inline-flex rounded-xl border border-[#e2eaf5] bg-white p-1">
@@ -71,9 +67,9 @@ export default function ClubsPage() {
               activeTab === tab
                 ? 'bg-white text-[#0f1f3d] shadow-sm ring-1 ring-[#e2eaf5]'
                 : 'text-[#7a90af] hover:text-[#0f1f3d]'
-            }`}
+          }`}
           >
-            {tab === 'active' ? 'Идэвхтэй клубүүд' : 'Шинэ санаа'}
+            {tab === 'active' ? 'Миний клубүүд' : 'Бусад клубүүд'}
           </button>
         ))}
       </div>
