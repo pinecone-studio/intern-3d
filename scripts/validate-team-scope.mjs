@@ -73,10 +73,17 @@ function getTeamLabel(event) {
   return labels[0];
 }
 
+function getMergeBase(baseSha, headSha) {
+  return execFileSync('git', ['merge-base', baseSha, headSha], {
+    encoding: 'utf8',
+  }).trim();
+}
+
 function getChangedFiles(baseSha, headSha) {
+  const mergeBase = getMergeBase(baseSha, headSha);
   const output = execFileSync(
     'git',
-    ['diff', '--name-only', '--diff-filter=ACMR', baseSha, headSha],
+    ['diff', '--name-only', '--diff-filter=ACMR', mergeBase, headSha],
     { encoding: 'utf8' }
   );
 
