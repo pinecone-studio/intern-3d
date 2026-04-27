@@ -1,34 +1,84 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useRole } from '@/lib/role-context'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { GraduationCap, ShieldCheck, Clock, Monitor } from 'lucide-react'
+import type { User } from '@/lib/types'
+
+type UsersResponse = {
+  users: User[]
+}
 
 export default function LoginPage() {
   const router = useRouter()
-  const { isReady, role, setRole } = useRole()
+  const { user, loading: sessionLoading, loginAs } = useRole()
+  const [users, setUsers] = useState<User[]>([])
+  const [loadingUsers, setLoadingUsers] = useState(true)
+  const [loginError, setLoginError] = useState<string | null>(null)
+  const [submittingUserId, setSubmittingUserId] = useState<string | null>(null)
 
   useEffect(() => {
-    if (isReady && role) {
+    if (!sessionLoading && user) {
       router.replace('/dashboard')
     }
-  }, [isReady, role, router])
+  }, [sessionLoading, router, user])
 
-  const handleRoleSelect = (role: 'admin' | 'student') => {
-    setRole(role)
-    router.push('/dashboard')
+  useEffect(() => {
+    let active = true
+
+    const loadUsers = async () => {
+      setLoadingUsers(true)
+      setLoginError(null)
+
+      try {
+        const response = await fetch('/api/users', { cache: 'no-store' })
+        const data = (await response.json()) as UsersResponse
+        if (!response.ok) {
+          throw new Error('Хэрэглэгчдийн жагсаалтыг уншиж чадсангүй.')
+        }
+
+        if (active) {
+          setUsers(data.users ?? [])
+        }
+      } catch (error) {
+        if (active) {
+          setLoginError(error instanceof Error ? error.message : 'Хэрэглэгчдийн жагсаалт ачаалсангүй.')
+        }
+      } finally {
+        if (active) {
+          setLoadingUsers(false)
+        }
+      }
+    }
+
+    void loadUsers()
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const adminUsers = useMemo(() => users.filter((entry) => entry.role === 'admin'), [users])
+  const studentUsers = useMemo(() => users.filter((entry) => entry.role === 'student'), [users])
+
+  const handleUserSelect = async (selectedUser: User) => {
+    setLoginError(null)
+    setSubmittingUserId(selectedUser.id)
+
+    try {
+      await loginAs(selectedUser.id)
+      router.replace('/dashboard')
+    } catch (error) {
+      setLoginError(error instanceof Error ? error.message : 'Нэвтрэх үед алдаа гарлаа.')
+    } finally {
+      setSubmittingUserId(null)
+    }
   }
 
-  if (!isReady) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    )
-  }
+  const isBusy = sessionLoading || loadingUsers
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
@@ -52,40 +102,62 @@ export default function LoginPage() {
         <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-lg">Нэвтрэх</CardTitle>
-            <CardDescription>Үүрэг сонгоно уу</CardDescription>
+            <CardDescription>DB дээрх хэрэглэгчээ сонгоно уу</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button
-              variant="outline"
-              className="h-auto w-full justify-start gap-4 p-4 hover:bg-primary/5 hover:border-primary/50 transition-all"
-              onClick={() => handleRoleSelect('admin')}
-            >
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 border border-blue-500/20">
-                <ShieldCheck className="h-6 w-6 text-blue-400" />
+            {isBusy ? (
+              <div className="rounded-md border border-dashed border-border bg-background/60 p-6 text-center text-sm text-muted-foreground">
+                Хэрэглэгчдийн мэдээллийг ачаалж байна...
               </div>
-              <div className="flex flex-col items-start text-left">
-                <span className="font-semibold text-foreground">Админ</span>
-                <span className="text-sm text-muted-foreground">
-                  Хуваарь удирдах, төхөөрөмж хянах
-                </span>
-              </div>
-            </Button>
+            ) : (
+              <>
+                {adminUsers.map((entry) => (
+                  <Button
+                    key={entry.id}
+                    variant="outline"
+                    className="h-auto w-full justify-start gap-4 p-4 hover:bg-primary/5 hover:border-primary/50 transition-all"
+                    disabled={submittingUserId != null}
+                    onClick={() => void handleUserSelect(entry)}
+                  >
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-blue-500/20 bg-blue-500/10">
+                      <ShieldCheck className="h-6 w-6 text-blue-400" />
+                    </div>
+                    <div className="flex flex-col items-start text-left">
+                      <span className="font-semibold text-foreground">{entry.name}</span>
+                      <span className="text-sm text-muted-foreground">
+                        Хуваарь удирдах, төхөөрөмж хянах
+                      </span>
+                    </div>
+                  </Button>
+                ))}
 
-            <Button
-              variant="outline"
-              className="h-auto w-full justify-start gap-4 p-4 hover:bg-primary/5 hover:border-primary/50 transition-all"
-              onClick={() => handleRoleSelect('student')}
-            >
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                <GraduationCap className="h-6 w-6 text-emerald-400" />
-              </div>
-              <div className="flex flex-col items-start text-left">
-                <span className="font-semibold text-foreground">Сурагч</span>
-                <span className="text-sm text-muted-foreground">
-                  Сул өрөө хайх, өөрийн iMac харах
-                </span>
-              </div>
-            </Button>
+                {studentUsers.map((entry) => (
+                  <Button
+                    key={entry.id}
+                    variant="outline"
+                    className="h-auto w-full justify-start gap-4 p-4 hover:bg-primary/5 hover:border-primary/50 transition-all"
+                    disabled={submittingUserId != null}
+                    onClick={() => void handleUserSelect(entry)}
+                  >
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-emerald-500/20 bg-emerald-500/10">
+                      <GraduationCap className="h-6 w-6 text-emerald-400" />
+                    </div>
+                    <div className="flex flex-col items-start text-left">
+                      <span className="font-semibold text-foreground">{entry.name}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {entry.assignedDevice
+                          ? `Таны iMac: ${entry.assignedDevice.name} / Анги ${entry.assignedDevice.roomNumber}`
+                          : 'Сул өрөө хайх, өөрийн iMac харах'}
+                      </span>
+                    </div>
+                  </Button>
+                ))}
+              </>
+            )}
+
+            {loginError ? (
+              <p className="text-sm text-destructive">{loginError}</p>
+            ) : null}
           </CardContent>
         </Card>
 

@@ -27,8 +27,8 @@ import Link from 'next/link'
 type FilterType = 'today' | 'week' | 'month'
 
 const GET_MY_SCHEDULE = gql`
-  query GetMySchedule {
-    events {
+  query GetMySchedule($instructor: String) {
+    events(instructor: $instructor) {
       id
       roomId
       title
@@ -56,25 +56,15 @@ type MyScheduleQueryResult = {
   rooms: Array<Pick<Room, 'id' | 'number'>>
 }
 
-function getInstructorSearchName(userName?: string): string {
-  const lastName = userName?.split(' ').pop()
-  return lastName && lastName !== 'Admin' ? lastName : 'Болд'
-}
-
-function getInstructorEvents(events: ScheduleEvent[], instructorName: string): ScheduleEvent[] {
-  const instructorEvents = events.filter(event => event.instructor?.includes(instructorName))
-  return instructorEvents.length > 0 ? instructorEvents : events
-}
-
 export default function MySchedulePage() {
   const { user, role } = useRole()
   const clock = useTimelineClock()
   const [filter, setFilter] = useState<FilterType>('today')
-
-  // Get the instructor name from the user
-  const instructorName = getInstructorSearchName(user?.name)
   const { data, loading, error, refetch } = useQuery<MyScheduleQueryResult>(GET_MY_SCHEDULE, {
-    skip: role !== 'admin',
+    variables: {
+      instructor: user?.name ?? null,
+    },
+    skip: role !== 'admin' || !user?.name,
   })
 
   useTimelineLiveUpdates({
@@ -83,8 +73,8 @@ export default function MySchedulePage() {
   })
 
   const myEvents = useMemo(() => {
-    return getInstructorEvents(data?.events ?? [], instructorName)
-  }, [data?.events, instructorName])
+    return data?.events ?? []
+  }, [data?.events])
   const roomNamesById = useMemo(() => {
     return new Map((data?.rooms ?? []).map(room => [room.id, room.number]))
   }, [data?.rooms])

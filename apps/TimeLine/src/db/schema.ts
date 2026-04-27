@@ -27,6 +27,8 @@ export const schedulesTable = sqliteTable('schedules', {
   daysOfWeek: text('days_of_week').notNull(),
   startTime: text('start_time').notNull(),
   endTime: text('end_time').notNull(),
+  instructor: text('instructor'),
+  notes: text('notes'),
   startDate: text('start_date').notNull(),
   endDate: text('end_date').notNull(),
   createdBy: text('created_by')
@@ -45,6 +47,8 @@ export const scheduleOverridesTable = sqliteTable('schedule_overrides', {
   endTime: text('end_time').notNull(),
   type: text('type').notNull(),
   title: text('title').notNull(),
+  instructor: text('instructor'),
+  notes: text('notes'),
   createdBy: text('created_by')
     .notNull()
     .references(() => usersTable.id, { onDelete: 'restrict' }),

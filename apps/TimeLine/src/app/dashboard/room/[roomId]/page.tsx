@@ -174,6 +174,8 @@ type ScheduleEventMutationInput = {
   daysOfWeek: number[]
   date?: string | null
   isOverride: boolean
+  instructor?: string | null
+  notes?: string | null
   validFrom?: string | null
   validUntil?: string | null
 }
@@ -204,6 +206,8 @@ function createMutationInput(roomId: string, formData: EventFormData): ScheduleE
     daysOfWeek: formData.daysOfWeek,
     date: formData.date || null,
     isOverride: formData.isOverride,
+    instructor: formData.instructor || null,
+    notes: formData.notes || null,
     validFrom: formData.validFrom || null,
     validUntil: formData.validUntil || null,
   }

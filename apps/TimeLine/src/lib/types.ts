@@ -37,7 +37,7 @@ export type Device = {
   roomId: string
   roomNumber: string
   status: 'available' | 'assigned' | 'maintenance'
-  assignedTo?: string
+  assignedTo?: string | null
 }
 
 export type UserRole = 'admin' | 'student'
@@ -45,6 +45,7 @@ export type UserRole = 'admin' | 'student'
 export type User = {
   id: string
   name: string
+  email: string
   role: UserRole
-  assignedDevice?: Device | null
+  assignedDevice: Device | null
 }

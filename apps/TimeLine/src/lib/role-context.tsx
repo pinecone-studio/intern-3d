@@ -1,70 +1,90 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import { getDemoUser } from './demo-users'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import type { User, UserRole } from './types'
-
-const ROLE_STORAGE_KEY = 'timeline-role'
 
 type RoleContextType = {
   user: User | null
   role: UserRole | null
-  isReady: boolean
-  setRole: (_role: UserRole) => void
-  logout: () => void
+  loading: boolean
+  loginAs: (_userId: string) => Promise<void>
+  logout: () => Promise<void>
+  refreshUser: () => Promise<void>
 }
 
 const RoleContext = createContext<RoleContextType | undefined>(undefined)
 
-function isUserRole(value: string | null): value is UserRole {
-  return value === 'admin' || value === 'student'
-}
-
-function readStoredRole(): UserRole | null {
-  if (typeof window === 'undefined') {
-    return null
-  }
-
-  const storedRole = window.localStorage.getItem(ROLE_STORAGE_KEY)
-  return isUserRole(storedRole) ? storedRole : null
-}
-
-function persistRole(role: UserRole) {
-  window.localStorage.setItem(ROLE_STORAGE_KEY, role)
-}
-
-function clearStoredRole() {
-  window.localStorage.removeItem(ROLE_STORAGE_KEY)
+type SessionResponse = {
+  user: User | null
 }
 
 export function RoleProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [isReady, setIsReady] = useState(false)
+  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const storedRole = readStoredRole()
-    setUser(storedRole ? getDemoUser(storedRole) : null)
-    setIsReady(true)
+  const refreshUser = useCallback(async () => {
+    setLoading(true)
+
+    try {
+      const response = await fetch('/api/session', {
+        cache: 'no-store',
+      })
+      const data = (await response.json()) as SessionResponse
+      setUser(data.user ?? null)
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
-  const setRole = (role: UserRole) => {
-    persistRole(role)
-    setUser(getDemoUser(role))
-  }
+  useEffect(() => {
+    void refreshUser()
+  }, [refreshUser])
 
-  const logout = () => {
-    clearStoredRole()
-    setUser(null)
-  }
+  const loginAs = useCallback(async (userId: string) => {
+    setLoading(true)
+
+    try {
+      const response = await fetch('/api/session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId }),
+      })
+
+      const data = (await response.json()) as SessionResponse & { error?: string }
+      if (!response.ok || !data.user) {
+        throw new Error(data.error ?? 'Нэвтрэх үед алдаа гарлаа.')
+      }
+
+      setUser(data.user)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const logout = useCallback(async () => {
+    setLoading(true)
+
+    try {
+      await fetch('/api/session', {
+        method: 'DELETE',
+      })
+      setUser(null)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   return (
     <RoleContext.Provider
       value={{
         user,
         role: user?.role ?? null,
-        isReady,
-        setRole,
+        loading,
+        loginAs,
         logout,
+        refreshUser,
       }}
     >
       {children}
