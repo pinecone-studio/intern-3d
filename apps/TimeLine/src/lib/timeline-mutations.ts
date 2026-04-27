@@ -1,6 +1,7 @@
+/* eslint-disable max-lines */
 import { eq } from 'drizzle-orm'
 import { getDrizzleDb } from '@/db/client'
-import { scheduleOverridesTable, schedulesTable, usersTable } from '@/db/schema'
+import { scheduleBlocksTable, scheduleOverridesTable, schedulesTable, usersTable } from '@/db/schema'
 import { getRoomDetail } from '@/lib/timeline-queries'
 import type { EventType } from '@/lib/types'
 
@@ -30,8 +31,23 @@ function toDatabaseEventType(type: EventType): string {
   return type === 'openlab' ? 'open' : type
 }
 
+function toBlockEventType(type: EventType): string {
+  if (type === 'openlab') return 'open_lab'
+  if (type === 'closed') return 'event'
+  return type
+}
+
+function toHour(time: string): number {
+  return Number(time.split(':')[0])
+}
+
 function shouldSaveAsOverride(input: ScheduleEventInput): boolean {
   return input.isOverride || input.type === 'closed' || Boolean(input.date)
+}
+
+function toRecurrence(input: ScheduleEventInput): 'one_time' | 'daily' | 'weekly' {
+  if (shouldSaveAsOverride(input)) return 'one_time'
+  return input.daysOfWeek.length >= 5 ? 'daily' : 'weekly'
 }
 
 function getOverrideDate(input: ScheduleEventInput): string {
@@ -100,11 +116,45 @@ function toOverrideInsert(input: ScheduleEventInput, id: string, now: string, cr
   }
 }
 
+function toScheduleBlockInsert(input: ScheduleEventInput, id: string, now: string, createdBy: string) {
+  const recurrence = toRecurrence(input)
+  const date = getOverrideDate(input)
+
+  return {
+    id,
+    roomId: input.roomId,
+    cohortId: null,
+    type: toBlockEventType(input.type),
+    title: input.title,
+    description: normalizeOptionalText(input.notes),
+    color: null,
+    organizer: normalizeOptionalText(input.instructor),
+    startHour: toHour(input.startTime),
+    endHour: toHour(input.endTime),
+    recurrence,
+    specificDate: recurrence === 'one_time' ? date : null,
+    daysOfWeek: recurrence === 'weekly' ? JSON.stringify(input.daysOfWeek) : null,
+    validFrom: recurrence === 'one_time' ? date : input.validFrom || DEFAULT_VALID_FROM,
+    validUntil: recurrence === 'one_time' ? date : input.validUntil || null,
+    isActive: 1,
+    createdBy,
+    createdAt: now,
+    updatedAt: now,
+  }
+}
+
 export async function createScheduleEvent(input: ScheduleEventInput, actorUserId: string | null) {
   const db = getDrizzleDb()
   const id = createEventId()
   const now = new Date().toISOString()
   const createdBy = await requireScheduleEditorId(actorUserId)
+
+  try {
+    await db.insert(scheduleBlocksTable).values(toScheduleBlockInsert(input, id, now, createdBy))
+    return getRoomDetail(input.roomId)
+  } catch {
+    // Older local/D1 databases use schedules + overrides until migration 0004 is applied.
+  }
 
   if (shouldSaveAsOverride(input)) {
     await db.insert(scheduleOverridesTable).values(toOverrideInsert(input, id, now, createdBy))
@@ -119,6 +169,22 @@ export async function updateScheduleEvent(id: string, input: ScheduleEventInput,
   const db = getDrizzleDb()
   const now = new Date().toISOString()
   const createdBy = await requireScheduleEditorId(actorUserId)
+
+  try {
+    const [existingBlock] = await db.select().from(scheduleBlocksTable).where(eq(scheduleBlocksTable.id, id)).limit(1)
+
+    if (existingBlock) {
+      await db
+        .update(scheduleBlocksTable)
+        .set({ ...toScheduleBlockInsert(input, id, existingBlock.createdAt, createdBy), updatedAt: now })
+        .where(eq(scheduleBlocksTable.id, id))
+
+      return getRoomDetail(input.roomId)
+    }
+  } catch {
+    // Older local/D1 databases use schedules + overrides until migration 0004 is applied.
+  }
+
   const [existingSchedule] = await db.select().from(schedulesTable).where(eq(schedulesTable.id, id)).limit(1)
   const [existingOverride] = await db.select().from(scheduleOverridesTable).where(eq(scheduleOverridesTable.id, id)).limit(1)
 
@@ -144,6 +210,13 @@ export async function updateScheduleEvent(id: string, input: ScheduleEventInput,
 export async function deleteScheduleEvent(id: string, actorUserId: string | null) {
   await requireScheduleEditorId(actorUserId)
   const db = getDrizzleDb()
+
+  try {
+    await db.delete(scheduleBlocksTable).where(eq(scheduleBlocksTable.id, id))
+  } catch {
+    // Older local/D1 databases use schedules + overrides until migration 0004 is applied.
+  }
+
   await db.delete(schedulesTable).where(eq(schedulesTable.id, id))
   await db.delete(scheduleOverridesTable).where(eq(scheduleOverridesTable.id, id))
   return true

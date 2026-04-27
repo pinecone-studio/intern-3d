@@ -3,15 +3,41 @@ import type { DeviceAssignmentRow, RoomRow, ScheduleOverrideRow, ScheduleRow } f
 const FALLBACK_CREATED_AT = '2026-04-01T00:00:00.000Z'
 const FALLBACK_CREATED_BY = 'admin-1'
 
+function fallbackRoom(id: string, name: string, floor: number, type: RoomRow['type'], capacity: number): RoomRow {
+  return {
+    id,
+    name,
+    floor,
+    type,
+    capacity,
+    imacCount: type === 'event_hall' ? 0 : capacity,
+    isActive: 1,
+    notes: null,
+    createdAt: FALLBACK_CREATED_AT,
+  }
+}
+
 export const fallbackRooms: RoomRow[] = [
-  { id: 'room-301', name: '301', floor: 3, type: 'lab', capacity: 32, createdAt: FALLBACK_CREATED_AT },
-  { id: 'room-302', name: '302', floor: 3, type: 'lab', capacity: 28, createdAt: FALLBACK_CREATED_AT },
-  { id: 'room-303', name: '303', floor: 3, type: 'lab', capacity: 30, createdAt: FALLBACK_CREATED_AT },
-  { id: 'room-304', name: '304', floor: 3, type: 'lab', capacity: 26, createdAt: FALLBACK_CREATED_AT },
-  { id: 'room-305', name: '305', floor: 3, type: 'lab', capacity: 24, createdAt: FALLBACK_CREATED_AT },
-  { id: 'room-401', name: '401', floor: 4, type: 'lab', capacity: 36, createdAt: FALLBACK_CREATED_AT },
-  { id: 'room-402', name: '402', floor: 4, type: 'event_hall', capacity: 80, createdAt: FALLBACK_CREATED_AT },
-  { id: 'room-403', name: '403', floor: 4, type: 'lab', capacity: 34, createdAt: FALLBACK_CREATED_AT },
+  fallbackRoom('room-301', '301', 3, 'lab', 32),
+  fallbackRoom('room-302', '302', 3, 'lab', 28),
+  fallbackRoom('room-303', '303', 3, 'lab', 30),
+  fallbackRoom('room-304', '304', 3, 'lab', 26),
+  fallbackRoom('room-305', '305', 3, 'lab', 24),
+  fallbackRoom('room-306', '306', 3, 'lab', 25),
+  fallbackRoom('room-307', '307', 3, 'lab', 25),
+  fallbackRoom('room-308', '308', 3, 'lab', 25),
+  fallbackRoom('room-309', '309', 3, 'lab', 25),
+  fallbackRoom('room-310', '310', 3, 'lab', 25),
+  fallbackRoom('room-401', '401', 4, 'lab', 25),
+  fallbackRoom('room-402', '402', 4, 'event_hall', 80),
+  fallbackRoom('room-403', '403', 4, 'lab', 25),
+  fallbackRoom('room-404', '404', 4, 'lab', 25),
+  fallbackRoom('room-405', '405', 4, 'lab', 25),
+  fallbackRoom('room-406', '406', 4, 'lab', 25),
+  fallbackRoom('room-407', '407', 4, 'lab', 25),
+  fallbackRoom('room-408', '408', 4, 'lab', 25),
+  fallbackRoom('room-409', '409', 4, 'lab', 25),
+  fallbackRoom('room-410', '410', 4, 'lab', 25),
 ]
 
 export const fallbackSchedules: ScheduleRow[] = [

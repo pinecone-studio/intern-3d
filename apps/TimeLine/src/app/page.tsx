@@ -35,9 +35,11 @@ export default function LoginPage() {
 
       try {
         const response = await fetch('/api/users', { cache: 'no-store' })
-        const data = (await response.json()) as UsersResponse
+        const data = (await response.json().catch(() => ({ users: [] }))) as UsersResponse & {
+          error?: string
+        }
         if (!response.ok) {
-          throw new Error('Хэрэглэгчдийн жагсаалтыг уншиж чадсангүй.')
+          throw new Error(data.error ?? 'Хэрэглэгчдийн жагсаалтыг уншиж чадсангүй.')
         }
 
         if (active) {

@@ -1,4 +1,4 @@
-import type { DeviceAssignmentRow, RoomRow, ScheduleOverrideRow, ScheduleRow } from '@/db/schema'
+import type { DeviceAssignmentRow, RoomRow, ScheduleBlockRow, ScheduleOverrideRow, ScheduleRow } from '@/db/schema'
 import { getCurrentEvent, getNextEvent, getRoomStatusFromEvent } from '@/lib/timeline-status'
 import type { Device, EventType, Room, ScheduleEvent } from '@/lib/types'
 
@@ -52,6 +52,40 @@ export function mapScheduleOverrideRow(override: ScheduleOverrideRow, instructor
     isOverride: true,
     instructor: override.instructor ?? instructor,
     notes: override.notes ?? undefined,
+  }
+}
+
+function toBlockEventType(type: string): EventType {
+  if (type === 'open_lab') return 'openlab'
+  if (type === 'event') return 'closed'
+  return type as EventType
+}
+
+function daysForBlock(block: ScheduleBlockRow): number[] {
+  if (block.recurrence === 'daily') return [1, 2, 3, 4, 5]
+  if (block.recurrence === 'one_time' && block.specificDate) return [isoDayFromDate(block.specificDate)]
+  return parseDaysOfWeek(block.daysOfWeek ?? '[]')
+}
+
+export function mapScheduleBlockRow(block: ScheduleBlockRow, instructor?: string): ScheduleEvent {
+  const daysOfWeek = daysForBlock(block)
+  const isOverride = block.recurrence === 'one_time'
+
+  return {
+    id: block.id,
+    roomId: block.roomId,
+    title: block.title,
+    type: toBlockEventType(block.type),
+    startTime: `${String(block.startHour).padStart(2, '0')}:00`,
+    endTime: `${String(block.endHour).padStart(2, '0')}:00`,
+    dayOfWeek: daysOfWeek[0] ?? 0,
+    daysOfWeek,
+    date: isOverride ? block.specificDate ?? block.validFrom : undefined,
+    isOverride,
+    instructor: block.organizer ?? instructor,
+    notes: block.description ?? undefined,
+    validFrom: isOverride ? undefined : block.validFrom,
+    validUntil: isOverride ? undefined : block.validUntil ?? undefined,
   }
 }
 

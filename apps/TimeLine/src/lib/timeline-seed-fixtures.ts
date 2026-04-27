@@ -40,16 +40,30 @@ export const seedUsers: UserRow[] = [
   },
 ]
 
+function seedRoom(id: string, name: string, floor: number, type: RoomRow['type'], capacity: number): RoomRow {
+  return {
+    id,
+    name,
+    floor,
+    type,
+    capacity,
+    imacCount: type === 'event_hall' ? 0 : capacity,
+    isActive: 1,
+    notes: null,
+    createdAt: FIXTURE_CREATED_AT,
+  }
+}
+
 export const seedRooms: RoomRow[] = [
-  { id: 'room-301', name: '301', floor: 3, type: 'lab', capacity: 32, createdAt: FIXTURE_CREATED_AT },
-  { id: 'room-302', name: '302', floor: 3, type: 'lab', capacity: 28, createdAt: FIXTURE_CREATED_AT },
-  { id: 'room-303', name: '303', floor: 3, type: 'lab', capacity: 30, createdAt: FIXTURE_CREATED_AT },
-  { id: 'room-304', name: '304', floor: 3, type: 'lab', capacity: 26, createdAt: FIXTURE_CREATED_AT },
-  { id: 'room-305', name: '305', floor: 3, type: 'lab', capacity: 24, createdAt: FIXTURE_CREATED_AT },
-  { id: 'room-hall-3', name: 'Event hall 3', floor: 3, type: 'event_hall', capacity: 80, createdAt: FIXTURE_CREATED_AT },
-  { id: 'room-401', name: '401', floor: 4, type: 'lab', capacity: 36, createdAt: FIXTURE_CREATED_AT },
-  { id: 'room-402', name: '402', floor: 4, type: 'event_hall', capacity: 80, createdAt: FIXTURE_CREATED_AT },
-  { id: 'room-403', name: '403', floor: 4, type: 'lab', capacity: 34, createdAt: FIXTURE_CREATED_AT },
+  seedRoom('room-301', '301', 3, 'lab', 32),
+  seedRoom('room-302', '302', 3, 'lab', 28),
+  seedRoom('room-303', '303', 3, 'lab', 30),
+  seedRoom('room-304', '304', 3, 'lab', 26),
+  seedRoom('room-305', '305', 3, 'lab', 24),
+  seedRoom('room-hall-3', 'Event hall 3', 3, 'event_hall', 80),
+  seedRoom('room-401', '401', 4, 'lab', 36),
+  seedRoom('room-402', '402', 4, 'event_hall', 80),
+  seedRoom('room-403', '403', 4, 'lab', 34),
 ]
 
 export const seedSchedules: ScheduleRow[] = [

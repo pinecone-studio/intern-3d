@@ -1,9 +1,93 @@
 import { sql } from 'drizzle-orm'
 import { getDrizzleDb } from '@/db/client'
-import { deviceAssignmentsTable, roomsTable, scheduleOverridesTable, schedulesTable, usersTable } from '@/db/schema'
+import { deviceAssignmentsTable, roomsTable, scheduleBlocksTable, scheduleOverridesTable, schedulesTable, usersTable } from '@/db/schema'
 import { seedDeviceAssignments, seedOverrides, seedRooms, seedSchedules, seedUsers } from '@/lib/timeline-seed-fixtures'
+import type { EventType, ScheduleEvent } from '@/lib/types'
 
 const INSERT_CHUNK_SIZE = 8
+
+function toBlockEventType(type: EventType): string {
+  if (type === 'openlab') return 'open_lab'
+  if (type === 'closed') return 'event'
+  return type
+}
+
+function toHour(time: string): number {
+  return Number(time.split(':')[0])
+}
+
+function toScheduleEventFromSchedule(schedule: typeof seedSchedules[number]): ScheduleEvent {
+  const daysOfWeek = JSON.parse(schedule.daysOfWeek) as number[]
+
+  return {
+    id: schedule.id,
+    roomId: schedule.roomId,
+    title: schedule.title,
+    type: (schedule.type === 'open' ? 'openlab' : schedule.type) as EventType,
+    startTime: schedule.startTime,
+    endTime: schedule.endTime,
+    dayOfWeek: daysOfWeek[0] ?? 0,
+    daysOfWeek,
+    isOverride: false,
+    instructor: schedule.instructor ?? undefined,
+    notes: schedule.notes ?? undefined,
+    validFrom: schedule.startDate,
+    validUntil: schedule.endDate,
+  }
+}
+
+function toScheduleEventFromOverride(override: typeof seedOverrides[number]): ScheduleEvent {
+  const day = new Date(`${override.date}T00:00:00`).getDay()
+  const dayOfWeek = day === 0 ? 7 : day
+
+  return {
+    id: override.id,
+    roomId: override.roomId,
+    title: override.title,
+    type: (override.type === 'open' ? 'openlab' : override.type) as EventType,
+    startTime: override.startTime,
+    endTime: override.endTime,
+    dayOfWeek,
+    daysOfWeek: [dayOfWeek],
+    date: override.date,
+    isOverride: true,
+    instructor: override.instructor ?? undefined,
+    notes: override.notes ?? undefined,
+  }
+}
+
+function toScheduleBlock(event: ScheduleEvent): typeof scheduleBlocksTable.$inferInsert {
+  const isOneTime = event.isOverride || event.type === 'closed' || Boolean(event.date)
+  const date = event.date ?? event.validFrom ?? '2026-04-01'
+  const isDaily = !isOneTime && event.daysOfWeek.length >= 5
+
+  return {
+    id: event.id,
+    roomId: event.roomId,
+    type: toBlockEventType(event.type),
+    title: event.title,
+    description: event.notes ?? null,
+    organizer: event.instructor ?? null,
+    startHour: toHour(event.startTime),
+    endHour: toHour(event.endTime),
+    recurrence: isOneTime ? 'one_time' : isDaily ? 'daily' : 'weekly',
+    specificDate: isOneTime ? date : null,
+    daysOfWeek: !isOneTime && !isDaily ? JSON.stringify(event.daysOfWeek) : null,
+    validFrom: isOneTime ? date : event.validFrom ?? '2026-04-01',
+    validUntil: isOneTime ? date : event.validUntil ?? '2026-12-31',
+    isActive: 1,
+    createdBy: 'admin-1',
+    createdAt: event.validFrom ?? '2026-04-01T00:00:00.000Z',
+    updatedAt: event.validFrom ?? '2026-04-01T00:00:00.000Z',
+  }
+}
+
+function getScheduleBlocks(): Array<typeof scheduleBlocksTable.$inferInsert> {
+  return [
+    ...seedSchedules.map(toScheduleEventFromSchedule),
+    ...seedOverrides.map(toScheduleEventFromOverride),
+  ].map(toScheduleBlock)
+}
 
 async function insertChunks<T>(values: T[], insertChunk: (_chunk: T[]) => Promise<unknown>) {
   for (let index = 0; index < values.length; index += INSERT_CHUNK_SIZE) {
@@ -17,10 +101,16 @@ export async function seedTimelineDatabase(options: { reset?: boolean } = {}) {
   const rooms = seedRooms
   const schedules = seedSchedules
   const overrides = seedOverrides
+  const scheduleBlocks = getScheduleBlocks()
   const devices = seedDeviceAssignments
 
   if (options.reset) {
     await db.delete(deviceAssignmentsTable)
+    try {
+      await db.delete(scheduleBlocksTable)
+    } catch {
+      // Older local/D1 databases use schedules + overrides until migration 0004 is applied.
+    }
     await db.delete(scheduleOverridesTable)
     await db.delete(schedulesTable)
     await db.delete(roomsTable)
@@ -36,13 +126,18 @@ export async function seedTimelineDatabase(options: { reset?: boolean } = {}) {
   await insertChunks(rooms, chunk => db.insert(roomsTable).values(chunk))
   await insertChunks(schedules, chunk => db.insert(schedulesTable).values(chunk))
   await insertChunks(overrides, chunk => db.insert(scheduleOverridesTable).values(chunk))
+  try {
+    await insertChunks(scheduleBlocks, chunk => db.insert(scheduleBlocksTable).values(chunk))
+  } catch {
+    // Older local/D1 databases use schedules + overrides until migration 0004 is applied.
+  }
   await insertChunks(devices, chunk => db.insert(deviceAssignmentsTable).values(chunk))
 
   return {
     seeded: true,
     users: users.length,
     rooms: rooms.length,
-    events: schedules.length + overrides.length,
+    events: scheduleBlocks.length,
     devices: devices.length,
   }
 }

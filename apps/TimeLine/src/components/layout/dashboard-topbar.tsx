@@ -48,7 +48,7 @@ export function DashboardTopbar() {
 
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-background">
-      <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+      <div className="mx-auto flex max-w-[1800px] flex-col gap-3 px-4 py-3 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <div className="flex items-center gap-3">
             <SidebarTrigger className="md:inline-flex" />
@@ -61,7 +61,7 @@ export function DashboardTopbar() {
                   Academic TimeLine
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Room availability
+                  Academy room scheduler
                 </p>
               </div>
             </Link>
@@ -85,11 +85,11 @@ export function DashboardTopbar() {
 
         <div className="flex flex-wrap items-center gap-2">
           <ThemeToggle />
-          <Badge 
+          <Badge
             variant="outline"
             className={`rounded-md px-2 py-1 ${
-              role === 'admin' 
-                ? 'text-foreground' 
+              role === 'admin'
+                ? 'text-foreground'
                 : 'text-muted-foreground'
             }`}
           >

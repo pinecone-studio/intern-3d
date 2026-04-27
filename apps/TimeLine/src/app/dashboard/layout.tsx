@@ -34,8 +34,8 @@ export default function DashboardLayout({
       <DashboardSidebar />
       <SidebarInset>
         <DashboardTopbar />
-        <main className="p-4 sm:p-6">
-          <div className="mx-auto max-w-7xl">
+        <main className="p-3 sm:p-5">
+          <div className="mx-auto max-w-[1800px]">
             {children}
           </div>
         </main>
