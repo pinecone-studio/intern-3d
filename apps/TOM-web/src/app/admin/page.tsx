@@ -21,18 +21,18 @@ import { useAdminDashboard } from './useAdminDashboard';
 export type AdminSection = 'requests' | 'users' | 'clubs' | 'spam' | 'events';
 
 const monthLabels = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
+  '1 сар',
+  '2 сар',
+  '3 сар',
+  '4 сар',
+  '5 сар',
+  '6 сар',
+  '7 сар',
+  '8 сар',
+  '9 сар',
+  '10 сар',
+  '11 сар',
+  '12 сар',
 ];
 
 const fieldClass =
@@ -91,7 +91,7 @@ export function AdminDashboardContent({
 
   const summaryCards = [
     {
-      label: 'Total users',
+      label: 'Нийт хэрэглэгч',
       value: summary.totalUsers,
       delta: '+4.2%',
       icon: Users,
@@ -99,7 +99,7 @@ export function AdminDashboardContent({
       badge: 'bg-[#edf3ff] text-[#4f72d5]',
     },
     {
-      label: 'Active clubs',
+      label: 'Идэвхтэй клуб',
       value: activeCount,
       delta: `+${activeClubs.length}`,
       icon: ShieldCheck,
@@ -107,7 +107,7 @@ export function AdminDashboardContent({
       badge: 'bg-[#eaf8ff] text-[#1f95ca]',
     },
     {
-      label: 'Pending reviews',
+      label: 'Хүлээгдэж буй хүсэлт',
       value: summary.pendingRequests,
       delta: `+${thresholdReachedCount}`,
       icon: CalendarDays,
@@ -115,7 +115,7 @@ export function AdminDashboardContent({
       badge: 'bg-[#eef4ff] text-[#4f77d6]',
     },
     {
-      label: 'Flagged clubs',
+      label: 'Тэмдэглэгдсэн клуб',
       value: summary.spamRequests,
       delta: `+${Math.max(1, summary.spamRequests) * 9}%`,
       icon: ShieldAlert,
@@ -193,10 +193,10 @@ export function AdminDashboardContent({
     1
   );
   const analyticsBars = [
-    ['Users', summary.totalUsers],
-    ['Clubs', activeClubs.length],
-    ['Requests', requests.length],
-    ['Events', events.length],
+    ['Хэрэглэгч', summary.totalUsers],
+    ['Клуб', activeClubs.length],
+    ['Хүсэлт', requests.length],
+    ['Арга хэмжээ', events.length],
   ] as const;
   const upcomingEventCount = upcomingEvents;
   const ongoingEventCount = events.filter(
@@ -226,20 +226,20 @@ export function AdminDashboardContent({
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em]">
                   {errorMessage
-                    ? 'Sync error'
+                    ? 'Синхрончлолын алдаа'
                     : isLoading
-                    ? 'Loading live data'
+                    ? 'Шууд өгөгдөл ачаалж байна'
                     : isSaving
-                    ? 'Saving changes'
-                    : 'Live sync'}
+                    ? 'Өөрчлөлт хадгалж байна'
+                    : 'Шууд синхрон'}
                 </p>
                 <p className="mt-1 text-sm">
                 {optionsErrorMessage ||
                   errorMessage ||
                   (isLoading
-                    ? 'Cloudflare D1 дээрх option, өгөгдлийг admin dashboard руу ачаалж байна.'
+                    ? 'Cloudflare D1 дээрх сонголт, өгөгдлийг админ самбар руу ачаалж байна.'
                     : isOptionsLoading
-                    ? 'Cloudflare D1 дээрх өгөгдлийг admin dashboard руу ачаалж байна.'
+                    ? 'Cloudflare D1 дээрх өгөгдлийг админ самбар руу ачаалж байна.'
                     : isSaving
                       ? 'Сүүлд хийсэн өөрчлөлтийг API-аар хадгалж байна.'
                       : banner)}
@@ -255,7 +255,7 @@ export function AdminDashboardContent({
                       : 'bg-emerald-400'
                   }`}
                 />
-                {errorMessage ? 'Needs attention' : 'Connected'}
+                {errorMessage ? 'Анхаарал шаардлагатай' : 'Холбогдсон'}
               </span>
             </div>
           </div>
@@ -301,12 +301,11 @@ export function AdminDashboardContent({
                 <div className="flex items-center gap-2 text-[color:var(--primary)]">
                   <ChartColumnIncreasing className="h-4 w-4" />
                   <p className="text-sm font-semibold text-[#183153]">
-                    Platform activity
+                    Платформын идэвхжил
                   </p>
                 </div>
                 <p className="mt-2 text-sm text-[#6c829f]">
-                  Club approvals, activity, and moderation signals for the last
-                  12 months.
+                  Сүүлийн 12 сарын клуб батлах, идэвхжил, хяналтын үзүүлэлтүүд.
                 </p>
               </div>
               <span className="inline-flex items-center rounded-full bg-[color:var(--primary-soft)] px-4 py-2 text-sm font-semibold text-[#365f91]">
@@ -405,7 +404,7 @@ export function AdminDashboardContent({
             <div className="flex items-center gap-2">
               <Trophy className="h-4 w-4 text-[color:var(--primary)]" />
               <p className="text-lg font-semibold text-[#183153]">
-                Leaderboard
+                Тэргүүлэгчид
               </p>
             </div>
 
@@ -434,8 +433,12 @@ export function AdminDashboardContent({
                         {user.name}
                       </p>
                       <p className="truncate text-xs text-[#6983a4]">
-                        {user.role === 'teacher' ? 'Teacher' : 'Student'} ·{' '}
-                        {user.accountStatus}
+                        {user.role === 'teacher' ? 'Багш' : 'Сурагч'} ·{' '}
+                        {user.accountStatus === 'active'
+                          ? 'Идэвхтэй'
+                          : user.accountStatus === 'restricted'
+                          ? 'Хязгаарласан'
+                          : 'Хориглосон'}
                       </p>
                     </div>
                   </div>
@@ -445,7 +448,7 @@ export function AdminDashboardContent({
                       {user.points.toLocaleString()}
                     </p>
                     <p className="text-xs text-[#8195af]">
-                      {user.clubCount} clubs
+                      {user.clubCount} клуб
                     </p>
                   </div>
                 </div>
@@ -461,16 +464,16 @@ export function AdminDashboardContent({
                     <div className="flex items-center gap-2">
                       <ChartColumnIncreasing className="h-4 w-4 text-[color:var(--primary)]" />
                       <p className="text-lg font-semibold text-[#183153]">
-                        Analytics overview
+                        Аналитикийн тойм
                       </p>
                     </div>
                     <p className="mt-2 text-sm text-[#6c829f]">
-                      Users, clubs, requests, and events are now summarized
-                      directly inside the Admin Panel.
+                      Хэрэглэгч, клуб, хүсэлт, арга хэмжээний мэдээлэл одоо админ
+                      самбар дээр нэг дор харагдана.
                     </p>
                   </div>
                   <span className="rounded-full bg-[color:var(--primary-soft)] px-4 py-2 text-sm font-semibold text-[#365f91]">
-                    Live data
+                    Шууд өгөгдөл
                   </span>
                 </div>
 
@@ -503,19 +506,19 @@ export function AdminDashboardContent({
                 <div className="flex items-center gap-2">
                   <CalendarDays className="h-4 w-4 text-[color:var(--primary)]" />
                   <p className="text-lg font-semibold text-[#183153]">
-                    Health metrics
+                    Үндсэн үзүүлэлтүүд
                   </p>
                 </div>
 
                 <div className="mt-5 grid gap-3">
                   {[
-                    ['Teachers', teacherCount],
-                    ['Active clubs', activeClubStatusCount],
-                    ['Paused clubs', pausedClubStatusCount],
-                    ['Upcoming events', upcomingEvents],
-                    ['Event participants', totalEventParticipants],
-                    ['Restricted users', restrictedUsers],
-                    ['Banned users', bannedUsers],
+                    ['Багш', teacherCount],
+                    ['Идэвхтэй клуб', activeClubStatusCount],
+                    ['Түр зогссон клуб', pausedClubStatusCount],
+                    ['Удахгүй болох арга хэмжээ', upcomingEvents],
+                    ['Арга хэмжээний оролцогч', totalEventParticipants],
+                    ['Хязгаарласан хэрэглэгч', restrictedUsers],
+                    ['Хориглосон хэрэглэгч', bannedUsers],
                   ].map(([label, value]) => (
                     <div
                       key={label}
@@ -549,30 +552,33 @@ export function AdminDashboardContent({
                       <div className="flex items-center gap-2">
                         <BadgeAlert className="h-4 w-4 text-[color:var(--primary)]" />
                         <p className="text-lg font-semibold text-[#183153]">
-                          Club requests
+                          Клубийн хүсэлтүүд
                         </p>
                       </div>
                       <p className="mt-2 text-sm text-[#6c829f]">
-                        Review pending club requests and approve or reject them
-                        from this queue.
+                        Хүлээгдэж буй клубийн хүсэлтүүдийг эндээс шалгаад батлах
+                        эсвэл татгалзана.
                       </p>
                     </div>
 
-                    <StatusBadge type="review" text={`${pendingRequests.length} pending`} />
+                    <StatusBadge
+                      type="review"
+                      text={`${pendingRequests.length} хүлээгдэж буй`}
+                    />
                   </div>
 
                   <div className="overflow-hidden rounded-[26px] border border-[color:var(--border)] bg-[color:var(--surface-strong)]">
                     <div className="grid gap-4 border-b border-[color:var(--border)] px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#7f93b1] sm:grid-cols-[1.2fr_0.95fr_0.8fr_0.8fr]">
-                      <span>Club</span>
-                      <span>Interest</span>
-                      <span>Status</span>
-                      <span className="text-right">Action</span>
+                      <span>Клуб</span>
+                      <span>Сонирхол</span>
+                      <span>Төлөв</span>
+                      <span className="text-right">Үйлдэл</span>
                     </div>
 
                     <div className="divide-y divide-[#e7eef9]">
                       {requests.length === 0 ? (
                         <div className="px-4 py-8 text-center text-sm text-[#6f86a7]">
-                          Шалгах club request одоогоор байхгүй байна.
+                          Шалгах клубийн хүсэлт одоогоор байхгүй байна.
                         </div>
                       ) : (
                         requests.map((club) => {
@@ -611,12 +617,12 @@ export function AdminDashboardContent({
                                 }
                                 text={
                                   club.requestStatus === 'approved'
-                                    ? 'approved'
+                                    ? 'Батлагдсан'
                                     : club.requestStatus === 'rejected'
-                                    ? 'rejected'
+                                    ? 'Татгалзсан'
                                     : thresholdReached
-                                    ? 'ready'
-                                    : 'below threshold'
+                                    ? 'Бэлэн'
+                                    : 'Босгод хүрээгүй'
                                 }
                               />
 
@@ -629,7 +635,7 @@ export function AdminDashboardContent({
                                   }
                                   className="rounded-full px-3 py-2 text-sm font-semibold text-[#ff5c5c] transition hover:bg-[#fff1f2] hover:text-[#e33f3f] disabled:cursor-not-allowed disabled:opacity-40"
                                 >
-                                  Reject
+                                  Татгалзах
                                 </button>
                                 <button
                                   type="button"
@@ -639,7 +645,7 @@ export function AdminDashboardContent({
                                   }
                                   className="rounded-full bg-[color:var(--primary)] px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(79,114,213,0.22)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-[#b5d0f3]"
                                 >
-                                  Approve
+                                  Батлах
                                 </button>
                               </div>
                             </div>
@@ -653,23 +659,23 @@ export function AdminDashboardContent({
                 <aside className="space-y-5">
                   <section className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft">
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7f93b1]">
-                      Review notes
+                      Хяналтын тэмдэглэл
                     </p>
                     <h3 className="mt-2 text-[1.15rem] font-semibold text-[#183153]">
-                      What the queue controls
+                      Энэ жагсаалтын үүрэг
                     </h3>
                     <div className="mt-4 space-y-3 text-sm text-[#60789a]">
                       <div className="rounded-[22px] bg-[color:var(--surface)] px-4 py-3.5 leading-6">
-                        Approve or reject each pending club request from one
-                        clean list.
+                        Хүлээгдэж буй клубийн хүсэлт бүрийг нэг жагсаалтаас
+                        батлах эсвэл татгалзах.
                       </div>
                       <div className="rounded-[22px] bg-[color:var(--surface)] px-4 py-3.5 leading-6">
-                        Promote accepted clubs from pending to active without
-                        changing the layout.
+                        Батлагдсан клубийг хүлээгдэж буйгаас идэвхтэй төлөв рүү
+                        шилжүүлэх.
                       </div>
                       <div className="rounded-[22px] bg-[color:var(--surface)] px-4 py-3.5 leading-6">
-                        Check whether interest reaches the {thresholdGoal}{' '}
-                        student threshold.
+                        Сонирхол {thresholdGoal} сурагчийн босгод хүрсэн эсэхийг
+                        шалгах.
                       </div>
                     </div>
                   </section>
@@ -678,13 +684,13 @@ export function AdminDashboardContent({
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7f93b1]">
-                          Threshold
+                          Босго
                         </p>
                         <h3 className="mt-2 text-[1.15rem] font-semibold text-[#183153]">
-                          Interest progress
+                          Сонирхлын явц
                         </h3>
                       </div>
-                      <StatusBadge type="approved" text="ready check" />
+                      <StatusBadge type="approved" text="Шалгах боломжтой" />
                     </div>
 
                     <div className="mt-4 space-y-4">
@@ -737,20 +743,19 @@ export function AdminDashboardContent({
               >
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7f93b1]">
-                    New user
+                    Шинэ хэрэглэгч
                   </p>
                   <h3 className="mt-2 text-xl font-semibold text-[#183153]">
-                    Create managed account
+                    Удирдах хэрэглэгчийн бүртгэл үүсгэх
                   </h3>
                   <p className="mt-2 text-sm text-[#6c829f]">
-                    Use this form to add a student or teacher with the same
-                    visual style as the rest of the admin console.
+                    Энэ маягтаар сурагч эсвэл багшийн бүртгэл нэмнэ.
                   </p>
                 </div>
 
                 <div className="mt-6 space-y-4">
                   <label className="block">
-                    <span className={inputLabelClass}>Name</span>
+                    <span className={inputLabelClass}>Нэр</span>
                     <input
                       type="text"
                       value={userForm.name}
@@ -762,7 +767,7 @@ export function AdminDashboardContent({
                   </label>
 
                   <label className="block">
-                    <span className={inputLabelClass}>Email</span>
+                    <span className={inputLabelClass}>Имэйл</span>
                     <input
                       type="email"
                       value={userForm.email}
@@ -774,7 +779,7 @@ export function AdminDashboardContent({
                   </label>
 
                   <label className="block">
-                    <span className={inputLabelClass}>Role</span>
+                    <span className={inputLabelClass}>Үүрэг</span>
                     <select
                       value={userForm.role}
                       onChange={(event) =>
@@ -784,14 +789,14 @@ export function AdminDashboardContent({
                     >
                       {userRoleOptions.map((role) => (
                         <option key={role} value={role}>
-                          {role === 'teacher' ? 'Teacher' : 'Student'}
+                          {role === 'teacher' ? 'Багш' : 'Сурагч'}
                         </option>
                       ))}
                     </select>
                   </label>
 
                   <label className="block">
-                    <span className={inputLabelClass}>Reason</span>
+                    <span className={inputLabelClass}>Шалтгаан</span>
                     <textarea
                       rows={4}
                       value={userForm.reason}
@@ -809,14 +814,14 @@ export function AdminDashboardContent({
                     disabled={isSaving}
                     className="rounded-full bg-[color:var(--primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(79,114,213,0.22)] transition hover:opacity-90"
                   >
-                    Add user
+                    Хэрэглэгч нэмэх
                   </button>
                   <button
                     type="button"
                     onClick={resetUserForm}
                     className="rounded-full border border-[color:var(--border)] bg-white px-5 py-2.5 text-sm font-semibold text-[#56708f] transition hover:bg-[color:var(--surface)]"
                   >
-                    Reset
+                    Дахин тохируулах
                   </button>
                 </div>
               </form>
@@ -842,17 +847,17 @@ export function AdminDashboardContent({
                           <StatusBadge
                             type={user.role}
                             text={
-                              user.role === 'teacher' ? 'teacher' : 'student'
+                              user.role === 'teacher' ? 'Багш' : 'Сурагч'
                             }
                           />
                           <StatusBadge
                             type={user.accountStatus}
                             text={
                               user.accountStatus === 'active'
-                                ? 'active'
+                                ? 'Идэвхтэй'
                                 : user.accountStatus === 'restricted'
-                                ? 'restricted'
-                                : 'banned'
+                                ? 'Хязгаарласан'
+                                : 'Хориглосон'
                             }
                           />
                         </div>
@@ -861,7 +866,7 @@ export function AdminDashboardContent({
                         </p>
                       </div>
                       <div className="text-right text-xs text-[#6f86a7]">
-                        <p>Last active</p>
+                        <p>Сүүлд идэвхтэй</p>
                         <p className="mt-1 font-semibold text-[#183153]">
                           {user.lastActive}
                         </p>
@@ -877,9 +882,16 @@ export function AdminDashboardContent({
 
                     <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
                       {[
-                        ['Role', user.role],
-                        ['Clubs', user.clubCount],
-                        ['Status', user.accountStatus],
+                        ['Үүрэг', user.role === 'teacher' ? 'Багш' : 'Сурагч'],
+                        ['Клубүүд', user.clubCount],
+                        [
+                          'Төлөв',
+                          user.accountStatus === 'active'
+                            ? 'Идэвхтэй'
+                            : user.accountStatus === 'restricted'
+                            ? 'Хязгаарласан'
+                            : 'Хориглосон',
+                        ],
                         ['ID', user.id],
                       ].map(([label, value]) => (
                         <div
@@ -909,8 +921,8 @@ export function AdminDashboardContent({
                         className="rounded-full bg-[color:var(--primary)] px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90"
                       >
                         {user.role === 'student'
-                          ? 'Make teacher'
-                          : 'Make student'}
+                          ? 'Багш болгох'
+                          : 'Сурагч болгох'}
                       </button>
                       <button
                         type="button"
@@ -919,8 +931,8 @@ export function AdminDashboardContent({
                         className="rounded-full border border-[#e3c98a] bg-white px-4 py-2 text-xs font-semibold text-[#ae7922] transition hover:bg-[#fff8e8]"
                       >
                         {user.accountStatus === 'restricted'
-                          ? 'Remove restriction'
-                          : 'Restrict'}
+                          ? 'Хязгаарлалтыг авах'
+                          : 'Хязгаарлах'}
                       </button>
                       <button
                         type="button"
@@ -928,7 +940,9 @@ export function AdminDashboardContent({
                         disabled={isSaving}
                         className="rounded-full border border-[#f4b5ba] bg-white px-4 py-2 text-xs font-semibold text-[#de4a58] transition hover:bg-[#fff6f7]"
                       >
-                        {user.accountStatus === 'banned' ? 'Unban' : 'Ban'}
+                        {user.accountStatus === 'banned'
+                          ? 'Хориг цуцлах'
+                          : 'Хориглох'}
                       </button>
                     </div>
                   </article>
@@ -945,25 +959,24 @@ export function AdminDashboardContent({
                     <div className="flex items-center gap-2">
                       <ShieldCheck className="h-5 w-5 text-[color:var(--primary)]" />
                       <h2 className="text-2xl font-bold text-[#183153]">
-                        Club Status
+                        Клубын төлөв
                       </h2>
                     </div>
                     <p className="mt-2 text-sm text-[#6c829f]">
-                      Идэвхтэй болон pause төлөвтэй club-уудыг эндээс
-                      удирдана.
+                      Идэвхтэй болон түр зогссон клубүүдийг эндээс удирдана.
                     </p>
                   </div>
 
                   <div className="grid grid-cols-3 gap-3 text-center">
                     {[
-                      ['Total', activeClubs.length],
+                      ['Нийт', activeClubs.length],
                       [
-                        'Active',
+                        'Идэвхтэй',
                         activeClubs.filter((club) => club.clubStatus === 'active')
                           .length,
                       ],
                       [
-                        'Paused',
+                        'Түр зогссон',
                         activeClubs.filter((club) => club.clubStatus === 'paused')
                           .length,
                       ],
@@ -988,10 +1001,10 @@ export function AdminDashboardContent({
                     <ShieldCheck className="h-6 w-6 text-[color:var(--primary)]" />
                   </div>
                   <p className="mt-4 font-semibold text-[#183153]">
-                    Club status хоосон байна
+                    Клубын төлөв хоосон байна
                   </p>
                   <p className="mt-1 text-sm text-[#6982a2]">
-                    Request approve хийсний дараа active club энд харагдана.
+                    Хүсэлтийг баталсны дараа идэвхтэй клуб энд харагдана.
                   </p>
                 </div>
               ) : (
@@ -1012,7 +1025,11 @@ export function AdminDashboardContent({
                         </div>
                         <StatusBadge
                           type={club.clubStatus}
-                          text={club.clubStatus}
+                          text={
+                            club.clubStatus === 'active'
+                              ? 'Идэвхтэй'
+                              : 'Түр зогссон'
+                          }
                         />
                       </div>
 
@@ -1038,8 +1055,8 @@ export function AdminDashboardContent({
                           className="rounded-full bg-[color:var(--primary)] px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
                         >
                           {club.clubStatus === 'active'
-                            ? 'Pause club'
-                            : 'Activate club'}
+                            ? 'Түр зогсоох'
+                            : 'Идэвхжүүлэх'}
                         </button>
                         <StatusBadge
                           type={
@@ -1065,17 +1082,17 @@ export function AdminDashboardContent({
                     <div className="flex items-center gap-2">
                       <ShieldAlert className="h-5 w-5 text-[#de4a58]" />
                       <h2 className="text-2xl font-bold text-[#183153]">
-                        Spam Review
+                        Спам шалгалт
                       </h2>
                     </div>
                     <p className="mt-2 text-sm text-[#8a5c64]">
-                      Сэжигтэй эсвэл spam гэж тэмдэглэгдсэн club request-уудыг
+                      Сэжигтэй эсвэл спам гэж тэмдэглэгдсэн клубийн хүсэлтүүдийг
                       эндээс цэвэрлэнэ.
                     </p>
                   </div>
 
                   <span className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#de4a58]">
-                    {spamQueue.length} flagged
+                    {spamQueue.length} тэмдэглэгдсэн
                   </span>
                 </div>
               </div>
@@ -1086,10 +1103,10 @@ export function AdminDashboardContent({
                     <ShieldAlert className="h-6 w-6 text-[#de4a58]" />
                   </div>
                   <p className="mt-4 font-semibold text-[#183153]">
-                    Spam request байхгүй байна
+                    Спам хүсэлт байхгүй байна
                   </p>
                   <p className="mt-1 text-sm text-[#8a5c64]">
-                    Flagged club гарвал энд жагсаагдаж remove хийх боломжтой.
+                    Тэмдэглэгдсэн клуб гарвал энд жагсаагдаж, устгах боломжтой.
                   </p>
                 </div>
               ) : (
@@ -1108,14 +1125,15 @@ export function AdminDashboardContent({
                             {club.teacher}
                           </p>
                         </div>
-                        <StatusBadge type="spam" text="flagged" />
+                        <StatusBadge type="spam" text="Тэмдэглэгдсэн" />
                       </div>
 
                       <p className="mt-3 text-sm leading-6 text-[#60789a]">
                         {club.note}
                       </p>
                       <p className="mt-3 rounded-[22px] bg-white/90 p-3 text-sm leading-6 text-[#cc4d57] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
-                        {club.flaggedReason || 'Flagged for admin review.'}
+                        {club.flaggedReason ||
+                          'Админы шалгалтаар тэмдэглэгдсэн.'}
                       </p>
 
                       <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -1125,7 +1143,7 @@ export function AdminDashboardContent({
                           disabled={isSaving}
                           className="rounded-full bg-[#ff5c6b] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#e44757] disabled:opacity-50"
                         >
-                          Remove spam club
+                          Спам клуб устгах
                         </button>
                         <span className="text-xs text-[#8a5c64]">
                           {club.createdBy}
@@ -1146,22 +1164,22 @@ export function AdminDashboardContent({
                     <div className="flex items-center gap-2">
                       <CalendarDays className="h-5 w-5 text-[color:var(--primary)]" />
                       <h2 className="text-2xl font-bold text-[#183153]">
-                        School Events
+                        Сургуулийн арга хэмжээ
                       </h2>
                     </div>
                     <p className="mt-2 text-sm text-[#6c829f]">
-                      Сургуулийн event үүсгэхэд бүх хэрэглэгч автоматаар
-                      оролцогч болж нэмэгдэнэ.
+                      Сургуулийн арга хэмжээ үүсгэхэд бүх хэрэглэгч автоматаар
+                      оролцогчоор нэмэгдэнэ.
                     </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 text-center sm:grid-cols-5">
                     {[
-                      ['Total', events.length],
-                      ['Upcoming', upcomingEventCount],
-                      ['Ongoing', ongoingEventCount],
-                      ['Completed', completedEventCount],
-                      ['Cancelled', cancelledEventCount],
+                      ['Нийт', events.length],
+                      ['Удахгүй', upcomingEventCount],
+                      ['Явагдаж буй', ongoingEventCount],
+                      ['Дууссан', completedEventCount],
+                      ['Цуцлагдсан', cancelledEventCount],
                     ].map(([label, value]) => (
                       <div
                         key={label}
@@ -1177,7 +1195,7 @@ export function AdminDashboardContent({
                 </div>
 
                 <div className="mt-4 rounded-2xl bg-[color:var(--primary-soft)] px-4 py-3 text-sm font-semibold text-[#365f91]">
-                  Нийт auto-joined оролцогч: {totalEventParticipants}
+                  Нийт автоматаар нэмэгдсэн оролцогч: {totalEventParticipants}
                 </div>
               </div>
 
@@ -1193,21 +1211,21 @@ export function AdminDashboardContent({
                   <div className="flex items-center gap-2">
                     <CalendarDays className="h-4 w-4 text-[color:var(--primary)]" />
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7f93b1]">
-                      Шинэ event
+                      Шинэ арга хэмжээ
                     </p>
                   </div>
                   <h3 className="mt-2 text-xl font-semibold text-[#183153]">
-                    Сургуулийн event үүсгэх
+                    Сургуулийн арга хэмжээ үүсгэх
                   </h3>
                   <p className="mt-2 text-sm text-[#6c829f]">
-                    Гарчиг болон огноо заавал оруулна. Үүссэний дараа бүх user
-                    автоматаар event-д нэгдэнэ.
+                    Гарчиг болон огноо заавал оруулна. Үүссэний дараа бүх
+                    хэрэглэгч автоматаар арга хэмжээнд нэгдэнэ.
                   </p>
                 </div>
 
                 <div className="mt-6 space-y-4">
                   <label className="block">
-                    <span className={inputLabelClass}>Event гарчиг</span>
+                    <span className={inputLabelClass}>Арга хэмжээний гарчиг</span>
                     <input
                       type="text"
                       value={eventForm.title}
@@ -1277,7 +1295,7 @@ export function AdminDashboardContent({
                       onChange={(e) =>
                         updateEventField('description', e.target.value)
                       }
-                      placeholder="Event-ийн дэлгэрэнгүй мэдээлэл..."
+                      placeholder="Арга хэмжээний дэлгэрэнгүй мэдээлэл..."
                       className={fieldClass}
                     />
                   </label>
@@ -1291,7 +1309,7 @@ export function AdminDashboardContent({
                     }
                     className="rounded-full bg-[color:var(--primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(79,114,213,0.22)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-[#b5d0f3]"
                   >
-                    Event үүсгэж auto join хийх
+                    Арга хэмжээ үүсгээд автоматаар нэмэх
                   </button>
                   <button
                     type="button"
@@ -1307,7 +1325,7 @@ export function AdminDashboardContent({
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-[color:var(--primary)]" />
                   <p className="text-lg font-semibold text-[#183153]">
-                    Бүх events ({events.length})
+                    Бүх арга хэмжээ ({events.length})
                   </p>
                 </div>
 
@@ -1317,10 +1335,11 @@ export function AdminDashboardContent({
                       <CalendarDays className="h-6 w-6 text-[color:var(--primary)]" />
                     </div>
                     <p className="mt-4 font-semibold text-[#183153]">
-                      Event байхгүй байна
+                      Арга хэмжээ байхгүй байна
                     </p>
                     <p className="mt-1 text-sm text-[#6982a2]">
-                      Эхний event үүсгэхэд бүх хэрэглэгч автоматаар нэгдэнэ.
+                      Эхний арга хэмжээ үүсгэхэд бүх хэрэглэгч автоматаар
+                      нэгдэнэ.
                     </p>
                   </div>
                 ) : (
@@ -1335,12 +1354,21 @@ export function AdminDashboardContent({
                           ? 'bg-[#f0f0f0] text-[#6b7280]'
                           : 'bg-[#fff0f0] text-[#d94f4f]';
 
+                      const statusLabel =
+                        event.status === 'upcoming'
+                          ? 'Удахгүй'
+                          : event.status === 'ongoing'
+                          ? 'Явагдаж буй'
+                          : event.status === 'completed'
+                          ? 'Дууссан'
+                          : 'Цуцлагдсан';
+
                       const nextStatusLabel =
                         event.status === 'upcoming'
-                          ? 'Ongoing болгох'
+                          ? 'Явагдаж буй болгох'
                           : event.status === 'ongoing'
-                          ? 'Completed болгох'
-                          : 'Upcoming болгох';
+                          ? 'Дууссан болгох'
+                          : 'Удахгүй болгох';
 
                       return (
                         <article
@@ -1361,7 +1389,7 @@ export function AdminDashboardContent({
                             <span
                               className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${statusColor}`}
                             >
-                              {event.status}
+                              {statusLabel}
                             </span>
                           </div>
 

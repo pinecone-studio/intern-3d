@@ -16,7 +16,9 @@ async function readJson<T>(response: Response) {
     | ({ error?: string } & T)
     | null;
   if (!response.ok) {
-    throw new Error(data?.error || `Request failed with status ${response.status}.`);
+    throw new Error(
+      data?.error || `Хүсэлт амжилтгүй боллоо (код: ${response.status}).`
+    );
   }
   return data as T;
 }
@@ -175,7 +177,7 @@ export function useClubsPage(options: TomFormOptions) {
       setBanner(
         nextStatus === 'active'
           ? `"${club.clubName}" дахин идэвхжлээ.`
-          : `"${club.clubName}" түр pause төлөвт орлоо.`
+          : `"${club.clubName}" түр зогсоосон төлөвт орлоо.`
       );
     }, 'Клубийн төлөв шинэчилж чадсангүй.');
   };

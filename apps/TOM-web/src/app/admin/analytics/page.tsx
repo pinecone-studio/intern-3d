@@ -50,40 +50,40 @@ export default function AnalyticsPage() {
 
   const cards = [
     {
-      label: 'Total users',
+      label: 'Нийт хэрэглэгч',
       value: summary.totalUsers,
-      detail: `${teacherCount} teachers`,
+      detail: `${teacherCount} багш`,
       icon: Users,
       tint: 'bg-gradient-primary',
     },
     {
-      label: 'Active clubs',
+      label: 'Идэвхтэй клуб',
       value: activeClubCount,
-      detail: `${pausedClubCount} paused`,
+      detail: `${pausedClubCount} түр зогссон`,
       icon: ShieldCheck,
       tint: 'bg-gradient-teacher',
     },
     {
-      label: 'Pending requests',
+      label: 'Хүлээгдэж буй хүсэлт',
       value: summary.pendingRequests,
-      detail: `${thresholdReachedCount} ready`,
+      detail: `${thresholdReachedCount} бэлэн`,
       icon: Activity,
       tint: 'bg-gradient-student',
     },
     {
-      label: 'Flagged spam',
+      label: 'Тэмдэглэгдсэн спам',
       value: spamQueue.length,
-      detail: 'needs review',
+      detail: 'шалгах шаардлагатай',
       icon: ShieldAlert,
       tint: 'bg-gradient-admin',
     },
   ];
 
   const bars = [
-    ['Users', summary.totalUsers],
-    ['Clubs', activeClubs.length],
-    ['Requests', requests.length],
-    ['Events', events.length],
+    ['Хэрэглэгч', summary.totalUsers],
+    ['Клуб', activeClubs.length],
+    ['Хүсэлт', requests.length],
+    ['Арга хэмжээ', events.length],
   ] as const;
 
   return (
@@ -93,14 +93,14 @@ export default function AnalyticsPage() {
           <div>
             <div className="flex items-center gap-2">
               <Activity className="h-5 w-5 text-[color:var(--primary)]" />
-              <h1 className="text-2xl font-bold text-[#183153]">Analytics</h1>
+              <h1 className="text-2xl font-bold text-[#183153]">Аналитик</h1>
             </div>
             <p className="mt-2 text-sm text-[#6c829f]">
-              Live overview of users, clubs, requests, moderation, and events.
+              Хэрэглэгч, клуб, хүсэлт, хяналт, арга хэмжээний шууд тойм.
             </p>
           </div>
           <span className="rounded-full bg-[color:var(--primary-soft)] px-4 py-2 text-sm font-semibold text-[#365f91]">
-            {isLoading ? 'Loading...' : 'Live data'}
+            {isLoading ? 'Ачаалж байна...' : 'Шууд өгөгдөл'}
           </span>
         </div>
 
@@ -142,7 +142,7 @@ export default function AnalyticsPage() {
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
         <article className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-6 shadow-soft">
           <h2 className="text-xl font-semibold text-[#183153]">
-            Platform breakdown
+            Платформын задаргаа
           </h2>
           <div className="mt-6 space-y-5">
             {bars.map(([label, value]) => (
@@ -166,16 +166,16 @@ export default function AnalyticsPage() {
           <div className="flex items-center gap-2">
             <CalendarDays className="h-5 w-5 text-[color:var(--primary)]" />
             <h2 className="text-xl font-semibold text-[#183153]">
-              Event health
+              Арга хэмжээний үзүүлэлт
             </h2>
           </div>
           <div className="mt-5 grid gap-3">
             {[
-              ['Total events', events.length],
-              ['Upcoming events', upcomingEvents],
-              ['Participants', totalEventParticipants],
-              ['Restricted users', restrictedUsers],
-              ['Banned users', bannedUsers],
+              ['Нийт арга хэмжээ', events.length],
+              ['Удахгүй болох', upcomingEvents],
+              ['Оролцогч', totalEventParticipants],
+              ['Хязгаарласан хэрэглэгч', restrictedUsers],
+              ['Хориглосон хэрэглэгч', bannedUsers],
             ].map(([label, value]) => (
               <div
                 key={label}

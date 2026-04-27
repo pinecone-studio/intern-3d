@@ -39,7 +39,7 @@ type DashboardSnapshot = {
 };
 
 const defaultBanner =
-  'Cloudflare D1 дээрх бодит өгөгдлийг уншаад admin dashboard-ийг синк хийлээ.';
+  'Cloudflare D1 дээрх бодит өгөгдлийг уншаад админ самбарыг синхрончиллоо.';
 
 const emptySummary: DashboardSummary = {
   totalUsers: 0,
@@ -63,7 +63,9 @@ async function readJson<T>(response: Response) {
     | null;
 
   if (!response.ok) {
-    throw new Error(data?.error || `Request failed with status ${response.status}.`);
+    throw new Error(
+      data?.error || `Хүсэлт амжилтгүй боллоо (код: ${response.status}).`
+    );
   }
 
   return data as T;
@@ -140,6 +142,21 @@ function mapUser(user: ApiManagedUser): ManagedUser {
     clubCount: user.clubCount,
     notes: user.notes,
   };
+}
+
+function formatEventStatusLabel(status: string) {
+  switch (status) {
+    case 'upcoming':
+      return 'Удахгүй';
+    case 'ongoing':
+      return 'Явагдаж буй';
+    case 'completed':
+      return 'Дууссан';
+    case 'cancelled':
+      return 'Цуцлагдсан';
+    default:
+      return status;
+  }
 }
 
 export type EventForm = {
@@ -265,7 +282,7 @@ export function useAdminDashboard(options: TomFormOptions) {
       } catch (error) {
         if (!cancelled) {
           setErrorMessage(
-            getErrorMessage(error, 'Admin dashboard data-г ачаалж чадсангүй.')
+            getErrorMessage(error, 'Админ самбарын өгөгдлийг ачаалж чадсангүй.')
           );
         }
       } finally {
@@ -358,7 +375,9 @@ export function useAdminDashboard(options: TomFormOptions) {
         `/api/club-requests/${requestId}/approve`,
         { method: 'POST' }
       );
-      await refreshDashboard(`${request.clubName} батлагдаж active төлөвт шилжлээ.`);
+      await refreshDashboard(
+        `${request.clubName} батлагдаж идэвхтэй төлөвт шилжлээ.`
+      );
     }, 'Клубийн хүсэлтийг баталж чадсангүй.');
   };
 
@@ -406,7 +425,7 @@ export function useAdminDashboard(options: TomFormOptions) {
       await refreshDashboard(
         nextStatus === 'active'
           ? `${club.clubName} дахин идэвхжлээ.`
-          : `${club.clubName} түр pause төлөвт орлоо.`
+          : `${club.clubName} түр зогсоосон төлөвт орлоо.`
       );
     }, 'Клубийн төлөв шинэчилж чадсангүй.');
   };
@@ -486,7 +505,9 @@ export function useAdminDashboard(options: TomFormOptions) {
         method: 'DELETE',
       });
 
-      await refreshDashboard(`${spamClub.clubName} spam гэж устгагдлаа.`);
+      await refreshDashboard(
+        `${spamClub.clubName} хүсэлтийг спам гэж тэмдэглээд устгалаа.`
+      );
     }, 'Spam хүсэлтийг устгаж чадсангүй.');
   };
 
@@ -497,7 +518,7 @@ export function useAdminDashboard(options: TomFormOptions) {
   const resetEventForm = () => setEventForm(initialEventForm);
 
   const handleCreateEvent = async () => {
-    const title = eventForm.title.trim() || 'Нэргүй event';
+    const title = eventForm.title.trim() || 'Нэргүй арга хэмжээ';
 
     await runMutation(async () => {
       await apiRequest<{ event: ApiEvent }>('/api/events', {
@@ -514,8 +535,10 @@ export function useAdminDashboard(options: TomFormOptions) {
       });
 
       setEventForm(initialEventForm);
-      await refreshDashboard(`"${title}" event үүсгэгдэж бүх хэрэглэгч auto join хийгдлээ.`);
-    }, 'Event үүсгэж чадсангүй.');
+      await refreshDashboard(
+        `"${title}" арга хэмжээ үүсэж, бүх хэрэглэгч автоматаар нэгдлээ.`
+      );
+    }, 'Арга хэмжээ үүсгэж чадсангүй.');
   };
 
   const handleDeleteEvent = async (eventId: string) => {
@@ -524,8 +547,8 @@ export function useAdminDashboard(options: TomFormOptions) {
 
     await runMutation(async () => {
       await apiRequest<{ ok: boolean }>(`/api/events/${eventId}`, { method: 'DELETE' });
-      await refreshDashboard(`"${event.title}" event устгагдлаа.`);
-    }, 'Event устгаж чадсангүй.');
+      await refreshDashboard(`"${event.title}" арга хэмжээ устгагдлаа.`);
+    }, 'Арга хэмжээ устгаж чадсангүй.');
   };
 
   const handleToggleEventStatus = async (eventId: string) => {
@@ -543,8 +566,10 @@ export function useAdminDashboard(options: TomFormOptions) {
         body: JSON.stringify({ status: nextStatus }),
       });
 
-      await refreshDashboard(`"${event.title}" төлөв "${nextStatus}" болов.`);
-    }, 'Event төлөв шинэчилж чадсангүй.');
+      await refreshDashboard(
+        `"${event.title}" төлөв "${formatEventStatusLabel(nextStatus)}" боллоо.`
+      );
+    }, 'Арга хэмжээний төлөв шинэчилж чадсангүй.');
   };
 
   const handleCancelEvent = async (eventId: string) => {
@@ -557,8 +582,8 @@ export function useAdminDashboard(options: TomFormOptions) {
         body: JSON.stringify({ status: 'cancelled' }),
       });
 
-      await refreshDashboard(`"${event.title}" event цуцлагдлаа.`);
-    }, 'Event цуцалж чадсангүй.');
+      await refreshDashboard(`"${event.title}" арга хэмжээ цуцлагдлаа.`);
+    }, 'Арга хэмжээ цуцалж чадсангүй.');
   };
 
   const spamQueue = requests.filter((request) => request.clubStatus === 'spam');
