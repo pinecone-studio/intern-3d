@@ -5,6 +5,7 @@ import { Plus, X } from 'lucide-react';
 
 import { CapacityBar } from '@/app/_components';
 import { useTomOptions } from '@/app/_hooks/useTomOptions';
+import { useTomSession } from '@/app/_providers/tom-session-provider';
 import type { Club, TomFormOptions } from '@/lib/tom-types';
 
 type ClubRequestForm = {
@@ -22,8 +23,6 @@ const fieldClass =
   'w-full rounded-[18px] border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-3 text-sm text-[color:var(--text)] outline-none transition placeholder:text-[#8aa0be] focus:border-[color:var(--primary)] focus:bg-white focus:ring-4 focus:ring-[color:var(--primary-soft)]';
 
 const inputLabelClass = 'mb-2 block text-sm font-semibold text-[#5f7697]';
-
-const joinedClubsStorageKey = 'tom.joined-clubs.v1';
 
 function createInitialForm(options: TomFormOptions): ClubRequestForm {
   return {
@@ -66,32 +65,19 @@ async function apiRequest<T>(input: string, init?: RequestInit) {
   return readJson<T>(response);
 }
 
-function loadJoinedClubIds() {
-  if (typeof window === 'undefined') return [];
-
-  try {
-    const raw = window.localStorage.getItem(joinedClubsStorageKey);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((value) => typeof value === 'string');
-  } catch {
-    return [];
-  }
-}
-
-function saveJoinedClubIds(ids: string[]) {
-  if (typeof window === 'undefined') return;
-  window.localStorage.setItem(joinedClubsStorageKey, JSON.stringify(ids));
-}
+type MembershipResponse = {
+  joinedClubIds: string[];
+};
 
 export default function ClubsPage() {
   const { options } = useTomOptions();
+  const { user } = useTomSession();
 
   const [clubs, setClubs] = useState<Club[]>([]);
   const [activeTab, setActiveTab] = useState<'mine' | 'other'>('mine');
   const [joinedClubIds, setJoinedClubIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [pendingClubId, setPendingClubId] = useState('');
   const [banner, setBanner] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -99,10 +85,6 @@ export default function ClubsPage() {
   const [dialogError, setDialogError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState<ClubRequestForm>(() => createInitialForm(options));
-
-  useEffect(() => {
-    setJoinedClubIds(loadJoinedClubIds());
-  }, []);
 
   useEffect(() => {
     setForm((current) => ({
@@ -121,8 +103,14 @@ export default function ClubsPage() {
       setErrorMessage('');
 
       try {
-        const data = await apiRequest<{ clubs: Club[] }>('/api/clubs?status=active');
-        if (!cancelled) setClubs(data.clubs);
+        const [clubData, membershipData] = await Promise.all([
+          apiRequest<{ clubs: Club[] }>('/api/clubs?status=active'),
+          apiRequest<MembershipResponse>('/api/club-memberships'),
+        ]);
+        if (!cancelled) {
+          setClubs(clubData.clubs);
+          setJoinedClubIds(membershipData.joinedClubIds);
+        }
       } catch (error) {
         if (!cancelled) {
           setErrorMessage(getErrorMessage(error, 'Клубуудын жагсаалтыг ачаалж чадсангүй.'));
@@ -175,18 +163,58 @@ export default function ClubsPage() {
     setForm((current) => ({ ...current, [field]: value }));
   };
 
-  const joinClub = (clubId: string) => {
+  const updateClubMemberCount = (clubId: string, delta: 1 | -1) => {
+    setClubs((current) =>
+      current.map((club) =>
+        club.id === clubId
+          ? { ...club, memberCount: Math.max(0, club.memberCount + delta) }
+          : club
+      )
+    );
+  };
+
+  const joinClub = async (clubId: string) => {
+    if (joinedSet.has(clubId)) return;
+
     setBanner('');
     setErrorMessage('');
+    setPendingClubId(clubId);
 
-    setJoinedClubIds((current) => {
-      if (current.includes(clubId)) return current;
-      const next = [...current, clubId];
-      saveJoinedClubIds(next);
-      return next;
-    });
+    try {
+      const data = await apiRequest<MembershipResponse>('/api/club-memberships', {
+        method: 'POST',
+        body: JSON.stringify({ clubId }),
+      });
+      setJoinedClubIds(data.joinedClubIds);
+      updateClubMemberCount(clubId, 1);
+      setBanner('Клубт амжилттай нэгдлээ.');
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error, 'Клубт нэгдэж чадсангүй.'));
+    } finally {
+      setPendingClubId('');
+    }
+  };
 
-    setBanner('Клубт амжилттай нэгдлээ.');
+  const leaveClub = async (clubId: string) => {
+    if (!joinedSet.has(clubId)) return;
+
+    setBanner('');
+    setErrorMessage('');
+    setPendingClubId(clubId);
+
+    try {
+      const data = await apiRequest<MembershipResponse & { ok: true }>('/api/club-memberships', {
+        method: 'DELETE',
+        body: JSON.stringify({ clubId }),
+      });
+      setJoinedClubIds(data.joinedClubIds);
+      updateClubMemberCount(clubId, -1);
+      setBanner('Клубээс гарлаа.');
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error, 'Клубээс гарч чадсангүй.'));
+    } finally {
+      setPendingClubId('');
+    }
   };
 
   const handleSubmitRequest = async () => {
@@ -207,7 +235,7 @@ export default function ClubsPage() {
         body: JSON.stringify({
           clubName,
           teacher: form.teacherName,
-          createdBy: 'Сурагч',
+          createdBy: user?.name ?? 'Сурагч',
           startDate: form.startDate,
           endDate: form.endDate,
           allowedDays: form.allowedDays,
@@ -303,16 +331,27 @@ export default function ClubsPage() {
                   </div>
 
                   {isJoined ? (
-                    <span className="rounded-md border border-[#86c78a] px-2 py-0.5 text-xs font-semibold text-[#3a8a3e]">
-                      Нэгдсэн
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-md border border-[#86c78a] px-2 py-0.5 text-xs font-semibold text-[#3a8a3e]">
+                        Нэгдсэн
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => void leaveClub(club.id)}
+                        disabled={pendingClubId === club.id}
+                        className="rounded-full border border-[#e2eaf5] px-4 py-2 text-xs font-semibold text-[#4b6284] transition hover:bg-[#f4f8ff] disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {pendingClubId === club.id ? 'Гарч байна...' : 'Гарах'}
+                      </button>
+                    </div>
                   ) : (
                     <button
                       type="button"
-                      onClick={() => joinClub(club.id)}
-                      className="rounded-full bg-[#1a3560] px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+                      onClick={() => void joinClub(club.id)}
+                      disabled={pendingClubId === club.id}
+                      className="rounded-full bg-[#1a3560] px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      Нэгдэх
+                      {pendingClubId === club.id ? 'Нэгдэж байна...' : 'Нэгдэх'}
                     </button>
                   )}
                 </div>
@@ -499,4 +538,3 @@ export default function ClubsPage() {
     </div>
   );
 }
-

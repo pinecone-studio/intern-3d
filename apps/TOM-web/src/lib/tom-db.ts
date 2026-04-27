@@ -10,6 +10,7 @@ import type {
   BadgeInput,
   Club,
   ClubInput,
+  ClubMembership,
   ClubRequest,
   ClubRequestInput,
   ClubStatus,
@@ -78,6 +79,13 @@ type UserRow = {
   notes: string
   created_at: string
   updated_at: string
+}
+
+type ClubMembershipRow = {
+  id: string
+  club_id: string
+  user_id: string
+  joined_at: string
 }
 
 type FormOptionCategory = 'teacher' | 'allowed_day' | 'grade_range'
@@ -154,6 +162,15 @@ function mapUserRow(row: UserRow): ManagedUser {
     notes: row.notes,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+  }
+}
+
+function mapClubMembershipRow(row: ClubMembershipRow): ClubMembership {
+  return {
+    id: row.id,
+    clubId: row.club_id,
+    userId: row.user_id,
+    joinedAt: row.joined_at,
   }
 }
 
@@ -350,6 +367,74 @@ export async function deleteClub(id: string) {
 
   await db.prepare('DELETE FROM clubs WHERE id = ?').bind(id).run()
   return true
+}
+
+async function syncClubMembershipCounts(clubId: string, userId: string) {
+  const db = getTomDb()
+  const [clubMembershipCount, userMembershipCount] = await Promise.all([
+    db
+      .prepare('SELECT COUNT(*) AS count FROM club_memberships WHERE club_id = ?')
+      .bind(clubId)
+      .first<{ count: number }>(),
+    db
+      .prepare('SELECT COUNT(*) AS count FROM club_memberships WHERE user_id = ?')
+      .bind(userId)
+      .first<{ count: number }>(),
+  ])
+
+  await Promise.all([
+    db
+      .prepare('UPDATE clubs SET member_count = ?, updated_at = ? WHERE id = ?')
+      .bind(clubMembershipCount?.count ?? 0, nowIso(), clubId)
+      .run(),
+    db
+      .prepare('UPDATE users SET club_count = ?, updated_at = ? WHERE id = ?')
+      .bind(userMembershipCount?.count ?? 0, nowIso(), userId)
+      .run(),
+  ])
+}
+
+export async function listClubMembershipsForUser(userId: string): Promise<ClubMembership[]> {
+  const db = getTomDb()
+  const result = await db
+    .prepare('SELECT * FROM club_memberships WHERE user_id = ? ORDER BY joined_at ASC')
+    .bind(userId)
+    .all<ClubMembershipRow>()
+
+  return result.results.map(mapClubMembershipRow)
+}
+
+export async function joinClub(clubId: string, userId: string): Promise<ClubMembership | null> {
+  const db = getTomDb()
+  const now = nowIso()
+
+  await db
+    .prepare(
+      `INSERT OR IGNORE INTO club_memberships (id, club_id, user_id, joined_at)
+       VALUES (lower(hex(randomblob(16))), ?, ?, ?)`
+    )
+    .bind(clubId, userId, now)
+    .run()
+
+  await syncClubMembershipCounts(clubId, userId)
+
+  const row = await db
+    .prepare('SELECT * FROM club_memberships WHERE club_id = ? AND user_id = ? LIMIT 1')
+    .bind(clubId, userId)
+    .first<ClubMembershipRow>()
+
+  return row ? mapClubMembershipRow(row) : null
+}
+
+export async function leaveClub(clubId: string, userId: string): Promise<void> {
+  const db = getTomDb()
+
+  await db
+    .prepare('DELETE FROM club_memberships WHERE club_id = ? AND user_id = ?')
+    .bind(clubId, userId)
+    .run()
+
+  await syncClubMembershipCounts(clubId, userId)
 }
 
 export async function listClubRequests(params: {
@@ -1040,6 +1125,7 @@ export async function seedTomDatabase({ reset = false }: { reset?: boolean } = {
   const db = getTomDb()
 
   if (reset) {
+    await db.prepare('DELETE FROM club_memberships').run()
     await db.prepare('DELETE FROM clubs').run()
     await db.prepare('DELETE FROM club_requests').run()
     await db.prepare('DELETE FROM users').run()

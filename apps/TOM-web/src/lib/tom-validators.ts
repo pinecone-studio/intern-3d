@@ -1,4 +1,4 @@
-import type { ClubInput, ClubRequestInput, UserInput } from '@/lib/tom-types'
+import type { ClubInput, ClubMembershipInput, ClubRequestInput, UserInput } from '@/lib/tom-types'
 
 function asString(value: unknown) {
   return typeof value === 'string' ? value.trim() : ''
@@ -89,4 +89,15 @@ export function parseSessionLoginInput(body: Record<string, unknown>) {
   if (!userId) return null
 
   return { userId }
+}
+
+export function parseClubMembershipInput(body: Record<string, unknown>) {
+  const clubId = asString(body.clubId)
+  if (!clubId) return null
+
+  const input: ClubMembershipInput = {
+    clubId,
+  }
+
+  return input
 }

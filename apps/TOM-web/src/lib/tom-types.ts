@@ -96,6 +96,13 @@ export type ManagedUser = {
   updatedAt: string
 }
 
+export type ClubMembership = {
+  id: string
+  clubId: string
+  userId: string
+  joinedAt: string
+}
+
 export type TomSession = {
   id: string
   userId: string
@@ -133,6 +140,10 @@ export type EventInput = Partial<Omit<SchoolEvent, 'id' | 'createdAt' | 'updated
 
 export type ClubInput = Partial<Omit<Club, 'id' | 'createdAt' | 'updatedAt'>> & {
   name: string
+}
+
+export type ClubMembershipInput = {
+  clubId: string
 }
 
 export type ClubRequestInput = Partial<Omit<ClubRequest, 'id' | 'createdAt' | 'updatedAt'>> & {
