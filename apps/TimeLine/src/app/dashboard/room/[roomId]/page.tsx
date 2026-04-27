@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { gql } from '@apollo/client'
 import { useMutation, useQuery } from '@apollo/client/react'
 import { useRole } from '@/lib/role-context'
+import { getDefaultSelectedDay } from '@/lib/timeline-clock'
+import { useTimelineClock } from '@/lib/use-timeline-clock'
 import { DAYS_OF_WEEK, EVENT_TYPE_CONFIG, STATUS_CONFIG } from '@/lib/constants'
 import type { ScheduleEvent, EventType, Room } from '@/lib/types'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -44,10 +46,6 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { format, parseISO } from 'date-fns'
-
-// Demo time simulation: Tuesday 10:30
-const DEMO_DAY = 2
-const DEMO_TIME = '10:30'
 
 const GET_ROOM_DETAIL = gql`
   query GetRoomDetail($roomId: ID!) {
@@ -218,6 +216,7 @@ function timeToMinutes(time: string): number {
 export default function RoomDetailPage({ params }: { params: Promise<{ roomId: string }> }) {
   const { roomId } = use(params)
   const { role } = useRole()
+  const clock = useTimelineClock()
   const isAdmin = role === 'admin'
   const { data, loading, error, refetch } = useQuery<RoomDetailQueryResult>(GET_ROOM_DETAIL, {
     variables: { roomId },
@@ -228,7 +227,7 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
   const room = data?.room?.room
   const roomEvents = data?.room?.events ?? []
   
-  const [selectedDay, setSelectedDay] = useState(DEMO_DAY)
+  const [selectedDay, setSelectedDay] = useState(() => getDefaultSelectedDay(clock))
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<ScheduleEvent | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -236,7 +235,13 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
   const [mutationError, setMutationError] = useState<string | null>(null)
   const isSavingEvent = creatingEvent || updatingEvent
 
-  if (loading) {
+  useEffect(() => {
+    if (clock?.scheduleDay) {
+      setSelectedDay(currentDay => currentDay || clock.scheduleDay || 1)
+    }
+  }, [clock?.scheduleDay])
+
+  if (loading || !clock) {
     return (
       <div className="flex min-h-[420px] items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -413,16 +418,16 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
           </Card>
         )}
 
-        {/* Demo Time Indicator */}
+        {/* Current Time Indicator */}
         <Card className="border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/5">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-amber-700 dark:text-amber-400">Демо цаг</CardTitle>
+            <CardTitle className="text-sm font-medium text-amber-700 dark:text-amber-400">Одоогийн цаг</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
               <span className="text-lg font-semibold text-amber-700 dark:text-amber-400">
-                {DAYS_OF_WEEK.find(d => d.value === DEMO_DAY)?.label} {DEMO_TIME}
+                {DAYS_OF_WEEK.find(d => d.value === clock.currentDay)?.label ?? 'Ням'} {clock.currentTime}
               </span>
             </div>
           </CardContent>
@@ -498,9 +503,9 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
                 <div className="space-y-3">
                   {todayEvents.map(event => {
                     const config = EVENT_TYPE_CONFIG[event.type]
-                    const isCurrentTime = selectedDay === DEMO_DAY && 
-                      timeToMinutes(DEMO_TIME) >= timeToMinutes(event.startTime) && 
-                      timeToMinutes(DEMO_TIME) < timeToMinutes(event.endTime)
+                    const isCurrentTime = selectedDay === clock.currentDay &&
+                      clock.currentMinutes >= timeToMinutes(event.startTime) &&
+                      clock.currentMinutes < timeToMinutes(event.endTime)
                     
                     return (
                       <div
@@ -586,7 +591,13 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
               <CardDescription>Даваа - Баасан гариг</CardDescription>
             </CardHeader>
             <CardContent>
-              <WeeklyScheduleGrid events={regularEvents} isAdmin={isAdmin} onEditEvent={handleEditEvent} />
+              <WeeklyScheduleGrid
+                events={regularEvents}
+                isAdmin={isAdmin}
+                currentDay={clock.currentDay}
+                currentTime={clock.currentTime}
+                onEditEvent={handleEditEvent}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -708,10 +719,14 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
 function WeeklyScheduleGrid({ 
   events, 
   isAdmin, 
+  currentDay,
+  currentTime,
   onEditEvent 
 }: { 
   events: ScheduleEvent[]
   isAdmin: boolean
+  currentDay: number
+  currentTime: string
   onEditEvent: (_event: ScheduleEvent) => void
 }) {
   const days = DAYS_OF_WEEK.filter(d => d.value >= 1 && d.value <= 5)
@@ -735,7 +750,7 @@ function WeeklyScheduleGrid({
               key={day.value} 
               className={cn(
                 'p-2 text-center text-sm font-medium border-l',
-                day.value === DEMO_DAY && 'bg-primary/10 text-primary'
+                day.value === currentDay && 'bg-primary/10 text-primary'
               )}
             >
               {day.label}
@@ -794,9 +809,9 @@ function WeeklyScheduleGrid({
 
           {/* Current time indicator */}
           {(() => {
-            const currentMinutes = timeToMinutes(DEMO_TIME)
+            const currentMinutes = timeToMinutes(currentTime)
             const offset = (currentMinutes - 8 * 60) / 60 * 48
-            const dayIndex = days.findIndex(d => d.value === DEMO_DAY)
+            const dayIndex = days.findIndex(d => d.value === currentDay)
             if (dayIndex === -1 || offset < 0 || offset > 12 * 48) return null
 
             return (

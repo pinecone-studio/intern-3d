@@ -5,6 +5,7 @@ import { gql } from '@apollo/client'
 import { useQuery } from '@apollo/client/react'
 import { useRole } from '@/lib/role-context'
 import { DAYS_OF_WEEK, EVENT_TYPE_CONFIG } from '@/lib/constants'
+import { useTimelineClock } from '@/lib/use-timeline-clock'
 import type { Room, ScheduleEvent } from '@/lib/types'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -64,11 +65,9 @@ function getInstructorEvents(events: ScheduleEvent[], instructorName: string): S
   return instructorEvents.length > 0 ? instructorEvents : events
 }
 
-// Demo date: Tuesday, April 15, 2026
-const DEMO_DATE = new Date(2026, 3, 15) // April 15, 2026
-
 export default function MySchedulePage() {
   const { user, role } = useRole()
+  const clock = useTimelineClock()
   const [filter, setFilter] = useState<FilterType>('today')
 
   // Get the instructor name from the user
@@ -83,48 +82,52 @@ export default function MySchedulePage() {
   const roomNamesById = useMemo(() => {
     return new Map((data?.rooms ?? []).map(room => [room.id, room.number]))
   }, [data?.rooms])
+  const now = clock?.now ?? null
 
   // Get date range based on filter
   const dateRange = useMemo(() => {
+    if (!now) {
+      return { start: null, end: null, label: 'Өнөөдөр' }
+    }
+
     switch (filter) {
       case 'today': {
-        return { start: DEMO_DATE, end: DEMO_DATE, label: 'Өнөөдөр' }
+        return { start: now, end: now, label: 'Өнөөдөр' }
       }
       case 'week': {
-        const start = startOfWeek(DEMO_DATE, { weekStartsOn: 1 })
+        const start = startOfWeek(now, { weekStartsOn: 1 })
         const end = addDays(start, 6)
         return { start, end, label: '7 хоног' }
       }
       case 'month': {
-        const start = startOfMonth(DEMO_DATE)
-        const end = endOfMonth(DEMO_DATE)
+        const start = startOfMonth(now)
+        const end = endOfMonth(now)
         return { start, end, label: 'Сар' }
       }
     }
-  }, [filter])
+  }, [filter, now])
 
   // Filter events based on the selected date range and day of week
   const filteredEvents = useMemo(() => {
-    const demoDayOfWeek = DEMO_DATE.getDay() === 0 ? 0 : DEMO_DATE.getDay() // Sunday = 0
+    const currentDayOfWeek = clock?.currentDay ?? null
+    if (currentDayOfWeek === null) {
+      return []
+    }
     
     switch (filter) {
       case 'today': {
-        // Only show events that happen on the demo day (Tuesday = 2)
-        return myEvents.filter(event => event.daysOfWeek.includes(demoDayOfWeek))
+        return myEvents.filter(event => event.daysOfWeek.includes(currentDayOfWeek))
       }
       case 'week': {
-        // Show events for all weekdays in the current week
         return myEvents.filter(event => {
-          // Check if any of the event's days fall within Mon-Fri
           return event.daysOfWeek.some(d => d >= 1 && d <= 5)
         })
       }
       case 'month': {
-        // Show all events (they repeat weekly, so all of them apply)
         return myEvents
       }
     }
-  }, [filter, myEvents])
+  }, [clock?.currentDay, filter, myEvents])
 
   // Group events by day for display
   const eventsByDay = useMemo(() => {
@@ -157,40 +160,31 @@ export default function MySchedulePage() {
     return roomNamesById.get(roomId) || roomId
   }
 
-  // Check if an event is currently happening (for demo time 10:30)
   const isCurrentEvent = (event: ScheduleEvent) => {
-    const demoDayOfWeek = 2 // Tuesday
-    const demoTimeMinutes = 10 * 60 + 30 // 10:30
-    
-    if (!event.daysOfWeek.includes(demoDayOfWeek)) return false
+    if (!clock || !event.daysOfWeek.includes(clock.currentDay)) return false
     
     const startMinutes = parseInt(event.startTime.split(':')[0]) * 60 + parseInt(event.startTime.split(':')[1])
     const endMinutes = parseInt(event.endTime.split(':')[0]) * 60 + parseInt(event.endTime.split(':')[1])
     
-    return demoTimeMinutes >= startMinutes && demoTimeMinutes < endMinutes
+    return clock.currentMinutes >= startMinutes && clock.currentMinutes < endMinutes
   }
 
-  // Check if an event is upcoming today
   const isUpcoming = (event: ScheduleEvent) => {
-    const demoDayOfWeek = 2 // Tuesday
-    const demoTimeMinutes = 10 * 60 + 30 // 10:30
-    
-    if (!event.daysOfWeek.includes(demoDayOfWeek)) return false
+    if (!clock || !event.daysOfWeek.includes(clock.currentDay)) return false
     
     const startMinutes = parseInt(event.startTime.split(':')[0]) * 60 + parseInt(event.startTime.split(':')[1])
     
-    return startMinutes > demoTimeMinutes
+    return startMinutes > clock.currentMinutes
   }
 
-  // Get validity status label
   const getValidityLabel = (event: ScheduleEvent) => {
-    if (!event.validFrom || !event.validUntil) return null
+    if (!event.validFrom || !event.validUntil || !now) return null
     
     const validFrom = parseISO(event.validFrom)
     const validUntil = parseISO(event.validUntil)
     
-    const isExpired = DEMO_DATE > validUntil
-    const isUpcoming = DEMO_DATE < validFrom
+    const isExpired = now > validUntil
+    const isUpcoming = now < validFrom
     if (isExpired) {
       return { label: 'Дууссан', className: 'bg-gray-100 dark:bg-gray-500/20 text-gray-600 dark:text-gray-400' }
     }
@@ -211,6 +205,14 @@ export default function MySchedulePage() {
   }
 
   if (loading) {
+    return (
+      <div className="flex min-h-[420px] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    )
+  }
+
+  if (!clock || !now || !dateRange.start || !dateRange.end) {
     return (
       <div className="flex min-h-[420px] items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -260,13 +262,13 @@ export default function MySchedulePage() {
         </Tabs>
       </div>
 
-      {/* Demo Date Indicator */}
+      {/* Current Date Indicator */}
       <Card className="border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/5">
         <CardContent className="py-3 flex items-center gap-3">
           <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
           <div>
             <span className="text-sm font-medium text-amber-700 dark:text-amber-400">
-              Демо: {format(DEMO_DATE, 'yyyy оны MM сарын dd', { locale: mn })} (Мягмар) 10:30
+              Одоо: {format(now, 'yyyy оны MM сарын dd', { locale: mn })} {format(now, 'HH:mm')}
             </span>
           </div>
         </CardContent>
@@ -290,13 +292,13 @@ export default function MySchedulePage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <span>{format(DEMO_DATE, 'EEEE', { locale: mn })}</span>
+                  <span>{format(now, 'EEEE', { locale: mn })}</span>
                   <Badge variant="secondary" className="font-normal">
                     {filteredEvents.length} хичээл
                   </Badge>
                 </CardTitle>
                 <CardDescription>
-                  {format(DEMO_DATE, 'yyyy оны MM сарын dd', { locale: mn })}
+                  {format(now, 'yyyy оны MM сарын dd', { locale: mn })}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -328,7 +330,7 @@ export default function MySchedulePage() {
                 const dayEvents = eventsByDay[day.value] || []
                 if (dayEvents.length === 0) return null
                 
-                const isToday = day.value === 2 // Tuesday is demo day
+                const isToday = day.value === clock.currentDay
                 
                 return (
                   <Card key={day.value} className={cn(isToday && 'ring-2 ring-primary')}>
@@ -366,7 +368,7 @@ export default function MySchedulePage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <span>{format(DEMO_DATE, 'yyyy оны MM сар', { locale: mn })}</span>
+                  <span>{format(now, 'yyyy оны MM сар', { locale: mn })}</span>
                   <Badge variant="secondary" className="font-normal">
                     {myEvents.length} хичээл
                   </Badge>
