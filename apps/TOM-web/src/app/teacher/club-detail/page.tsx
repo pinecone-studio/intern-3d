@@ -7,6 +7,15 @@ import { CapacityBar, StatusBadge } from '@/app/_components';
 import { useTomOptions } from '@/app/_hooks/useTomOptions';
 import type { Club, ClubStatus } from '@/lib/tom-types';
 
+const clubStatusLabel: Record<ClubStatus, string> = {
+  draft: 'Ноорог',
+  pending: 'Хүлээгдэж буй',
+  active: 'Идэвхтэй',
+  paused: 'Түр зогссон',
+  archived: 'Архивласан',
+  spam: 'Спам',
+};
+
 type EditableClub = {
   name: string;
   description: string;
@@ -79,7 +88,7 @@ export default function DetailPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [message, setMessage] = useState(
-    'Teacher club detail page дэлгэрэнгүй мэдээллийг ачааллаа.'
+    'Клубийн дэлгэрэнгүй мэдээллийг ачааллаа.'
   );
 
   const loadData = async (nextMessage?: string) => {
@@ -100,9 +109,7 @@ export default function DetailPage() {
       return clubData.clubs[0]?.id ?? '';
     });
 
-    setMessage(
-      nextMessage || 'Teacher club detail page дэлгэрэнгүй мэдээллийг шинэчиллээ.'
-    );
+    setMessage(nextMessage || 'Клубийн дэлгэрэнгүй мэдээллийг шинэчиллээ.');
   };
 
   useEffect(() => {
@@ -119,7 +126,7 @@ export default function DetailPage() {
           setErrorMessage(
             error instanceof Error
               ? error.message
-              : 'Club detail page ачаалж чадсангүй.'
+              : 'Клубийн дэлгэрэнгүй хуудсыг ачаалж чадсангүй.'
           );
         }
       } finally {
@@ -201,20 +208,20 @@ export default function DetailPage() {
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em]">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em]">
               {errorMessage
-                ? 'Sync error'
+                ? 'Синк алдаа'
                 : isLoading
-                ? 'Loading club detail'
+                ? 'Клубийн дэлгэрэнгүй ачаалж байна'
                 : isSaving
-                ? 'Saving club detail'
-                : 'Club detail'}
+                ? 'Клубийн дэлгэрэнгүй хадгалж байна'
+                : 'Клубийн дэлгэрэнгүй'}
             </p>
             <p className="mt-1 text-sm">
               {optionsError ||
                 errorMessage ||
                 (isLoading
-                  ? 'Option болон клубийн дэлгэрэнгүйг ачаалж байна.'
+                  ? 'Сонголтууд болон клубийн дэлгэрэнгүйг ачаалж байна.'
                   : isOptionsLoading
                   ? 'Клубийн дэлгэрэнгүй мэдээллийг ачаалж байна.'
                   : isSaving
@@ -227,7 +234,7 @@ export default function DetailPage() {
             <input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Search clubs"
+              placeholder="Клуб хайх"
               className="w-36 bg-transparent outline-none placeholder:text-[#8aa0be]"
             />
           </label>
@@ -239,7 +246,7 @@ export default function DetailPage() {
           <div className="flex items-center gap-3">
             <FileText className="h-5 w-5 text-[#1a3560]" />
             <div>
-              <h2 className="text-xl font-semibold text-[#17304f]">Club list</h2>
+              <h2 className="text-xl font-semibold text-[#17304f]">Клубийн жагсаалт</h2>
               <p className="mt-1 text-sm text-[#6e84a3]">
                 Засах клубээ эндээс сонгоно.
               </p>
@@ -274,7 +281,7 @@ export default function DetailPage() {
                     </div>
                     <StatusBadge
                       type={club.status}
-                      text={club.status.toUpperCase()}
+                      text={clubStatusLabel[club.status]}
                     />
                   </div>
                 </button>
@@ -298,14 +305,14 @@ export default function DetailPage() {
                     </h2>
                     <StatusBadge
                       type={draft.status}
-                      text={draft.status.toUpperCase()}
+                      text={clubStatusLabel[draft.status]}
                     />
                     {draft.verified ? (
-                      <StatusBadge type="approved" text="Verified" />
+                      <StatusBadge type="approved" text="Баталгаажсан" />
                     ) : null}
                   </div>
                   <p className="mt-2 text-sm text-[#6e84a3]">
-                    {selectedClub.createdBy} · updated {selectedClub.updatedAt}
+                    {selectedClub.createdBy} · шинэчилсэн: {selectedClub.updatedAt}
                   </p>
                 </div>
                 <button
@@ -315,14 +322,14 @@ export default function DetailPage() {
                   className="inline-flex items-center gap-2 rounded-full bg-[#1a3560] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#24478a] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Save className="h-4 w-4" />
-                  Save changes
+                  Өөрчлөлт хадгалах
                 </button>
               </div>
 
               <div className="mt-5 grid gap-4 md:grid-cols-2">
                 <div className="rounded-2xl bg-[#f4f8fd] px-4 py-4">
                   <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d91ae]">
-                    Capacity overview
+                    Багтаамжийн тойм
                   </p>
                   <CapacityBar
                     current={Number(draft.memberCount) || 0}
@@ -332,7 +339,7 @@ export default function DetailPage() {
                 <div className="grid gap-3 md:grid-cols-2">
                   <div className="rounded-2xl bg-[#f4f8fd] px-4 py-4 text-sm text-[#5f7697]">
                     <p className="text-xs uppercase tracking-[0.14em] text-[#7d91ae]">
-                      Interested
+                      Сонирхсон
                     </p>
                     <p className="mt-2 text-lg font-semibold text-[#17304f]">
                       {draft.interestCount}
@@ -340,10 +347,10 @@ export default function DetailPage() {
                   </div>
                   <div className="rounded-2xl bg-[#f4f8fd] px-4 py-4 text-sm text-[#5f7697]">
                     <p className="text-xs uppercase tracking-[0.14em] text-[#7d91ae]">
-                      Category
+                      Ангилал
                     </p>
                     <p className="mt-2 text-lg font-semibold text-[#17304f]">
-                      {draft.category || 'general'}
+                      {draft.category || 'ерөнхий'}
                     </p>
                   </div>
                 </div>
@@ -359,7 +366,7 @@ export default function DetailPage() {
                         : current
                     )
                   }
-                  placeholder="Club name"
+                  placeholder="Клубийн нэр"
                   className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
                 />
                 <select
@@ -448,7 +455,7 @@ export default function DetailPage() {
                         : current
                     )
                   }
-                  placeholder="Student limit"
+                  placeholder="Сурагчийн дээд тоо"
                   className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
                 />
                 <input
@@ -462,7 +469,7 @@ export default function DetailPage() {
                         : current
                     )
                   }
-                  placeholder="Member count"
+                  placeholder="Гишүүдийн тоо"
                   className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
                 />
                 <input
@@ -476,7 +483,7 @@ export default function DetailPage() {
                         : current
                     )
                   }
-                  placeholder="Interest count"
+                  placeholder="Сонирхлын тоо"
                   className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
                 />
                 <input
@@ -488,7 +495,7 @@ export default function DetailPage() {
                         : current
                     )
                   }
-                  placeholder="Category"
+                  placeholder="Ангилал"
                   className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
                 />
                 <select
@@ -508,7 +515,7 @@ export default function DetailPage() {
                   {['draft', 'pending', 'active', 'paused', 'archived', 'spam'].map(
                     (status) => (
                       <option key={status} value={status}>
-                        {status}
+                        {clubStatusLabel[status as ClubStatus]}
                       </option>
                     )
                   )}
@@ -526,7 +533,7 @@ export default function DetailPage() {
                     }
                     className="h-4 w-4 rounded border-[#c0d1e8]"
                   />
-                  Mark as verified
+                  Баталгаажсан гэж тэмдэглэх
                 </label>
               </div>
 
@@ -540,7 +547,7 @@ export default function DetailPage() {
                   )
                 }
                 rows={4}
-                placeholder="Description"
+                placeholder="Тайлбар"
                 className="mt-4 w-full rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
               />
               <textarea
@@ -551,7 +558,7 @@ export default function DetailPage() {
                   )
                 }
                 rows={4}
-                placeholder="Teacher notes"
+                placeholder="Багшийн тэмдэглэл"
                 className="mt-4 w-full rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
               />
             </>

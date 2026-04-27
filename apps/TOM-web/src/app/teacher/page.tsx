@@ -60,7 +60,7 @@ export default function TeacherDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState(
-    'Teacher dashboard live data руу холбогдсон.'
+    'Багшийн самбарын шууд өгөгдөлд холбогдлоо.'
   );
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -76,7 +76,7 @@ export default function TeacherDashboard() {
     setSummary(summaryData.summary);
     setRequests(requestData.requests);
     setClubs(clubData.clubs);
-    setMessage(nextMessage || 'Teacher dashboard live data руу холбогдсон.');
+    setMessage(nextMessage || 'Багшийн самбарын шууд өгөгдөлд холбогдлоо.');
   };
 
   useEffect(() => {
@@ -93,7 +93,7 @@ export default function TeacherDashboard() {
           setErrorMessage(
             error instanceof Error
               ? error.message
-              : 'Teacher panel data ачаалж чадсангүй.'
+              : 'Багшийн самбарын өгөгдлийг ачаалж чадсангүй.'
           );
         }
       } finally {
@@ -170,35 +170,44 @@ export default function TeacherDashboard() {
       await loadData(
         nextStatus === 'active'
           ? `${club.name} дахин идэвхжлээ.`
-          : `${club.name} түр pause төлөвт орлоо.`
+          : `${club.name} түр зогссон төлөвт орлоо.`
       );
     }, 'Клубийн төлөв шинэчилж чадсангүй.');
   };
 
   const inactiveCount = clubs.filter((club) => club.status !== 'active').length;
+  const clubStatusLabel = (status: Club['status']) =>
+    ({
+      active: 'Идэвхтэй',
+      paused: 'Түр зогссон',
+      pending: 'Хүлээгдэж буй',
+      draft: 'Ноорог',
+      archived: 'Архивласан',
+      spam: 'Спам',
+    })[status] ?? status;
 
   const stats = useMemo(
     () => [
       {
-        label: 'Pending requests',
+        label: 'Хүлээгдэж буй хүсэлт',
         value: summary.pendingRequests,
         icon: ClipboardList,
         accent: 'bg-gradient-teacher',
       },
       {
-        label: 'My clubs',
+        label: 'Миний клубүүд',
         value: clubs.length,
         icon: ShieldCheck,
         accent: 'bg-gradient-primary',
       },
       {
-        label: 'Inactive clubs',
+        label: 'Идэвхгүй клубүүд',
         value: inactiveCount,
         icon: AlertCircle,
         accent: 'bg-gradient-admin',
       },
       {
-        label: 'Threshold ready',
+        label: 'Босго хангасан',
         value: summary.thresholdReachedRequests,
         icon: Calendar,
         accent: 'bg-gradient-student',
@@ -226,19 +235,19 @@ export default function TeacherDashboard() {
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em]">
                 {errorMessage
-                  ? 'Sync error'
+                  ? 'Синк алдаа'
                   : isLoading
-                  ? 'Loading live data'
+                  ? 'Шууд өгөгдөл ачаалж байна'
                   : isSaving
-                  ? 'Saving changes'
-                  : 'Connected'}
+                  ? 'Өөрчлөлт хадгалж байна'
+                  : 'Холбогдсон'}
               </p>
               <p className="mt-1 text-sm">
                 {errorMessage ||
                   (isLoading
                     ? 'Cloudflare D1 дээрх хүсэлт, клуб, статистик өгөгдлийг ачаалж байна.'
                     : isSaving
-                    ? 'Сүүлд хийсэн teacher action-ийг хадгалж байна.'
+                    ? 'Сүүлд хийсэн багшийн үйлдлийг хадгалж байна.'
                     : message)}
               </p>
             </div>
@@ -247,7 +256,7 @@ export default function TeacherDashboard() {
               className="inline-flex items-center gap-2 rounded-full bg-[color:var(--primary)] px-4 py-2 text-sm font-medium text-[color:var(--primary-foreground)] shadow transition-colors hover:opacity-90"
             >
               <Plus className="h-4 w-4" />
-              Open admin tools
+              Админы хэрэгсэл нээх
             </Link>
           </div>
         </section>
@@ -283,10 +292,10 @@ export default function TeacherDashboard() {
           <div className="shadow-soft lg:col-span-2 rounded-3xl border border-[color:var(--border)] bg-[color:var(--card)] text-[color:var(--card-foreground)]">
             <div className="flex flex-row items-center justify-between p-6">
               <div className="text-base font-semibold leading-none tracking-tight">
-                Club creation requests
+                Клуб үүсгэх хүсэлтүүд
               </div>
               <div className="rounded-full border border-transparent bg-[color:var(--secondary)] px-2.5 py-0.5 text-xs font-semibold text-[color:var(--secondary-foreground)]">
-                {requests.length} pending
+                {requests.length} хүлээгдэж байна
               </div>
             </div>
             <div className="space-y-3 p-6 pt-0">
@@ -298,8 +307,8 @@ export default function TeacherDashboard() {
                   <div>
                     <p className="font-medium">{request.clubName}</p>
                     <p className="mt-1 text-xs text-[color:var(--muted-foreground)]">
-                      by {request.createdBy} · {request.startDate || 'No date'}{' '}
-                      · {request.interestCount} interested
+                      {request.createdBy} · {request.startDate || 'Огноо алга'} ·{' '}
+                      {request.interestCount} сонирхсон
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -310,7 +319,7 @@ export default function TeacherDashboard() {
                       }
                       className="inline-flex h-8 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-[color:var(--input)] bg-[color:var(--background)] px-3 text-xs font-medium shadow-sm transition-colors hover:bg-[color:var(--accent)] hover:text-[color:var(--accent-foreground)] disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      <XCircle className="h-3.5 w-3.5" /> Reject
+                      <XCircle className="h-3.5 w-3.5" /> Татгалзах
                     </button>
                     <button
                       disabled={isSaving}
@@ -319,14 +328,14 @@ export default function TeacherDashboard() {
                       }
                       className="inline-flex h-8 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-[color:var(--primary)] px-3 text-xs font-medium text-[color:var(--primary-foreground)] shadow transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      <CheckCircle2 className="h-3.5 w-3.5" /> Approve
+                      <CheckCircle2 className="h-3.5 w-3.5" /> Батлах
                     </button>
                   </div>
                 </div>
               ))}
               {requests.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-[color:var(--border)] p-5 text-sm text-[color:var(--muted-foreground)]">
-                  Одоогоор pending хүсэлт алга байна.
+                  Одоогоор хүлээгдэж буй хүсэлт алга байна.
                 </div>
               ) : null}
             </div>
@@ -335,7 +344,7 @@ export default function TeacherDashboard() {
           <div className="shadow-soft rounded-3xl border border-[color:var(--border)] bg-[color:var(--card)] text-[color:var(--card-foreground)]">
             <div className="p-6">
               <div className="text-base font-semibold leading-none tracking-tight">
-                Quick actions
+                Түргэн үйлдлүүд
               </div>
             </div>
             <div className="space-y-3 p-6 pt-0">
@@ -343,19 +352,19 @@ export default function TeacherDashboard() {
                 href="/admin"
                 className="inline-flex w-full items-center justify-start gap-2 rounded-full bg-[color:var(--primary)] px-4 py-2 text-sm font-medium text-[color:var(--primary-foreground)] shadow transition-colors hover:opacity-90"
               >
-                <Plus className="h-4 w-4" /> Create new club
+                <Plus className="h-4 w-4" /> Шинэ клуб үүсгэх
               </Link>
               <button
                 disabled
                 className="inline-flex w-full items-center justify-start gap-2 rounded-full border border-[color:var(--input)] bg-[color:var(--background)] px-4 py-2 text-sm font-medium shadow-sm opacity-60"
               >
-                <Calendar className="h-4 w-4" /> Post an event
+                <Calendar className="h-4 w-4" /> Арга хэмжээ нийтлэх
               </button>
               <button
                 disabled
                 className="inline-flex w-full items-center justify-start gap-2 rounded-full border border-[color:var(--input)] bg-[color:var(--background)] px-4 py-2 text-sm font-medium shadow-sm opacity-60"
               >
-                <ShieldCheck className="h-4 w-4" /> Verify a club
+                <ShieldCheck className="h-4 w-4" /> Клуб баталгаажуулах
               </button>
             </div>
           </div>
@@ -364,7 +373,7 @@ export default function TeacherDashboard() {
         <div className="shadow-soft rounded-3xl border border-[color:var(--border)] bg-[color:var(--card)] text-[color:var(--card-foreground)]">
           <div className="p-6">
             <div className="text-base font-semibold leading-none tracking-tight">
-              Clubs I supervise
+              Миний хариуцсан клубүүд
             </div>
           </div>
           <div className="p-6 pt-0">
@@ -373,19 +382,19 @@ export default function TeacherDashboard() {
                 <thead className="[&_tr]:border-b">
                   <tr className="border-b transition-colors hover:bg-[color:var(--muted)]/50">
                     <th className="h-10 px-2 text-left align-middle font-medium text-[color:var(--muted-foreground)]">
-                      Club
+                      Клуб
                     </th>
                     <th className="h-10 px-2 text-left align-middle font-medium text-[color:var(--muted-foreground)]">
-                      Members
+                      Гишүүд
                     </th>
                     <th className="h-10 px-2 text-left align-middle font-medium text-[color:var(--muted-foreground)]">
-                      Status
+                      Төлөв
                     </th>
                     <th className="h-10 px-2 text-left align-middle font-medium text-[color:var(--muted-foreground)]">
-                      Verified
+                      Баталгаажсан
                     </th>
                     <th className="h-10 px-2 text-right align-middle font-medium text-[color:var(--muted-foreground)]">
-                      Action
+                      Үйлдэл
                     </th>
                   </tr>
                 </thead>
@@ -407,13 +416,13 @@ export default function TeacherDashboard() {
                               : 'bg-[color:var(--warning)]/20 text-[color:var(--warning-foreground)]'
                           }`}
                         >
-                          {club.status === 'active' ? 'Active' : 'Paused'}
+                          {clubStatusLabel(club.status)}
                         </div>
                       </td>
                       <td className="p-2 align-middle">
                         {club.verified ? (
                           <div className="inline-flex items-center rounded-full border-0 bg-[color:var(--primary-soft)] px-2.5 py-0.5 text-xs font-semibold text-[color:var(--primary)]">
-                            <ShieldCheck className="mr-1 h-3 w-3" /> Yes
+                            <ShieldCheck className="mr-1 h-3 w-3" /> Тийм
                           </div>
                         ) : (
                           <span className="text-xs text-[color:var(--muted-foreground)]">
@@ -427,7 +436,7 @@ export default function TeacherDashboard() {
                           onClick={() => void toggleClubStatus(club)}
                           className="inline-flex h-8 items-center justify-center rounded-full px-3 text-xs font-medium transition-colors hover:bg-[color:var(--accent)] hover:text-[color:var(--accent-foreground)] disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          {club.status === 'active' ? 'Pause' : 'Activate'}
+                          {club.status === 'active' ? 'Түр зогсоох' : 'Идэвхжүүлэх'}
                         </button>
                       </td>
                     </tr>
