@@ -1,12 +1,16 @@
 import { Suspense } from 'react';
 
+import { requireServerUser } from '@/lib/tom-auth-server';
+
 import SideBar from './_components/sideBar';
 
-export default function StudentsLayout({
+export default async function StudentsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  await requireServerUser(['admin']);
+
   return (
     <div className="min-h-screen bg-[#f4f7fb]">
       <aside className="fixed left-0 top-0 z-[60] h-screen w-56">

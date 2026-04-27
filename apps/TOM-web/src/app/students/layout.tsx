@@ -1,10 +1,14 @@
+import { requireServerUser } from '@/lib/tom-auth-server';
+
 import StudentHeader from './_components/header';
 
-export default function StudentsLayout({
+export default async function StudentsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  await requireServerUser(['student']);
+
   return (
     <div className="min-h-screen bg-[#f4f7fb]">
       <div className="mx-auto max-w-6xl p-10">
