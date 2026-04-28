@@ -14,6 +14,11 @@ type TeacherClubsResponse = {
   requests: ClubRequest[];
 };
 
+type ApproveRequestResponse = {
+  request: ClubRequest;
+  club: Club;
+};
+
 async function readJson<T>(response: Response) {
   const data = (await response.json().catch(() => null)) as
     | ({ error?: string } & T)
@@ -119,6 +124,32 @@ export default function ClubsPage() {
       });
       await loadData(`${request.clubName} хүсэлт батлагдлаа.`);
     }, 'Хүсэлт баталж чадсангүй.');
+  };
+
+  const approveAndCreateKickoffEvent = async (request: ClubRequest) => {
+    await runAction(async () => {
+      const approved = await apiRequest<ApproveRequestResponse>(`/api/club-requests/${request.id}/approve`, {
+        method: 'POST',
+      });
+
+      const now = new Date();
+      now.setDate(now.getDate() + 3);
+      const eventDate = now.toISOString().slice(0, 10);
+
+      await apiRequest('/api/teacher/events', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: `${approved.club.name} kickoff уулзалт`,
+          eventDate,
+          description: `${approved.club.name} клубийн анхны уулзалт, танилцуулга болон гишүүдийн хуваарь тохирох.`,
+          location: 'Клубийн танхим',
+          startTime: '15:30',
+          endTime: '16:30',
+        }),
+      });
+
+      await loadData(`${request.clubName} батлагдаж kickoff event автоматаар үүслээ.`);
+    }, 'Хүсэлт баталж kickoff event үүсгэж чадсангүй.');
   };
 
   const rejectRequest = async (request: ClubRequest) => {
@@ -396,7 +427,7 @@ export default function ClubsPage() {
                     {request.note || 'Нэмэлт тайлбаргүй.'}
                   </p>
 
-                  <div className="mt-4 flex gap-3">
+                  <div className="mt-4 flex flex-wrap gap-3">
                     <button
                       type="button"
                       onClick={() => void approveRequest(request)}
@@ -405,6 +436,15 @@ export default function ClubsPage() {
                     >
                       <CheckCircle2 className="h-4 w-4" />
                       Батлах
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void approveAndCreateKickoffEvent(request)}
+                      disabled={isSaving}
+                      className="inline-flex items-center gap-2 rounded-full border border-[#1a3560] bg-[#eef4ff] px-4 py-2 text-sm font-semibold text-[#1a3560] transition hover:bg-[#dfeaff] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      Батлаад kickoff event
                     </button>
                     <button
                       type="button"
