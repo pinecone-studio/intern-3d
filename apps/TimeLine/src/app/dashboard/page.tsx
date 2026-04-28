@@ -1,7 +1,8 @@
 'use client'
 
-import { useDeferredValue, useEffect, useMemo, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import type { MouseEvent } from 'react'
+import Link from 'next/link'
 import { gql } from '@apollo/client'
 import { useMutation, useQuery } from '@apollo/client/react'
 import {
@@ -43,6 +44,7 @@ import type { EventType, Room, RoomStatus, ScheduleEvent } from '@/lib/types'
 const PLANNING_START_HOUR = 9
 const PLANNING_END_HOUR = 20
 const SLOT_MINUTES = 30
+const DAY_VIEW_SLOT_MINUTES = SLOT_MINUTES
 const DAY_MINUTES = (PLANNING_END_HOUR - PLANNING_START_HOUR) * 60
 
 const WORK_DAYS = [
@@ -55,14 +57,18 @@ const WORK_DAYS = [
   { value: 7, label: 'Ням', short: 'Sun' },
 ] as const
 
+const CALENDAR_DAY_LETTERS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'] as const
+
 const HOUR_MARKS = Array.from({ length: PLANNING_END_HOUR - PLANNING_START_HOUR + 1 }, (_, index) => PLANNING_START_HOUR + index)
 const VISIBLE_HOUR_MARKS = HOUR_MARKS.slice(0, -1).filter(hour => (hour - PLANNING_START_HOUR) % 2 === 0 || hour === PLANNING_END_HOUR - 1)
 const HOUR_COUNT = PLANNING_END_HOUR - PLANNING_START_HOUR
 const SLOT_COUNT = DAY_MINUTES / SLOT_MINUTES
 const SLOT_INDEXES = Array.from({ length: SLOT_COUNT }, (_, index) => index)
+const DAY_VIEW_SLOT_COUNT = SLOT_COUNT
+const DAY_VIEW_SLOT_INDEXES = SLOT_INDEXES
 const HOUR_GRID_TEMPLATE = `repeat(${HOUR_COUNT}, minmax(0, 1fr))`
 const SLOT_GRID_TEMPLATE = `repeat(${SLOT_COUNT}, minmax(0, 1fr))`
-const SCHEDULER_GRID_TEMPLATE = '128px repeat(7, 520px)'
+const SCHEDULER_GRID_TEMPLATE = '104px repeat(7, minmax(280px, 1fr))'
 
 const GET_SCHEDULER_DATA = gql`
   query GetSchedulerData($floor: Int, $search: String) {
@@ -168,7 +174,10 @@ type Selection = {
   dayOfWeek: number
   startSlot: number
   endSlot: number
+  slotMinutes: number
 }
+
+type SchedulerViewMode = 'day' | 'week'
 
 type DraftForm = {
   title: string
@@ -206,8 +215,8 @@ function minutesToTime(minutes: number): string {
   return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`
 }
 
-function slotToTime(slot: number): string {
-  return minutesToTime(PLANNING_START_HOUR * 60 + slot * SLOT_MINUTES)
+function slotToTime(slot: number, slotMinutes: number): string {
+  return minutesToTime(PLANNING_START_HOUR * 60 + slot * slotMinutes)
 }
 
 function normalizeTimelineTime(time: string): string {
@@ -217,7 +226,7 @@ function normalizeTimelineTime(time: string): string {
   return minutesToTime(Math.round(clamped / SLOT_MINUTES) * SLOT_MINUTES)
 }
 
-function clampEventToPlanningDay(event: ScheduleEvent) {
+function clampEventToPlanningDay(event: ScheduleEvent, slotMinutes: number = SLOT_MINUTES) {
   const start = Math.max(timeToMinutes(event.startTime), PLANNING_START_HOUR * 60)
   const end = Math.min(timeToMinutes(event.endTime), PLANNING_END_HOUR * 60)
 
@@ -226,6 +235,7 @@ function clampEventToPlanningDay(event: ScheduleEvent) {
   return {
     left: ((start - PLANNING_START_HOUR * 60) / DAY_MINUTES) * 100,
     width: ((end - start) / DAY_MINUTES) * 100,
+    slotWidth: ((slotMinutes / DAY_MINUTES) * 100),
   }
 }
 
@@ -238,7 +248,10 @@ function getWeekStart(date: Date): Date {
 }
 
 function toIsoDate(date: Date): string {
-  return date.toISOString().slice(0, 10)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 function addDays(date: Date, days: number): Date {
@@ -247,8 +260,69 @@ function addDays(date: Date, days: number): Date {
   return copy
 }
 
+function addMonths(date: Date, months: number): Date {
+  const copy = new Date(date)
+  copy.setMonth(copy.getMonth() + months)
+  copy.setDate(1)
+  copy.setHours(0, 0, 0, 0)
+  return copy
+}
+
+function getMonthStart(date: Date): Date {
+  const copy = new Date(date)
+  copy.setDate(1)
+  copy.setHours(0, 0, 0, 0)
+  return copy
+}
+
+function getCalendarGridStart(date: Date): Date {
+  const monthStart = getMonthStart(date)
+  return addDays(monthStart, -monthStart.getDay())
+}
+
+function getMonthDays(date: Date): Date[] {
+  const start = getCalendarGridStart(date)
+  return Array.from({ length: 42 }, (_, index) => addDays(start, index))
+}
+
+function isSameDate(left: Date, right: Date): boolean {
+  return left.getFullYear() === right.getFullYear()
+    && left.getMonth() === right.getMonth()
+    && left.getDate() === right.getDate()
+}
+
+function isSameMonth(left: Date, right: Date): boolean {
+  return left.getFullYear() === right.getFullYear() && left.getMonth() === right.getMonth()
+}
+
+function isDateInSelectedWeek(date: Date, weekStart: Date): boolean {
+  const visibleWeekStart = addDays(weekStart, -1)
+  const visibleWeekEnd = addDays(weekStart, 5)
+  const target = new Date(date)
+
+  target.setHours(0, 0, 0, 0)
+  return target >= visibleWeekStart && target <= visibleWeekEnd
+}
+
 function formatShortDate(date: Date): string {
   return new Intl.DateTimeFormat('mn-MN', { month: '2-digit', day: '2-digit' }).format(date)
+}
+
+function formatMonthLabel(date: Date): string {
+  const month = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(date)
+  return `${date.getFullYear()} ${month}`
+}
+
+function formatWeekdayName(date: Date): string {
+  return new Intl.DateTimeFormat('mn-MN', { weekday: 'long' }).format(date)
+}
+
+function formatMonthDayLabel(date: Date): string {
+  return new Intl.DateTimeFormat('en-US', { month: '2-digit', day: '2-digit' }).format(date)
+}
+
+function isDateBefore(left: Date, right: Date) {
+  return left.getTime() < right.getTime()
 }
 
 function eventOccursInWeekOnDay(event: ScheduleEvent, dayOfWeek: number, dayDate: string): boolean {
@@ -300,8 +374,8 @@ function createDefaultForm(selection: Selection, weekStart: Date): DraftForm {
     title: '',
     type: 'club',
     recurrence: 'weekly',
-    startTime: slotToTime(Math.min(selection.startSlot, selection.endSlot)),
-    endTime: slotToTime(Math.max(selection.startSlot, selection.endSlot) + 1),
+    startTime: slotToTime(Math.min(selection.startSlot, selection.endSlot), selection.slotMinutes),
+    endTime: slotToTime(Math.max(selection.startSlot, selection.endSlot) + 1, selection.slotMinutes),
     validFrom: selectedDate,
     validUntil: '',
     date: selectedDate,
@@ -375,6 +449,15 @@ export default function DashboardPage() {
 
 function AdminScheduler() {
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()))
+  const [calendarMonth, setCalendarMonth] = useState(() => getMonthStart(new Date()))
+  const [viewMode, setViewMode] = useState<SchedulerViewMode>('week')
+  const [focusedDate, setFocusedDate] = useState(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return today
+  })
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+  const [weekMotionClass, setWeekMotionClass] = useState('opacity-100 translate-x-0 scale-100')
   const [selection, setSelection] = useState<Selection | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -392,8 +475,73 @@ function AdminScheduler() {
   const rooms = useMemo(() => [...(data?.rooms ?? [])].sort((left, right) => left.number.localeCompare(right.number, 'mn', { numeric: true })), [data?.rooms])
   const events = useMemo(() => [...(data?.events ?? []), ...localEvents].filter(shouldRenderTimelineEvent), [data?.events, localEvents])
   const weekDates = useMemo(() => WORK_DAYS.map(day => toIsoDate(addDays(weekStart, day.value - 1))), [weekStart])
+  const monthDays = useMemo(() => getMonthDays(calendarMonth), [calendarMonth])
+  const focusedDateLabel = useMemo(
+    () => new Intl.DateTimeFormat('mn-MN', { month: '2-digit', day: '2-digit', weekday: 'long' }).format(focusedDate),
+    [focusedDate]
+  )
+  const focusedDateTitle = useMemo(
+    () => `${formatWeekdayName(focusedDate)} · ${formatMonthDayLabel(focusedDate)}`,
+    [focusedDate]
+  )
+  const focusedDateIso = useMemo(() => toIsoDate(focusedDate), [focusedDate])
+  const focusedDayOfWeek = useMemo(() => {
+    const day = focusedDate.getDay()
+    return day === 0 ? 7 : day
+  }, [focusedDate])
+  const selectedRoomView = useMemo(
+    () => selectedRoomTab === 'all' ? null : rooms.find(room => room.id === selectedRoomTab) ?? null,
+    [rooms, selectedRoomTab]
+  )
+  const roomsForDayView = useMemo(
+    () => selectedRoomView ? [selectedRoomView] : rooms,
+    [rooms, selectedRoomView]
+  )
   const selectedRoom = selection ? rooms.find(room => room.id === selection.roomId) : null
   const selectedDay = selection ? WORK_DAYS.find(day => day.value === selection.dayOfWeek) : null
+  const selectedDayLabel = selection ? formatWeekdayName(addDays(weekStart, selection.dayOfWeek - 1)) : null
+  const previousWeekStartRef = useRef(weekStart)
+
+  useEffect(() => {
+    const previousWeekStart = previousWeekStartRef.current
+
+    if (previousWeekStart.getTime() === weekStart.getTime()) return
+
+    const entersFromRight = isDateBefore(previousWeekStart, weekStart)
+    setWeekMotionClass(entersFromRight ? 'opacity-0 translate-x-10 scale-[0.985]' : 'opacity-0 -translate-x-10 scale-[0.985]')
+
+    const frameId = requestAnimationFrame(() => {
+      setWeekMotionClass('opacity-100 translate-x-0 scale-100')
+    })
+
+    previousWeekStartRef.current = weekStart
+
+    return () => cancelAnimationFrame(frameId)
+  }, [weekStart])
+
+  const updateWeekStart = (date: Date) => {
+    const normalizedDate = new Date(date)
+    normalizedDate.setHours(0, 0, 0, 0)
+    const nextWeekStart = getWeekStart(date)
+    setWeekStart(nextWeekStart)
+    setCalendarMonth(getMonthStart(nextWeekStart))
+    setFocusedDate(normalizedDate)
+  }
+
+  const handleShiftWeek = (days: number) => {
+    if (viewMode === 'day') {
+      const nextDate = addDays(focusedDate, days > 0 ? 1 : -1)
+      updateWeekStart(nextDate)
+      return
+    }
+
+    setWeekStart(current => {
+      const next = addDays(current, days)
+      setCalendarMonth(getMonthStart(next))
+      setFocusedDate(next)
+      return next
+    })
+  }
 
   useEffect(() => {
     if (selectedRoomTab === 'all') return
@@ -405,7 +553,13 @@ function AdminScheduler() {
 
   const openCreateDialog = (targetSelection = selection) => {
     const fallbackSelection = rooms[0]
-      ? { roomId: rooms[0].id, dayOfWeek: WORK_DAYS[0].value, startSlot: 0, endSlot: 1 }
+      ? {
+        roomId: rooms[0].id,
+        dayOfWeek: viewMode === 'day' ? focusedDayOfWeek : WORK_DAYS[0].value,
+        startSlot: 0,
+        endSlot: 1,
+        slotMinutes: viewMode === 'day' ? DAY_VIEW_SLOT_MINUTES : SLOT_MINUTES,
+      }
       : null
     const nextSelection = targetSelection ?? fallbackSelection
 
@@ -418,19 +572,21 @@ function AdminScheduler() {
   }
 
   const openEditDialog = (event: ScheduleEvent, roomId: string, dayOfWeek: number) => {
-    const startSlot = Math.max(0, Math.floor((timeToMinutes(event.startTime) - PLANNING_START_HOUR * 60) / SLOT_MINUTES))
-    const endSlot = Math.min(SLOT_COUNT - 1, Math.ceil((timeToMinutes(event.endTime) - PLANNING_START_HOUR * 60) / SLOT_MINUTES) - 1)
+    const slotMinutes = viewMode === 'day' ? DAY_VIEW_SLOT_MINUTES : SLOT_MINUTES
+    const slotCount = viewMode === 'day' ? DAY_VIEW_SLOT_COUNT : SLOT_COUNT
+    const startSlot = Math.max(0, Math.floor((timeToMinutes(event.startTime) - PLANNING_START_HOUR * 60) / slotMinutes))
+    const endSlot = Math.min(slotCount - 1, Math.ceil((timeToMinutes(event.endTime) - PLANNING_START_HOUR * 60) / slotMinutes) - 1)
 
-    setSelection({ roomId, dayOfWeek, startSlot, endSlot })
+    setSelection({ roomId, dayOfWeek, startSlot, endSlot, slotMinutes })
     setForm(createFormFromEvent(event, dayOfWeek, weekStart))
     setEditingEvent(event)
     setMutationError(null)
     setDialogOpen(true)
   }
 
-  const handleSlotPointerDown = (roomId: string, dayOfWeek: number, slot: number, button: number) => {
+  const handleSlotPointerDown = (roomId: string, dayOfWeek: number, slot: number, slotMinutes: number, button: number) => {
     if (button !== 0) return
-    setSelection({ roomId, dayOfWeek, startSlot: slot, endSlot: slot })
+    setSelection({ roomId, dayOfWeek, startSlot: slot, endSlot: slot, slotMinutes })
     setIsDragging(true)
   }
 
@@ -442,11 +598,11 @@ function AdminScheduler() {
     })
   }
 
-  const handleContextMenu = (event: MouseEvent, roomId: string, dayOfWeek: number, slot: number) => {
+  const handleContextMenu = (event: MouseEvent, roomId: string, dayOfWeek: number, slot: number, slotMinutes: number) => {
     event.preventDefault()
     const targetSelection = selection?.roomId === roomId && selection.dayOfWeek === dayOfWeek
       ? selection
-      : { roomId, dayOfWeek, startSlot: slot, endSlot: slot }
+      : { roomId, dayOfWeek, startSlot: slot, endSlot: slot, slotMinutes }
 
     openCreateDialog(targetSelection)
   }
@@ -518,26 +674,65 @@ function AdminScheduler() {
       <div className="rounded-md border border-[#d1d1d1] bg-white shadow-sm dark:border-border dark:bg-card">
         <div className="flex flex-col gap-3 border-b border-[#e1dfdd] px-4 py-3 dark:border-border lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="h-9 w-9 rounded-md"
-              onClick={() => setWeekStart(current => addDays(current, -7))}
-              aria-label="Өмнөх долоо хоног"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <div className="flex h-9 items-center gap-2 rounded-md border border-[#d1d1d1] bg-[#faf9f8] px-3 text-sm font-medium dark:border-border dark:bg-muted">
-              <CalendarDays className="h-4 w-4 text-[#6264a7]" />
-              {formatShortDate(weekStart)} - {formatShortDate(addDays(weekStart, 6))}
+            <div className="flex items-center rounded-xl border border-[#d7d8f4] bg-[#f8f9ff] p-1 dark:border-[#3b3d62] dark:bg-[#1e2031]">
+              <button
+                type="button"
+                className={cn(
+                  'rounded-lg px-3 py-1.5 text-xs font-semibold transition',
+                  viewMode === 'week'
+                    ? 'bg-white text-foreground shadow-sm dark:bg-[#2b3150] dark:text-white'
+                    : 'text-muted-foreground hover:text-foreground dark:hover:text-white'
+                )}
+                onClick={() => setViewMode('week')}
+              >
+                Week
+              </button>
+              <button
+                type="button"
+                className={cn(
+                  'rounded-lg px-3 py-1.5 text-xs font-semibold transition',
+                  viewMode === 'day'
+                    ? 'bg-white text-foreground shadow-sm dark:bg-[#2b3150] dark:text-white'
+                    : 'text-muted-foreground hover:text-foreground dark:hover:text-white'
+                )}
+                onClick={() => setViewMode('day')}
+              >
+                Day
+              </button>
             </div>
             <Button
               type="button"
               variant="outline"
               size="icon"
-              className="h-9 w-9 rounded-md"
-              onClick={() => setWeekStart(current => addDays(current, 7))}
+              className="h-8 w-8 rounded-xl"
+              onClick={() => handleShiftWeek(-7)}
+              aria-label="Өмнөх долоо хоног"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <button
+              type="button"
+              className="flex min-w-[196px] items-center gap-2.5 rounded-xl border border-[#d7d8f4] bg-[#f8f9ff] px-3.5 py-2 text-left shadow-sm transition hover:border-[#6264a7] hover:bg-[#eef0ff] dark:border-[#3b3d62] dark:bg-[#1e2031] dark:hover:border-[#8a8dd8] dark:hover:bg-[#252845]"
+              onClick={() => setIsCalendarOpen(current => !current)}
+              aria-expanded={isCalendarOpen}
+              aria-label="Календарь харах"
+            >
+              <CalendarDays className="h-4 w-4 shrink-0 text-[#6264a7]" />
+              <div className="min-w-0">
+                <p className="text-sm font-semibold leading-5 text-foreground">{formatMonthLabel(calendarMonth)}</p>
+                <p className="text-xs text-muted-foreground">
+                  {viewMode === 'day'
+                    ? 'Day view'
+                    : `${formatShortDate(weekStart)} - ${formatShortDate(addDays(weekStart, 4))}`}
+                </p>
+              </div>
+            </button>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 rounded-xl"
+              onClick={() => handleShiftWeek(7)}
               aria-label="Дараагийн долоо хоног"
             >
               <ChevronRight className="h-4 w-4" />
@@ -546,8 +741,8 @@ function AdminScheduler() {
               type="button"
               variant="outline"
               size="sm"
-              className="h-9 rounded-md"
-              onClick={() => setWeekStart(getWeekStart(new Date()))}
+              className="h-8 rounded-xl px-3"
+              onClick={() => updateWeekStart(new Date())}
             >
               Өнөөдөр
             </Button>
@@ -562,147 +757,349 @@ function AdminScheduler() {
         </div>
 
         <Tabs value={selectedRoomTab} onValueChange={setSelectedRoomTab} className="gap-0">
-          <div className="border-b border-[#e1dfdd] px-4 py-3 dark:border-border">
-            <TabsList className="h-auto w-full justify-start overflow-x-auto rounded-md border border-[#e1dfdd] bg-[#faf9f8] p-1 dark:border-border dark:bg-muted/30">
-              <TabsTrigger value="all" className="min-w-fit px-3">
-                All classes
-              </TabsTrigger>
-              {rooms.map(room => (
-                <TabsTrigger key={room.id} value={room.id} className="min-w-fit px-3">
-                  {room.number}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </div>
-
-          {selectedRoomTab === 'all' ? (
-            <div className="overflow-auto">
-              <div className="min-w-max">
-                <div className="sticky top-0 z-[2] grid border-b border-[#e1dfdd] bg-white dark:border-border dark:bg-card" style={{ gridTemplateColumns: SCHEDULER_GRID_TEMPLATE }}>
-              <div className="border-r border-[#e1dfdd] px-3 py-2 text-xs font-semibold uppercase text-muted-foreground dark:border-border">
-                Анги
-              </div>
-              {WORK_DAYS.map((day, index) => (
-                <div key={day.value} className="border-r border-[#e1dfdd] px-3 py-2 last:border-r-0 dark:border-border">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-semibold leading-5 text-foreground">{day.label}</p>
-                      <p className="text-[11px] text-muted-foreground">{weekDates[index]}</p>
-                    </div>
-                    <Badge variant="outline" className="rounded-md text-[10px]">{day.short}</Badge>
-                  </div>
-                  <div className="relative mt-1.5 h-4 text-[10px] text-muted-foreground">
-                    {VISIBLE_HOUR_MARKS.map(hour => (
-                      <span
-                        key={hour}
-                        className="absolute top-0 -translate-x-1/2 whitespace-nowrap"
-                        style={{ left: `${((hour - PLANNING_START_HOUR) / HOUR_COUNT) * 100}%` }}
-                      >
-                        {hour}:00
-                      </span>
-                    ))}
-                  </div>
+          <div className="grid gap-3 p-3 xl:grid-cols-[212px_minmax(0,1fr)]">
+            <aside
+              className={cn(
+                isCalendarOpen ? 'block' : 'hidden',
+                'rounded-2xl border border-[#e5e7f3] bg-[#fbfbfe] p-3 shadow-sm dark:border-[#2c3149] dark:bg-[#171b27] xl:sticky xl:top-4 xl:block'
+              )}
+            >
+              <div className="mb-3 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{formatMonthLabel(calendarMonth)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {viewMode === 'day'
+                      ? 'Өдөр сонгоод баруун талын timeline-г шинэчилнэ'
+                      : `Сонгосон 7 хоног: ${formatShortDate(weekStart)} - ${formatShortDate(addDays(weekStart, 6))}`}
+                  </p>
                 </div>
-              ))}
-            </div>
+                <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 rounded-full"
+                    onClick={() => setCalendarMonth(current => addMonths(current, -1))}
+                    aria-label="Өмнөх сар"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 rounded-full"
+                    onClick={() => setCalendarMonth(current => addMonths(current, 1))}
+                    aria-label="Дараагийн сар"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
 
-                {loading && !data ? (
-                  <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">Ачаалж байна...</div>
-                ) : error ? (
-                  <div className="m-4 rounded-md border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
-                    {error.message}
-                  </div>
-                ) : rooms.length === 0 ? (
-                  <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">Анги олдсонгүй</div>
-                ) : (
-                  rooms.map(room => (
-                    <div key={room.id} className="grid min-h-[64px] border-b border-[#edebe9] dark:border-border" style={{ gridTemplateColumns: SCHEDULER_GRID_TEMPLATE }}>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedRoomTab(room.id)}
-                        className="flex flex-col justify-center border-r border-[#e1dfdd] bg-[#faf9f8] px-3 py-2 text-left transition-colors hover:bg-[#f3f2f1] dark:border-border dark:bg-muted/30"
-                      >
-                        <span className="text-base font-semibold leading-5 text-foreground">{room.number}</span>
-                        <span className="text-[11px] text-muted-foreground">{room.type === 'lab' ? 'Lab' : 'Event hall'}</span>
-                      </button>
+              <div className="mb-1.5 grid grid-cols-7 gap-1 text-center text-[10px] font-medium text-muted-foreground">
+                {CALENDAR_DAY_LETTERS.map((letter, index) => (
+                  <span key={`${letter}-${index}`} className="py-1">{letter}</span>
+                ))}
+              </div>
 
-                  {WORK_DAYS.map((day, dayIndex) => {
-                    const dayDate = weekDates[dayIndex]
-                    const dayEvents = events
-                      .filter(event => event.roomId === room.id && eventOccursInWeekOnDay(event, day.value, dayDate))
-                      .sort((left, right) => timeToMinutes(left.startTime) - timeToMinutes(right.startTime))
-                    const activeSelection = selection?.roomId === room.id && selection.dayOfWeek === day.value ? selection : null
-                    const selectedStart = activeSelection ? Math.min(activeSelection.startSlot, activeSelection.endSlot) : null
-                    const selectedEnd = activeSelection ? Math.max(activeSelection.startSlot, activeSelection.endSlot) + 1 : null
+              <div className="grid grid-cols-7 gap-1">
+                {monthDays.map(day => {
+                  const inCurrentMonth = isSameMonth(day, calendarMonth)
+                  const inSelectedWeek = isDateInSelectedWeek(day, weekStart)
+                  const isToday = isSameDate(day, new Date())
 
-                    return (
-                      <div key={day.value} className="relative border-r border-[#edebe9] last:border-r-0 dark:border-border">
-                        <div className="absolute inset-0 grid" style={{ gridTemplateColumns: HOUR_GRID_TEMPLATE }}>
-                          {HOUR_MARKS.slice(0, -1).map(hour => (
-                            <div key={hour} className="border-r border-[#f3f2f1] last:border-r-0 dark:border-border/60" />
-                          ))}
+                  return (
+                    <button
+                      key={toIsoDate(day)}
+                      type="button"
+                      className={cn(
+                        'flex h-8 items-center justify-center rounded-lg border text-[13px] font-medium transition',
+                        viewMode === 'day' && isSameDate(day, focusedDate) && 'border-[#6264a7] bg-[#dfe3ff] text-[#282f5f] dark:border-[#99a0ff] dark:bg-[#36406e] dark:text-white',
+                        viewMode === 'week' && inSelectedWeek
+                          ? 'border-[#7b7fd6] bg-[#eceeff] text-[#323769] shadow-sm dark:border-[#8e92ff]/70 dark:bg-[#2a3152] dark:text-white'
+                          : 'border-transparent text-foreground/80 hover:border-[#d7d8f4] hover:bg-white dark:hover:border-[#353b59] dark:hover:bg-[#1f2434]',
+                        !inCurrentMonth && 'text-muted-foreground/45',
+                        isToday && !inSelectedWeek && 'border-[#c9cdfa] text-foreground dark:border-[#6166a7]'
+                      )}
+                      onClick={() => updateWeekStart(day)}
+                      aria-label={day.toDateString()}
+                    >
+                      {day.getDate()}
+                    </button>
+                  )
+                })}
+              </div>
+
+              <div className="mt-3 rounded-xl border border-dashed border-[#d7d8f4] bg-white/70 px-3 py-2 text-[11px] text-muted-foreground dark:border-[#323858] dark:bg-[#111522]">
+                {viewMode === 'day'
+                  ? 'Өдөр дээр дармагц баруун талын day timeline шинэчлэгдэнэ.'
+                  : 'Өдөр дээр дармагц тухайн долоо хоногийн хуваарь баруун талд шинэчлэгдэнэ.'}
+              </div>
+            </aside>
+
+            <div className={cn('min-w-0 overflow-hidden rounded-2xl border border-[#e8e8eb] bg-white shadow-sm transition-all duration-500 ease-out dark:border-border dark:bg-card', weekMotionClass)}>
+              <div className="border-b border-[#e1dfdd] px-4 py-3 dark:border-border">
+                <TabsList className="h-auto w-full justify-start overflow-x-auto rounded-md border border-[#e1dfdd] bg-[#faf9f8] p-1 dark:border-border dark:bg-muted/30">
+                  <TabsTrigger value="all" className="min-w-fit px-3">
+                    All classes
+                  </TabsTrigger>
+                  {rooms.map(room => (
+                    <TabsTrigger key={room.id} value={room.id} className="min-w-fit px-3">
+                      {room.number}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </div>
+
+              <div className="overflow-auto">
+                {viewMode === 'week' ? (
+                  selectedRoomTab === 'all' ? (
+                    <div className="min-w-max">
+                      <div className="sticky top-0 z-[2] grid border-b border-[#e1dfdd] bg-white dark:border-border dark:bg-card" style={{ gridTemplateColumns: SCHEDULER_GRID_TEMPLATE }}>
+                        <div className="border-r border-[#e1dfdd] px-3 py-2 text-xs font-semibold uppercase text-muted-foreground dark:border-border">
+                          Анги
                         </div>
-                        <div className="absolute inset-0 grid" style={{ gridTemplateColumns: SLOT_GRID_TEMPLATE }}>
-                          {SLOT_INDEXES.map(slot => (
-                            <button
-                              key={slot}
-                              type="button"
-                              className="relative z-[1] h-full cursor-crosshair border-r border-transparent outline-none transition-colors hover:bg-[#6264a7]/5"
-                              onPointerDown={event => handleSlotPointerDown(room.id, day.value, slot, event.button)}
-                              onPointerEnter={() => handleSlotPointerEnter(room.id, day.value, slot)}
-                              onContextMenu={event => handleContextMenu(event, room.id, day.value, slot)}
-                              aria-label={`${room.number} ${day.label} ${slotToTime(slot)}`}
-                            />
-                          ))}
-                        </div>
+                        {WORK_DAYS.map((day, index) => (
+                          <div key={day.value} className="border-r border-[#e1dfdd] px-3 py-2 last:border-r-0 dark:border-border">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-semibold leading-5 text-foreground">{day.label}</p>
+                                <p className="text-[11px] text-muted-foreground">{weekDates[index]}</p>
+                              </div>
+                              <Badge variant="outline" className="rounded-md text-[10px]">{day.short}</Badge>
+                            </div>
+                            <div className="relative mt-1.5 h-4 text-[10px] text-muted-foreground">
+                              {VISIBLE_HOUR_MARKS.map(hour => (
+                                <span
+                                  key={hour}
+                                  className="absolute top-0 -translate-x-1/2 whitespace-nowrap"
+                                  style={{ left: `${((hour - PLANNING_START_HOUR) / HOUR_COUNT) * 100}%` }}
+                                >
+                                  {hour}:00
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
 
-                        {selectedStart != null && selectedEnd != null && (
-                          <div
-                            className="pointer-events-none absolute bottom-1.5 top-1.5 z-[2] rounded-md border border-[#6264a7] bg-[#6264a7]/15 shadow-[inset_0_0_0_1px_rgba(98,100,167,0.25)]"
-                            style={{
-                              left: `${(selectedStart / SLOT_COUNT) * 100}%`,
-                              width: `${((selectedEnd - selectedStart) / SLOT_COUNT) * 100}%`,
-                            }}
-                          />
-                        )}
+                  {loading && !data ? (
+                    <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">Ачаалж байна...</div>
+                  ) : error ? (
+                    <div className="m-4 rounded-md border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
+                      {error.message}
+                    </div>
+                  ) : rooms.length === 0 ? (
+                    <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">Анги олдсонгүй</div>
+                  ) : (
+                    rooms.map(room => (
+                      <div key={room.id} className="grid min-h-[64px] border-b border-[#edebe9] dark:border-border" style={{ gridTemplateColumns: SCHEDULER_GRID_TEMPLATE }}>
+                        <Link
+                          href={`/dashboard/room/${room.id}`}
+                          className="flex flex-col justify-center border-r border-[#e1dfdd] bg-[#faf9f8] px-2.5 py-2 transition-colors hover:bg-[#f3f2f1] dark:border-border dark:bg-muted/30"
+                        >
+                          <span className="text-[15px] font-semibold leading-5 text-foreground">{room.number}</span>
+                          <span className="text-[11px] text-muted-foreground">{room.type === 'lab' ? 'Lab' : 'Event hall'}</span>
+                        </Link>
 
-                        {dayEvents.map(event => {
-                          const position = clampEventToPlanningDay(event)
-                          if (!position) return null
+                        {WORK_DAYS.map((day, dayIndex) => {
+                          const dayDate = weekDates[dayIndex]
+                          const dayEvents = events
+                            .filter(event => event.roomId === room.id && eventOccursInWeekOnDay(event, day.value, dayDate))
+                            .sort((left, right) => timeToMinutes(left.startTime) - timeToMinutes(right.startTime))
+                          const activeSelection = selection?.roomId === room.id && selection.dayOfWeek === day.value ? selection : null
+                          const selectedStart = activeSelection ? Math.min(activeSelection.startSlot, activeSelection.endSlot) : null
+                          const selectedEnd = activeSelection ? Math.max(activeSelection.startSlot, activeSelection.endSlot) + 1 : null
 
                           return (
-                            <button
-                              key={`${event.id}-${day.value}-${dayDate}`}
-                              type="button"
-                              className={cn(
-                                'absolute bottom-1.5 top-1.5 z-[3] overflow-hidden rounded-md border border-[#d1d1d1] border-l-4 px-2 py-1 text-left text-xs shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md',
-                                getEventTone(event.type)
+                            <div key={day.value} className="relative border-r border-[#edebe9] last:border-r-0 dark:border-border">
+                              <div className="absolute inset-0 grid" style={{ gridTemplateColumns: HOUR_GRID_TEMPLATE }}>
+                                {HOUR_MARKS.slice(0, -1).map(hour => (
+                                  <div key={hour} className="border-r border-[#f3f2f1] last:border-r-0 dark:border-border/60" />
+                                ))}
+                              </div>
+                              <div className="absolute inset-0 grid" style={{ gridTemplateColumns: SLOT_GRID_TEMPLATE }}>
+                                {SLOT_INDEXES.map(slot => (
+                                  <button
+                                    key={slot}
+                                    type="button"
+                                    className="relative z-[1] h-full cursor-crosshair border-r border-transparent outline-none transition-colors hover:bg-[#6264a7]/5"
+                                    onPointerDown={event => handleSlotPointerDown(room.id, day.value, slot, SLOT_MINUTES, event.button)}
+                                    onPointerEnter={() => handleSlotPointerEnter(room.id, day.value, slot)}
+                                    onContextMenu={event => handleContextMenu(event, room.id, day.value, slot, SLOT_MINUTES)}
+                                    aria-label={`${room.number} ${day.label} ${slotToTime(slot, SLOT_MINUTES)}`}
+                                  />
+                                ))}
+                              </div>
+
+                              {selectedStart != null && selectedEnd != null && (
+                                <div
+                                  className="pointer-events-none absolute bottom-1.5 top-1.5 z-[2] rounded-md border border-[#6264a7] bg-[#6264a7]/15 shadow-[inset_0_0_0_1px_rgba(98,100,167,0.25)]"
+                                  style={{
+                                    left: `${(selectedStart / SLOT_COUNT) * 100}%`,
+                                    width: `${((selectedEnd - selectedStart) / SLOT_COUNT) * 100}%`,
+                                  }}
+                                />
                               )}
-                              style={{ left: `${position.left}%`, width: `${position.width}%` }}
-                              onClick={() => openEditDialog(event, room.id, day.value)}
-                            >
-                              <span className="block truncate font-semibold">{event.title}</span>
-                              <span className="block truncate opacity-80">{event.startTime}-{event.endTime} · {getEventLabel(event.type)}</span>
-                            </button>
+
+                              {dayEvents.map(event => {
+                                const position = clampEventToPlanningDay(event, SLOT_MINUTES)
+                                if (!position) return null
+
+                                return (
+                                  <button
+                                    key={`${event.id}-${day.value}-${dayDate}`}
+                                    type="button"
+                                    className={cn(
+                                      'absolute bottom-1.5 top-1.5 z-[3] overflow-hidden rounded-md border border-[#d1d1d1] border-l-4 px-2 py-1 text-left text-xs shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md',
+                                      getEventTone(event.type)
+                                    )}
+                                    style={{ left: `${position.left}%`, width: `${position.width}%` }}
+                                    onClick={() => openEditDialog(event, room.id, day.value)}
+                                  >
+                                    <span className="block truncate font-semibold">{event.title}</span>
+                                    <span className="block truncate opacity-80">{event.startTime}-{event.endTime} · {getEventLabel(event.type)}</span>
+                                  </button>
+                                )
+                              })}
+                            </div>
                           )
                         })}
                       </div>
-                    )
-                  })}
+                        ))
+                      )}
                     </div>
-                  ))
+                  ) : (
+                    <div className="p-4">
+                      <RoomWeeklySchedule
+                        room={selectedRoomView}
+                        events={events}
+                        onEditEvent={(event, dayOfWeek) => {
+                          if (!selectedRoomView) return
+                          openEditDialog(event, selectedRoomView.id, dayOfWeek)
+                        }}
+                      />
+                    </div>
+                  )
+                ) : (
+                  <div className="min-w-[980px]">
+                    <div className="sticky top-0 z-[2] grid grid-cols-[104px_minmax(860px,1fr)] border-b border-[#e1dfdd] bg-white dark:border-border dark:bg-card">
+                      <div className="border-r border-[#e1dfdd] px-2.5 py-2 text-[11px] font-semibold uppercase text-muted-foreground dark:border-border">
+                        Анги
+                      </div>
+                      <div className="px-3 py-2">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-semibold leading-5 text-foreground">{focusedDateTitle}</p>
+                            <p className="text-[11px] text-muted-foreground">30 минутын нарийвчлалтай day timeline</p>
+                          </div>
+                        </div>
+                        <div
+                          className="mt-2 grid text-[10px] text-muted-foreground"
+                          style={{ gridTemplateColumns: `repeat(${DAY_VIEW_SLOT_COUNT}, minmax(0, 1fr))` }}
+                        >
+                          {DAY_VIEW_SLOT_INDEXES.map(slot => (
+                            <span key={slot}>{slotToTime(slot, DAY_VIEW_SLOT_MINUTES)}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {loading && !data ? (
+                      <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">Ачаалж байна...</div>
+                    ) : error ? (
+                      <div className="m-4 rounded-md border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
+                        {error.message}
+                      </div>
+                    ) : roomsForDayView.length === 0 ? (
+                      <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">Анги олдсонгүй</div>
+                    ) : (
+                      roomsForDayView.map(room => {
+                        const dayEvents = events
+                          .filter(event => event.roomId === room.id && eventOccursInWeekOnDay(event, focusedDayOfWeek, focusedDateIso))
+                          .sort((left, right) => timeToMinutes(left.startTime) - timeToMinutes(right.startTime))
+                        const activeSelection = selection?.roomId === room.id && selection.dayOfWeek === focusedDayOfWeek ? selection : null
+                        const selectedStart = activeSelection ? Math.min(activeSelection.startSlot, activeSelection.endSlot) : null
+                        const selectedEnd = activeSelection ? Math.max(activeSelection.startSlot, activeSelection.endSlot) + 1 : null
+
+                        return (
+                          <div key={room.id} className="grid min-h-[84px] grid-cols-[104px_minmax(860px,1fr)] border-b border-[#edebe9] dark:border-border">
+                            <Link
+                              href={`/dashboard/room/${room.id}`}
+                              className="flex flex-col justify-center border-r border-[#e1dfdd] bg-[#faf9f8] px-2.5 py-2 transition-colors hover:bg-[#f3f2f1] dark:border-border dark:bg-muted/30"
+                            >
+                              <span className="text-[15px] font-semibold leading-5 text-foreground">{room.number}</span>
+                              <span className="text-[11px] text-muted-foreground">{room.type === 'lab' ? 'Lab' : 'Event hall'}</span>
+                            </Link>
+
+                            <div className="relative">
+                              <div
+                                className="absolute inset-0 grid"
+                                style={{ gridTemplateColumns: `repeat(${DAY_VIEW_SLOT_COUNT}, minmax(0, 1fr))` }}
+                              >
+                                {DAY_VIEW_SLOT_INDEXES.map(slot => (
+                                  <div key={slot} className="border-r border-[#f0f1f8] last:border-r-0 dark:border-border/60" />
+                                ))}
+                              </div>
+                              <div
+                                className="absolute inset-0 grid"
+                                style={{ gridTemplateColumns: `repeat(${DAY_VIEW_SLOT_COUNT}, minmax(0, 1fr))` }}
+                              >
+                                {DAY_VIEW_SLOT_INDEXES.map(slot => (
+                                  <button
+                                    key={slot}
+                                    type="button"
+                                    className="relative z-[1] h-full cursor-crosshair border-r border-transparent outline-none transition-colors hover:bg-[#6264a7]/5"
+                                    onPointerDown={event => handleSlotPointerDown(room.id, focusedDayOfWeek, slot, DAY_VIEW_SLOT_MINUTES, event.button)}
+                                    onPointerEnter={() => handleSlotPointerEnter(room.id, focusedDayOfWeek, slot)}
+                                    onContextMenu={event => handleContextMenu(event, room.id, focusedDayOfWeek, slot, DAY_VIEW_SLOT_MINUTES)}
+                                    aria-label={`${room.number} ${focusedDateLabel} ${slotToTime(slot, DAY_VIEW_SLOT_MINUTES)}`}
+                                  />
+                                ))}
+                              </div>
+
+                              {selectedStart != null && selectedEnd != null && (
+                                <div
+                                  className="pointer-events-none absolute bottom-2 top-2 z-[2] rounded-lg border border-[#6264a7] bg-[#6264a7]/15 shadow-[inset_0_0_0_1px_rgba(98,100,167,0.25)]"
+                                  style={{
+                                    left: `${(selectedStart / DAY_VIEW_SLOT_COUNT) * 100}%`,
+                                    width: `${((selectedEnd - selectedStart) / DAY_VIEW_SLOT_COUNT) * 100}%`,
+                                  }}
+                                />
+                              )}
+
+                              {dayEvents.map(event => {
+                                const position = clampEventToPlanningDay(event, DAY_VIEW_SLOT_MINUTES)
+                                if (!position) return null
+
+                                return (
+                                  <button
+                                    key={`${event.id}-${focusedDateIso}-${room.id}`}
+                                    type="button"
+                                    className={cn(
+                                      'absolute bottom-2 top-2 z-[3] overflow-hidden rounded-lg border border-[#d1d1d1] border-l-4 px-2.5 py-1.5 text-left text-xs shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md',
+                                      getEventTone(event.type)
+                                    )}
+                                    style={{ left: `${position.left}%`, width: `${position.width}%` }}
+                                    onClick={() => openEditDialog(event, room.id, focusedDayOfWeek)}
+                                  >
+                                    <span className="block truncate text-[12px] font-semibold">{event.title}</span>
+                                    <span className="block truncate opacity-80">{event.startTime}-{event.endTime} · {getEventLabel(event.type)}</span>
+                                    {event.notes && <span className="mt-1 block truncate opacity-70">{event.notes}</span>}
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
                 )}
               </div>
             </div>
-          ) : (
-            <div className="p-4">
-              <RoomWeeklySchedule
-                room={rooms.find(room => room.id === selectedRoomTab) ?? null}
-                events={events}
-                onEditEvent={(event, dayOfWeek) => openEditDialog(event, selectedRoomTab, dayOfWeek)}
-              />
-            </div>
-          )}
+          </div>
         </Tabs>
       </div>
 
@@ -722,7 +1119,7 @@ function AdminScheduler() {
           <DialogHeader>
             <DialogTitle>{editingEvent ? 'Хуваарь засах' : 'Хуваарь үүсгэх'}</DialogTitle>
             <DialogDescription>
-              {selectedRoom?.number} · {selectedDay?.label} · {form?.startTime}-{form?.endTime}
+              {selectedRoom?.number} · {selectedDay?.label ?? selectedDayLabel} · {form?.startTime}-{form?.endTime}
             </DialogDescription>
           </DialogHeader>
 
