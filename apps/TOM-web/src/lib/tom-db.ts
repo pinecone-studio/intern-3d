@@ -1256,3 +1256,16 @@ export async function seedTomDatabase({ reset = false }: { reset?: boolean } = {
     users: initialManagedUsers.length,
   }
 }
+
+export async function ensureTomUsersSeeded() {
+  const db = getTomDb()
+  const countRow = await db.prepare('SELECT COUNT(*) AS count FROM users').first<{ count: number }>()
+  const count = countRow?.count ?? 0
+
+  if (count === 0) {
+    await seedTomDatabase()
+    return { seeded: true }
+  }
+
+  return { seeded: false }
+}

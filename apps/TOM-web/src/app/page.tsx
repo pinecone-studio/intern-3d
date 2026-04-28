@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { GraduationCap, Shield, UserCheck, Users } from 'lucide-react';
+import { GraduationCap, Search, UserCheck, Users } from 'lucide-react';
 
 import { useTomSession } from '@/app/_providers/tom-session-provider';
 import type { ManagedUser } from '@/lib/tom-types';
@@ -10,32 +10,6 @@ import type { ManagedUser } from '@/lib/tom-types';
 type UsersResponse = {
   users: ManagedUser[];
 };
-
-const roleSections: Array<{
-  role: ManagedUser['role'];
-  title: string;
-  description: string;
-  icon: typeof Shield;
-}> = [
-  {
-    role: 'admin',
-    title: 'Админ',
-    description: 'Системийн хяналт, moderation, клубийн баталгаажуулалт.',
-    icon: Shield,
-  },
-  {
-    role: 'teacher',
-    title: 'Багш',
-    description: 'Клуб, үйл ажиллагаа, хуваарьтай холбоотой удирдлагын хэсэг.',
-    icon: UserCheck,
-  },
-  {
-    role: 'student',
-    title: 'Сурагч',
-    description: 'Клубүүд, уулзалт, оролцоо, хүсэлтүүдээ эндээс удирдана.',
-    icon: Users,
-  },
-];
 
 function routeForRole(role: ManagedUser['role']) {
   switch (role) {
@@ -48,8 +22,13 @@ function routeForRole(role: ManagedUser['role']) {
   }
 }
 
-async function loadUsers() {
-  const response = await fetch('/api/users', {
+async function loadUsers(query = '') {
+  const params = new URLSearchParams();
+  if (query.trim()) {
+    params.set('q', query.trim());
+  }
+
+  const response = await fetch(`/api/users${params.toString() ? `?${params.toString()}` : ''}`, {
     method: 'GET',
     credentials: 'same-origin',
     cache: 'no-store',
@@ -73,6 +52,7 @@ export default function HomePage() {
   const [users, setUsers] = useState<ManagedUser[]>([]);
   const [isUsersLoading, setIsUsersLoading] = useState(true);
   const [usersError, setUsersError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedUserId, setSelectedUserId] = useState('');
 
   useEffect(() => {
@@ -85,11 +65,17 @@ export default function HomePage() {
   useEffect(() => {
     let isMounted = true;
 
-    void loadUsers()
+    setIsUsersLoading(true);
+
+    void loadUsers(searchQuery)
       .then((nextUsers) => {
         if (!isMounted) return;
         setUsers(nextUsers);
-        setSelectedUserId(nextUsers.find((candidate) => candidate.accountStatus !== 'banned')?.id ?? '');
+        setSelectedUserId((previousUserId) =>
+          nextUsers.some((candidate) => candidate.id === previousUserId)
+            ? previousUserId
+            : (nextUsers.find((candidate) => candidate.accountStatus !== 'banned')?.id ?? '')
+        );
         setUsersError('');
       })
       .catch((error) => {
@@ -104,12 +90,11 @@ export default function HomePage() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [searchQuery]);
 
-  const usersByRole = roleSections.map((section) => ({
-    ...section,
-    users: users.filter((candidate) => candidate.role === section.role),
-  }));
+  const visibleUsers = users;
+  const activeUsers = visibleUsers.filter((candidate) => candidate.accountStatus === 'active').length;
+  const selectedUser = visibleUsers.find((candidate) => candidate.id === selectedUserId) ?? null;
 
   async function handleLogin(userId: string) {
     clearError();
@@ -135,13 +120,13 @@ export default function HomePage() {
       className="min-h-screen px-4 py-6"
       style={{
         backgroundImage:
-          'linear-gradient(#d6e4fb 1px, transparent 1px), linear-gradient(90deg, #d6e4fb 1px, transparent 1px)',
-        backgroundSize: '40px 40px',
-        backgroundColor: '#f0f4f8',
+          'radial-gradient(circle at top left, rgba(222,232,248,0.95), transparent 38%), linear-gradient(#d6e4fb 1px, transparent 1px), linear-gradient(90deg, #d6e4fb 1px, transparent 1px)',
+        backgroundSize: 'auto, 40px 40px, 40px 40px',
+        backgroundColor: '#eef4fb',
       }}
     >
-      <div className="mx-auto grid min-h-[calc(100vh-3rem)] max-w-6xl gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-        <section className="flex flex-col justify-center rounded-[32px] border border-[#dbe7f6] bg-white/80 p-8 shadow-[0_24px_70px_rgba(20,47,82,0.10)] backdrop-blur">
+      <div className="mx-auto grid min-h-[calc(100vh-3rem)] max-w-6xl gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+        <section className="flex flex-col justify-center rounded-[32px] border border-[#dbe7f6] bg-white/85 p-8 shadow-[0_24px_70px_rgba(20,47,82,0.10)] backdrop-blur">
           <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[#16345f] text-white shadow-[0_16px_30px_rgba(22,52,95,0.24)]">
             <GraduationCap className="h-7 w-7" />
           </div>
@@ -149,14 +134,30 @@ export default function HomePage() {
             School Club Platform
           </h1>
           <p className="mt-3 max-w-xl text-base leading-7 text-[#5f7697]">
-            Одоо role link биш, жинхэнэ session дээр суурилсан нэвтрэх урсгал руу орж байна. Доороос
-            DB дээрх хэрэглэгчээ сонгоод тухайн харагдац руугаа орно.
+            Database дээр байгаа хэрэглэгчдээс нэгийг нь сонгоод шууд session үүсгэн нэвтэрнэ.
+            Role card эсвэл hardcoded flow ашиглахгүй.
           </p>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            {roleSections.map(({ role, title, description, icon: Icon }) => (
+            {[
+              {
+                title: 'DB users',
+                description: 'Users table дээрх бодит бүртгэлүүдийг ашиглана.',
+                icon: Users,
+              },
+              {
+                title: 'Search',
+                description: 'Нэр эсвэл email-ээр нь шүүнэ.',
+                icon: Search,
+              },
+              {
+                title: 'One-click login',
+                description: 'Нэг дарж session үүсгээд role page руу орно.',
+                icon: UserCheck,
+              },
+            ].map(({ title, description, icon: Icon }) => (
               <article
-                key={role}
+                key={title}
                 className="rounded-[24px] border border-[#dce8f8] bg-[#f7faff] p-4 shadow-[0_10px_24px_rgba(50,88,140,0.08)]"
               >
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#1a3560] shadow-[0_10px_22px_rgba(26,53,96,0.10)]">
@@ -170,11 +171,29 @@ export default function HomePage() {
         </section>
 
         <section className="flex flex-col justify-center rounded-[32px] border border-[#dbe7f6] bg-white p-8 shadow-[0_24px_70px_rgba(20,47,82,0.10)]">
-          <h2 className="text-2xl font-semibold text-[#142f52]">Хэрэглэгч сонгох</h2>
-          <p className="mt-2 text-sm leading-6 text-[#6e86a7]">
-            Session API нь `userId`-аар cookie үүсгэнэ. Дараагийн PR дээр route guard-ууд энэ session-ийг
-            албан ёсоор ашиглаж эхэлнэ.
-          </p>
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-2xl font-semibold text-[#142f52]">Хэрэглэгчээр нэвтрэх</h2>
+              <p className="mt-2 text-sm leading-6 text-[#6e86a7]">
+                {isUsersLoading
+                  ? 'DB user-үүдийг ачаалж байна...'
+                  : `Нийт ${visibleUsers.length} хэрэглэгч, ${activeUsers} active хэрэглэгч байна.`}
+              </p>
+            </div>
+          </div>
+
+          <label className="mt-6 block">
+            <span className="text-sm font-semibold text-[#1c3d6a]">Хайх</span>
+            <div className="mt-2 flex items-center gap-3 rounded-[18px] border border-[#d7e4f4] bg-[#f8fbff] px-4 py-3 focus-within:border-[#2e5aac] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#dce8ff]">
+              <Search className="h-4 w-4 shrink-0 text-[#6e86a7]" />
+              <input
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Нэр эсвэл email"
+                className="w-full bg-transparent text-sm text-[#17365f] outline-none placeholder:text-[#93a6c0]"
+              />
+            </div>
+          </label>
 
           {combinedError ? (
             <div className="mt-5 rounded-2xl border border-[#ffd3d3] bg-[#fff5f5] px-4 py-3 text-sm text-[#b54747]">
@@ -187,11 +206,13 @@ export default function HomePage() {
             <select
               value={selectedUserId}
               onChange={(event) => setSelectedUserId(event.target.value)}
-              disabled={isUsersLoading || isAuthenticating}
+              disabled={isUsersLoading || isAuthenticating || visibleUsers.length === 0}
               className="mt-2 w-full rounded-[18px] border border-[#d7e4f4] bg-[#f8fbff] px-4 py-3 text-sm text-[#17365f] outline-none transition focus:border-[#2e5aac] focus:bg-white focus:ring-4 focus:ring-[#dce8ff]"
             >
-              <option value="">{isUsersLoading ? 'Хэрэглэгч дуудаж байна...' : 'Хэрэглэгч сонгоно уу'}</option>
-              {users.map((candidate) => (
+              <option value="">
+                {isUsersLoading ? 'Хэрэглэгч дуудаж байна...' : 'Хэрэглэгч сонгоно уу'}
+              </option>
+              {visibleUsers.map((candidate) => (
                 <option key={candidate.id} value={candidate.id} disabled={candidate.accountStatus === 'banned'}>
                   {candidate.name} · {candidate.role} · {candidate.accountStatus}
                 </option>
@@ -202,52 +223,24 @@ export default function HomePage() {
           <button
             type="button"
             onClick={() => void handleSelectedLogin()}
-            disabled={!selectedUserId || isUsersLoading || isAuthenticating || isLoading}
+            disabled={!selectedUserId || isUsersLoading || isAuthenticating || isLoading || selectedUser?.accountStatus === 'banned'}
             className="mt-4 inline-flex items-center justify-center rounded-[18px] bg-[#172a4e] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1e3a6b] disabled:cursor-not-allowed disabled:bg-[#9eb1cd]"
           >
             {isAuthenticating ? 'Нэвтэрч байна...' : 'Сонгосон хэрэглэгчээр нэвтрэх'}
           </button>
 
-          <div className="mt-8 space-y-4">
-            {usersByRole.map(({ role, title, users: roleUsers }) => (
-              <div key={role} className="rounded-[24px] border border-[#e3edf8] bg-[#fbfdff] p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-[#5c78a0]">
-                      {title}
-                    </h3>
-                    <p className="mt-1 text-xs text-[#89a0bf]">{roleUsers.length} хэрэглэгч</p>
-                  </div>
-                </div>
+          {selectedUser ? (
+            <div className="mt-4 rounded-2xl border border-[#dde8f8] bg-[#f8fbff] px-4 py-3 text-sm text-[#5e7597]">
+              <span className="font-semibold text-[#17365f]">{selectedUser.name}</span>
+              {` · ${selectedUser.email} · ${selectedUser.role} · ${selectedUser.accountStatus}`}
+            </div>
+          ) : null}
 
-                <div className="mt-3 space-y-2">
-                  {roleUsers.map((candidate) => (
-                    <button
-                      key={candidate.id}
-                      type="button"
-                      onClick={() => void handleLogin(candidate.id)}
-                      disabled={candidate.accountStatus === 'banned' || isAuthenticating}
-                      className="flex w-full items-center justify-between rounded-2xl border border-[#dde8f8] bg-white px-4 py-3 text-left transition hover:border-[#b9cdef] hover:bg-[#f5f9ff] disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      <span>
-                        <span className="block text-sm font-semibold text-[#18375f]">{candidate.name}</span>
-                        <span className="mt-1 block text-xs text-[#7c91af]">{candidate.email}</span>
-                      </span>
-                      <span className="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-semibold text-[#496da8]">
-                        {candidate.accountStatus}
-                      </span>
-                    </button>
-                  ))}
-
-                  {roleUsers.length === 0 ? (
-                    <p className="rounded-2xl border border-dashed border-[#d9e5f5] px-4 py-3 text-sm text-[#88a0be]">
-                      Энэ role дээр одоогоор хэрэглэгч алга.
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-            ))}
-          </div>
+          {!isUsersLoading && visibleUsers.length === 0 ? (
+            <p className="mt-6 rounded-2xl border border-dashed border-[#d9e5f5] px-4 py-3 text-sm text-[#88a0be]">
+              Тохирох хэрэглэгч олдсонгүй.
+            </p>
+          ) : null}
         </section>
       </div>
     </main>
