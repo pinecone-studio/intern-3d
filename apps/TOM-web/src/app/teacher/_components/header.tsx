@@ -14,10 +14,10 @@ import {
 import { useTomSession } from '@/app/_providers/tom-session-provider';
 
 const navItems = [
-  { href: '/teacher', label: 'Home', icon: LayoutDashboard },
+  { href: '/teacher', label: 'Хянах самбар', icon: LayoutDashboard },
   { href: '/teacher/clubs', label: 'Клубүүд', icon: Users },
-  { href: '/teacher/events', label: 'Events', icon: CalendarDays },
-  { href: '/teacher/club-detail', label: 'Details', icon: ListCheck },
+  { href: '/teacher/events', label: 'Үйл ажиллагаа', icon: CalendarDays },
+  { href: '/teacher/club-detail', label: 'Дэлгэрэнгүй', icon: ListCheck },
 ] as const;
 
 function normalizePathname(pathname: string) {
