@@ -901,7 +901,6 @@ function StudentDashboard() {
           onFloorChange={setSelectedFloor}
           onStatusChange={setSelectedStatus}
           onSearchChange={setSearchQuery}
-          showScheduleLink={false}
           embedded
         />
       </div>
