@@ -11,7 +11,6 @@ import {
   ChevronRight,
   MousePointer2,
   Plus,
-  RefreshCcw,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -478,7 +477,10 @@ function AdminScheduler() {
 
   return (
     <section
-      className="space-y-4"
+      className={cn(
+        'space-y-4 transition-[padding-right] duration-200',
+        dialogOpen ? 'xl:pr-[26rem]' : 'pr-0',
+      )}
       onPointerUp={() => setIsDragging(false)}
       onPointerLeave={() => setIsDragging(false)}
     >
@@ -521,9 +523,6 @@ function AdminScheduler() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Button type="button" variant="outline" size="icon" className="h-9 w-9 rounded-md" onClick={() => refetch()} aria-label="Дахин ачаалах">
-              <RefreshCcw className="h-4 w-4" />
-            </Button>
             <Button type="button" className="h-9 rounded-md bg-[#6264a7] hover:bg-[#5558a7]" onClick={() => openCreateDialog()}>
               <Plus className="mr-2 h-4 w-4" />
               Шинэ
@@ -652,8 +651,11 @@ function AdminScheduler() {
         {mutationError && <span className="text-destructive">Түр draft хадгалсан: {mutationError}</span>}
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg rounded-md">
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen} modal={false}>
+        <DialogContent
+          showOverlay={false}
+          className="left-auto right-0 top-0 h-screen w-full max-w-md translate-x-0 translate-y-0 overflow-y-auto rounded-none border-y-0 border-r-0 p-5 sm:max-w-md"
+        >
           <DialogHeader>
             <DialogTitle>{editingEvent ? 'Хуваарь засах' : 'Хуваарь үүсгэх'}</DialogTitle>
             <DialogDescription>
