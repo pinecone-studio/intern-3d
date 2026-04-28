@@ -1,8 +1,7 @@
 'use client'
 
-import { useDeferredValue, useMemo, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useState } from 'react'
 import type { MouseEvent } from 'react'
-import Link from 'next/link'
 import { gql } from '@apollo/client'
 import { useMutation, useQuery } from '@apollo/client/react'
 import {
@@ -30,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { RoomCard } from '@/components/rooms/room-card'
@@ -364,6 +364,7 @@ function AdminScheduler() {
   const [editingEvent, setEditingEvent] = useState<ScheduleEvent | null>(null)
   const [localEvents, setLocalEvents] = useState<ScheduleEvent[]>([])
   const [mutationError, setMutationError] = useState<string | null>(null)
+  const [selectedRoomTab, setSelectedRoomTab] = useState<string>('all')
 
   const { data, loading, error, refetch } = useQuery<SchedulerQueryResult>(GET_SCHEDULER_DATA)
   const [createScheduleEvent, { loading: saving }] = useMutation(CREATE_SCHEDULE_EVENT)
@@ -375,6 +376,14 @@ function AdminScheduler() {
   const weekDates = useMemo(() => WORK_DAYS.map(day => toIsoDate(addDays(weekStart, day.value - 1))), [weekStart])
   const selectedRoom = selection ? rooms.find(room => room.id === selection.roomId) : null
   const selectedDay = selection ? WORK_DAYS.find(day => day.value === selection.dayOfWeek) : null
+
+  useEffect(() => {
+    if (selectedRoomTab === 'all') return
+    const roomExists = rooms.some(room => room.id === selectedRoomTab)
+    if (!roomExists) {
+      setSelectedRoomTab('all')
+    }
+  }, [rooms, selectedRoomTab])
 
   const openCreateDialog = (targetSelection = selection) => {
     const fallbackSelection = rooms[0]
@@ -530,9 +539,24 @@ function AdminScheduler() {
           </div>
         </div>
 
-        <div className="overflow-auto">
-          <div className="min-w-[1320px]">
-            <div className="sticky top-0 z-[2] grid grid-cols-[128px_repeat(5,minmax(232px,1fr))] border-b border-[#e1dfdd] bg-white dark:border-border dark:bg-card">
+        <Tabs value={selectedRoomTab} onValueChange={setSelectedRoomTab} className="gap-0">
+          <div className="border-b border-[#e1dfdd] px-4 py-3 dark:border-border">
+            <TabsList className="h-auto w-full justify-start overflow-x-auto rounded-md border border-[#e1dfdd] bg-[#faf9f8] p-1 dark:border-border dark:bg-muted/30">
+              <TabsTrigger value="all" className="min-w-fit px-3">
+                All classes
+              </TabsTrigger>
+              {rooms.map(room => (
+                <TabsTrigger key={room.id} value={room.id} className="min-w-fit px-3">
+                  {room.number}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
+
+          {selectedRoomTab === 'all' ? (
+            <div className="overflow-auto">
+              <div className="min-w-[1320px]">
+                <div className="sticky top-0 z-[2] grid grid-cols-[128px_repeat(5,minmax(232px,1fr))] border-b border-[#e1dfdd] bg-white dark:border-border dark:bg-card">
               <div className="border-r border-[#e1dfdd] px-3 py-2 text-xs font-semibold uppercase text-muted-foreground dark:border-border">
                 Анги
               </div>
@@ -554,24 +578,25 @@ function AdminScheduler() {
               ))}
             </div>
 
-            {loading && !data ? (
-              <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">Ачаалж байна...</div>
-            ) : error ? (
-              <div className="m-4 rounded-md border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
-                {error.message}
-              </div>
-            ) : rooms.length === 0 ? (
-              <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">Анги олдсонгүй</div>
-            ) : (
-              rooms.map(room => (
-                <div key={room.id} className="grid min-h-[64px] grid-cols-[128px_repeat(5,minmax(232px,1fr))] border-b border-[#edebe9] dark:border-border">
-                  <Link
-                    href={`/dashboard/room/${room.id}`}
-                    className="flex flex-col justify-center border-r border-[#e1dfdd] bg-[#faf9f8] px-3 py-2 transition-colors hover:bg-[#f3f2f1] dark:border-border dark:bg-muted/30"
-                  >
-                    <span className="text-base font-semibold leading-5 text-foreground">{room.number}</span>
-                    <span className="text-[11px] text-muted-foreground">{room.type === 'lab' ? 'Lab' : 'Event hall'}</span>
-                  </Link>
+                {loading && !data ? (
+                  <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">Ачаалж байна...</div>
+                ) : error ? (
+                  <div className="m-4 rounded-md border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
+                    {error.message}
+                  </div>
+                ) : rooms.length === 0 ? (
+                  <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">Анги олдсонгүй</div>
+                ) : (
+                  rooms.map(room => (
+                    <div key={room.id} className="grid min-h-[64px] grid-cols-[128px_repeat(5,minmax(232px,1fr))] border-b border-[#edebe9] dark:border-border">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedRoomTab(room.id)}
+                        className="flex flex-col justify-center border-r border-[#e1dfdd] bg-[#faf9f8] px-3 py-2 text-left transition-colors hover:bg-[#f3f2f1] dark:border-border dark:bg-muted/30"
+                      >
+                        <span className="text-base font-semibold leading-5 text-foreground">{room.number}</span>
+                        <span className="text-[11px] text-muted-foreground">{room.type === 'lab' ? 'Lab' : 'Event hall'}</span>
+                      </button>
 
                   {WORK_DAYS.map((day, dayIndex) => {
                     const dayDate = weekDates[dayIndex]
@@ -636,11 +661,21 @@ function AdminScheduler() {
                       </div>
                     )
                   })}
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="p-4">
+              <RoomWeeklySchedule
+                room={rooms.find(room => room.id === selectedRoomTab) ?? null}
+                events={events}
+                onEditEvent={(event, dayOfWeek) => openEditDialog(event, selectedRoomTab, dayOfWeek)}
+              />
+            </div>
+          )}
+        </Tabs>
       </div>
 
       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -806,6 +841,105 @@ function Legend({ color, label }: { color: string; label: string }) {
       <span className={cn('h-2.5 w-2.5 rounded-sm', color)} />
       {label}
     </span>
+  )
+}
+
+function RoomWeeklySchedule({
+  room,
+  events,
+  onEditEvent,
+}: {
+  room: Room | null
+  events: ScheduleEvent[]
+  onEditEvent: (_event: ScheduleEvent, _dayOfWeek: number) => void
+}) {
+  const GRID_START_HOUR = 8
+  const GRID_END_HOUR = 20
+  const HOUR_HEIGHT = 48
+  const gridStartMinutes = GRID_START_HOUR * 60
+  const gridEndMinutes = GRID_END_HOUR * 60
+  const hours = Array.from({ length: GRID_END_HOUR - GRID_START_HOUR }, (_, index) => GRID_START_HOUR + index)
+
+  if (!room) {
+    return <div className="rounded-md border border-dashed border-border p-8 text-center text-sm text-muted-foreground">Анги олдсонгүй</div>
+  }
+
+  const regularEvents = events.filter(event => event.roomId === room.id && !event.isOverride)
+  const expandedEvents = regularEvents.flatMap(event =>
+    event.daysOfWeek
+      .filter(day => day >= 1 && day <= 5)
+      .map(day => ({ event, day }))
+  )
+
+  return (
+    <div className="rounded-md border border-[#d1d1d1] bg-white shadow-sm dark:border-border dark:bg-card">
+      <div className="border-b border-[#e1dfdd] px-4 py-3 dark:border-border">
+        <p className="text-sm font-semibold text-foreground">Долоо хоногийн хуваарь · {room.number}</p>
+      </div>
+      <div className="overflow-x-auto">
+        <div className="min-w-[700px]">
+          <div className="grid grid-cols-[60px_repeat(5,1fr)] border-b border-[#e1dfdd] dark:border-border">
+            <div className="p-2 text-xs text-muted-foreground" />
+            {WORK_DAYS.map(day => (
+              <div key={day.value} className="border-l border-[#e1dfdd] p-2 text-center text-sm font-medium dark:border-border">
+                {day.label}
+              </div>
+            ))}
+          </div>
+
+          <div className="relative">
+            {hours.map(hour => (
+              <div key={hour} className="grid h-12 grid-cols-[60px_repeat(5,1fr)] border-b border-[#edebe9] dark:border-border">
+                <div className="p-1 pr-2 pt-0 text-right text-xs text-muted-foreground -translate-y-2">
+                  {`${String(hour).padStart(2, '0')}:00`}
+                </div>
+                {WORK_DAYS.map(day => (
+                  <div key={day.value} className="border-l border-[#edebe9] dark:border-border" />
+                ))}
+              </div>
+            ))}
+
+            {expandedEvents.map(({ event, day }, index) => {
+              const dayIndex = WORK_DAYS.findIndex(entry => entry.value === day)
+              if (dayIndex === -1) return null
+
+              const startMinutes = timeToMinutes(event.startTime)
+              const endMinutes = timeToMinutes(event.endTime)
+              const clippedStartMinutes = Math.max(startMinutes, gridStartMinutes)
+              const clippedEndMinutes = Math.min(endMinutes, gridEndMinutes)
+              if (!Number.isFinite(startMinutes) || !Number.isFinite(endMinutes) || clippedEndMinutes <= clippedStartMinutes) {
+                return null
+              }
+
+              const startOffset = ((clippedStartMinutes - gridStartMinutes) / 60) * HOUR_HEIGHT
+              const height = ((clippedEndMinutes - clippedStartMinutes) / 60) * HOUR_HEIGHT
+              const width = 'calc((100% - 60px) / 5 - 4px)'
+
+              return (
+                <button
+                  key={`${event.id}-${day}-${index}`}
+                  type="button"
+                  className={cn(
+                    'absolute cursor-pointer overflow-hidden rounded-md border border-[#d1d1d1] border-l-4 p-1.5 text-left text-xs shadow-sm transition-opacity hover:opacity-90',
+                    getEventTone(event.type),
+                  )}
+                  style={{
+                    top: `${startOffset}px`,
+                    height: `${height}px`,
+                    left: `calc(60px + ${dayIndex} * ((100% - 60px) / 5) + 2px)`,
+                    width,
+                  }}
+                  onClick={() => onEditEvent(event, day)}
+                >
+                  <div className="truncate font-medium">{event.title}</div>
+                  <div className="truncate opacity-80">{event.startTime} - {event.endTime}</div>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 

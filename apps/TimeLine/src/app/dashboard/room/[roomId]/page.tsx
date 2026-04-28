@@ -5,28 +5,26 @@ import Link from 'next/link'
 import { gql } from '@apollo/client'
 import { useMutation, useQuery } from '@apollo/client/react'
 import { useRole } from '@/lib/role-context'
-import { getDefaultSelectedDay } from '@/lib/timeline-clock'
 import { useTimelineClock } from '@/lib/use-timeline-clock'
 import { useTimelineLiveUpdates } from '@/lib/use-timeline-live-updates'
-import { DAYS_OF_WEEK, EVENT_TYPE_CONFIG, STATUS_CONFIG } from '@/lib/constants'
+import { DAYS_OF_WEEK, EVENT_TYPE_CONFIG } from '@/lib/constants'
 import type { ScheduleEvent, EventType, Room } from '@/lib/types'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { RoomStatusBadge } from '@/components/rooms/room-status-badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   ArrowLeft, 
-  Monitor, 
-  Clock, 
   CalendarDays, 
-  Plus,
-  Pencil,
-  Trash2,
-  AlertTriangle,
-  Info
+  Plus
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Dialog,
   DialogContent,
@@ -35,18 +33,10 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
-import { format, parseISO } from 'date-fns'
 
 const GET_ROOM_DETAIL = gql`
   query GetRoomDetail($roomId: ID!) {
@@ -138,12 +128,6 @@ const UPDATE_SCHEDULE_EVENT = gql`
   }
 `
 
-const DELETE_SCHEDULE_EVENT = gql`
-  mutation DeleteScheduleEvent($id: ID!) {
-    deleteScheduleEvent(id: $id)
-  }
-`
-
 type RoomDetailQueryResult = {
   room: {
     room: Room
@@ -228,7 +212,6 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
   })
   const [createScheduleEvent, { loading: creatingEvent }] = useMutation(CREATE_SCHEDULE_EVENT)
   const [updateScheduleEvent, { loading: updatingEvent }] = useMutation(UPDATE_SCHEDULE_EVENT)
-  const [deleteScheduleEvent, { loading: deletingEvent }] = useMutation(DELETE_SCHEDULE_EVENT)
   const room = data?.room?.room
   const roomEvents = data?.room?.events ?? []
 
@@ -238,19 +221,10 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
     onEventsChanged: () => refetch(),
   })
   
-  const [selectedDay, setSelectedDay] = useState(() => getDefaultSelectedDay(clock))
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<ScheduleEvent | null>(null)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [eventToDelete, setEventToDelete] = useState<ScheduleEvent | null>(null)
   const [mutationError, setMutationError] = useState<string | null>(null)
   const isSavingEvent = creatingEvent || updatingEvent
-
-  useEffect(() => {
-    if (clock?.scheduleDay) {
-      setSelectedDay(currentDay => currentDay || clock.scheduleDay || 1)
-    }
-  }, [clock?.scheduleDay])
 
   if (loading || !clock) {
     return (
@@ -281,13 +255,7 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
     )
   }
 
-  // Filter events for selected day - now checking daysOfWeek array
-  const todayEvents = roomEvents
-    .filter(e => e.daysOfWeek.includes(selectedDay))
-    .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime))
-
   const regularEvents = roomEvents.filter(e => !e.isOverride)
-  const overrideEvents = roomEvents.filter(e => e.isOverride)
 
   const handleCreateEvent = () => {
     setMutationError(null)
@@ -299,12 +267,6 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
     setMutationError(null)
     setEditingEvent(event)
     setEditDialogOpen(true)
-  }
-
-  const handleDeleteEvent = (event: ScheduleEvent) => {
-    setMutationError(null)
-    setEventToDelete(event)
-    setDeleteDialogOpen(true)
   }
 
   const handleSaveEvent = async (formData: EventFormData) => {
@@ -323,20 +285,6 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
       setEditingEvent(null)
     } catch (saveError) {
       setMutationError(saveError instanceof Error ? saveError.message : 'Хуваарь хадгалж чадсангүй')
-    }
-  }
-
-  const handleConfirmDelete = async () => {
-    if (!eventToDelete) return
-
-    try {
-      setMutationError(null)
-      await deleteScheduleEvent({ variables: { id: eventToDelete.id } })
-      await refetch()
-      setDeleteDialogOpen(false)
-      setEventToDelete(null)
-    } catch (deleteError) {
-      setMutationError(deleteError instanceof Error ? deleteError.message : 'Хуваарь устгаж чадсангүй')
     }
   }
 
@@ -368,329 +316,27 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
         )}
       </div>
 
-      {/* Room Info Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Current Status */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Одоогийн төлөв</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <div className={cn(
-                'h-3 w-3 rounded-full',
-                STATUS_CONFIG[room.status].dotColor,
-                room.status === 'available' && 'animate-pulse'
-              )} />
-              <span className="text-lg font-semibold">{STATUS_CONFIG[room.status].label}</span>
-            </div>
-            {room.currentEvent && (
-              <p className="text-xs text-muted-foreground mt-1">
-                {room.currentEvent.title} ({room.currentEvent.startTime} - {room.currentEvent.endTime})
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Next Event */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Дараагийн үйл явдал</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {room.nextEvent ? (
-              <>
-                <span className="text-lg font-semibold">{room.nextEvent.title}</span>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {room.nextEvent.startTime} - {room.nextEvent.endTime}
-                </p>
-              </>
-            ) : (
-              <span className="text-muted-foreground">Өнөөдөр дахиж хуваарь байхгүй</span>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Device Count */}
-        {room.type === 'lab' && (
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Төхөөрөмжүүд</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <Monitor className="h-5 w-5 text-primary" />
-                <span className="text-lg font-semibold">
-                  {room.devices.filter(d => d.status === 'available').length}/{room.devices.length}
-                </span>
-                <span className="text-sm text-muted-foreground">iMac сул</span>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Current Time Indicator */}
-        <Card className="border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/5">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-amber-700 dark:text-amber-400">Одоогийн цаг</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-              <span className="text-lg font-semibold text-amber-700 dark:text-amber-400">
-                {DAYS_OF_WEEK.find(d => d.value === clock.currentDay)?.label ?? 'Ням'} {clock.currentTime}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Schedule Tabs */}
       {mutationError && (
         <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
           {mutationError}
         </div>
       )}
 
-      <Tabs defaultValue="today" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="today" className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            Өнөөдрийн хуваарь
-          </TabsTrigger>
-          <TabsTrigger value="weekly" className="flex items-center gap-2">
-            <CalendarDays className="h-4 w-4" />
-            Долоо хоногийн хуваарь
-          </TabsTrigger>
-          <TabsTrigger value="overrides" className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4" />
-            Түр өөрчлөлтүүд
-            {overrideEvents.length > 0 && (
-              <Badge variant="secondary" className="ml-1 h-5 px-1.5">
-                {overrideEvents.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Today's Schedule */}
-        <TabsContent value="today" className="mt-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Өнөөдрийн хуваарь</CardTitle>
-                  <CardDescription>
-                    {DAYS_OF_WEEK.find(d => d.value === selectedDay)?.label} гаригийн хуваарь
-                  </CardDescription>
-                </div>
-                <Select value={String(selectedDay)} onValueChange={(v) => setSelectedDay(Number(v))}>
-                  <SelectTrigger className="w-[140px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {DAYS_OF_WEEK.filter(d => d.value >= 1 && d.value <= 5).map(day => (
-                      <SelectItem key={day.value} value={String(day.value)}>
-                        {day.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {todayEvents.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <CalendarDays className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>Энэ өдөр хуваарь байхгүй байна</p>
-                  {isAdmin && (
-                    <Button variant="outline" size="sm" className="mt-4" onClick={handleCreateEvent}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Хуваарь нэмэх
-                    </Button>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {todayEvents.map(event => {
-                    const config = EVENT_TYPE_CONFIG[event.type]
-                    const isCurrentTime = selectedDay === clock.currentDay &&
-                      clock.currentMinutes >= timeToMinutes(event.startTime) &&
-                      clock.currentMinutes < timeToMinutes(event.endTime)
-                    
-                    return (
-                      <div
-                        key={event.id}
-                        className={cn(
-                          'relative flex items-center gap-4 rounded-lg border p-4 transition-colors',
-                          isCurrentTime && 'ring-2 ring-primary bg-primary/5',
-                          event.isOverride && 'border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/5'
-                        )}
-                      >
-                        <div className={cn(
-                          'h-full w-1 rounded-full absolute left-0 top-0 bottom-0',
-                          config.bgColor
-                        )} />
-                        <div className="flex-1 ml-2">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-medium">{event.title}</span>
-                            {event.isOverride && (
-                              <Badge variant="outline" className="text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-500/30">
-                                Түр өөрчлөлт
-                              </Badge>
-                            )}
-                            {isCurrentTime && (
-                              <Badge className="bg-primary">Одоо</Badge>
-                            )}
-                            {/* Show validity period if exists */}
-                            {event.validFrom && event.validUntil && (
-                              <Badge variant="secondary" className="text-xs">
-                                {format(parseISO(event.validFrom), 'MM/dd')} - {format(parseISO(event.validUntil), 'MM/dd')}
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {event.startTime} - {event.endTime}
-                            {event.instructor && ` • ${event.instructor}`}
-                          </p>
-                          {/* Show which days this event repeats */}
-                          {event.daysOfWeek.length > 1 && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Давтагдах: {event.daysOfWeek.map(d => DAYS_OF_WEEK.find(day => day.value === d)?.short).join(', ')}
-                            </p>
-                          )}
-                          {event.notes && (
-                            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                              <Info className="h-3 w-3" />
-                              {event.notes}
-                            </p>
-                          )}
-                        </div>
-                        <Badge variant="secondary" className={cn(
-                          'shrink-0',
-                          event.type === 'class' && 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400',
-                          event.type === 'club' && 'bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-400',
-                          event.type === 'openlab' && 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400',
-                          event.type === 'closed' && 'bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400',
-                        )}>
-                          {config.label}
-                        </Badge>
-                        {isAdmin && (
-                          <div className="flex items-center gap-1">
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditEvent(event)}>
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteEvent(event)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Weekly Schedule Grid */}
-        <TabsContent value="weekly" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Долоо хоногийн хуваарь</CardTitle>
-              <CardDescription>Даваа - Баасан гариг</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <WeeklyScheduleGrid
-                events={regularEvents}
-                isAdmin={isAdmin}
-                currentDay={clock.currentDay}
-                currentTime={clock.currentTime}
-                onEditEvent={handleEditEvent}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Overrides */}
-        <TabsContent value="overrides" className="mt-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <AlertTriangle className="h-5 w-5 text-amber-500" />
-                    Түр өөрчлөлтүүд
-                  </CardTitle>
-                  <CardDescription>
-                    Энгийн хуваариас өөрчлөгдсөн үйл явдлууд
-                  </CardDescription>
-                </div>
-                {isAdmin && (
-                  <Button variant="outline" onClick={handleCreateEvent}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Түр өөрчлөлт нэмэх
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              {overrideEvents.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <AlertTriangle className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>Түр өөрчлөлт байхгүй байна</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {overrideEvents.map(event => {
-                    const config = EVENT_TYPE_CONFIG[event.type]
-                    const dayNames = event.daysOfWeek.map(d => DAYS_OF_WEEK.find(day => day.value === d)?.label).join(', ')
-                    
-                    return (
-                      <div
-                        key={event.id}
-                        className="flex items-center gap-4 rounded-lg border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/5 p-4"
-                      >
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{event.title}</span>
-                            <Badge variant="secondary" className={cn(
-                              event.type === 'closed' && 'bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400',
-                            )}>
-                              {config.label}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {dayNames} • {event.startTime} - {event.endTime}
-                            {event.date && ` • ${event.date}`}
-                          </p>
-                          {event.notes && (
-                            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                              <Info className="h-3 w-3" />
-                              {event.notes}
-                            </p>
-                          )}
-                        </div>
-                        {isAdmin && (
-                          <div className="flex items-center gap-1">
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditEvent(event)}>
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteEvent(event)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      <Card>
+        <CardHeader>
+          <CardTitle>Долоо хоногийн хуваарь</CardTitle>
+          <CardDescription>Даваа - Баасан гариг</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <WeeklyScheduleGrid
+            events={regularEvents}
+            isAdmin={isAdmin}
+            currentDay={clock.currentDay}
+            currentTime={clock.currentTime}
+            onEditEvent={handleEditEvent}
+          />
+        </CardContent>
+      </Card>
 
       {/* Edit/Create Event Dialog */}
       <EventFormDialog
@@ -702,26 +348,6 @@ export default function RoomDetailPage({ params }: { params: Promise<{ roomId: s
         saving={isSavingEvent}
       />
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Устгахыг баталгаажуулах</DialogTitle>
-            <DialogDescription>
-              Та &quot;{eventToDelete?.title}&quot; үйл явдлыг устгахдаа итгэлтэй байна уу?
-              Энэ үйлдлийг буцаах боломжгүй.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
-              Болих
-            </Button>
-            <Button variant="destructive" onClick={handleConfirmDelete} disabled={deletingEvent}>
-              {deletingEvent ? 'Устгаж байна...' : 'Устгах'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
