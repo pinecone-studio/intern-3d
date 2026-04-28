@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server'
 import { getTomDb } from '@/lib/d1'
+import { isProductionRuntime, productionOnlyResponse } from '@/lib/tom-runtime'
 
 export async function GET() {
+  if (isProductionRuntime()) {
+    return productionOnlyResponse('Database status')
+  }
+
   const db = getTomDb()
 
   const [tablesResult, clubsResult, requestsResult, usersResult] = await Promise.all([

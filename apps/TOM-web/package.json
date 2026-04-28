@@ -6,7 +6,7 @@
     "dev:web": "next dev",
     "dev:cf": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "build": "next build --webpack",
-    "dev": "npm run dev:web",
+    "dev": "npm run dev:cf",
     "start": "next start",
     "preview": "npm run dev:cf",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
