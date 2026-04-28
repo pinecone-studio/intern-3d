@@ -741,7 +741,12 @@ function WeeklyScheduleGrid({
   onEditEvent: (_event: ScheduleEvent) => void
 }) {
   const days = DAYS_OF_WEEK.filter(d => d.value >= 1 && d.value <= 5)
-  const hours = Array.from({ length: 12 }, (_, i) => 8 + i) // 8:00 - 19:00
+  const GRID_START_HOUR = 8
+  const GRID_END_HOUR = 20
+  const HOUR_HEIGHT = 48
+  const gridStartMinutes = GRID_START_HOUR * 60
+  const gridEndMinutes = GRID_END_HOUR * 60
+  const hours = Array.from({ length: GRID_END_HOUR - GRID_START_HOUR }, (_, i) => GRID_START_HOUR + i) // 8:00 - 19:00
 
   // Expand events to show on each of their days
   const expandedEvents = events.flatMap(event => 
@@ -789,8 +794,14 @@ function WeeklyScheduleGrid({
 
             const startMinutes = timeToMinutes(event.startTime)
             const endMinutes = timeToMinutes(event.endTime)
-            const startOffset = (startMinutes - 8 * 60) / 60 * 48 // 48px per hour
-            const height = (endMinutes - startMinutes) / 60 * 48
+            const clippedStartMinutes = Math.max(startMinutes, gridStartMinutes)
+            const clippedEndMinutes = Math.min(endMinutes, gridEndMinutes)
+            if (!Number.isFinite(startMinutes) || !Number.isFinite(endMinutes) || clippedEndMinutes <= clippedStartMinutes) {
+              return null
+            }
+
+            const startOffset = (clippedStartMinutes - gridStartMinutes) / 60 * HOUR_HEIGHT
+            const height = (clippedEndMinutes - clippedStartMinutes) / 60 * HOUR_HEIGHT
             const width = `calc((100% - 60px) / 5 - 4px)`
 
             const config = EVENT_TYPE_CONFIG[event.type]
@@ -821,9 +832,9 @@ function WeeklyScheduleGrid({
           {/* Current time indicator */}
           {(() => {
             const currentMinutes = timeToMinutes(currentTime)
-            const offset = (currentMinutes - 8 * 60) / 60 * 48
+            const offset = (currentMinutes - gridStartMinutes) / 60 * HOUR_HEIGHT
             const dayIndex = days.findIndex(d => d.value === currentDay)
-            if (dayIndex === -1 || offset < 0 || offset > 12 * 48) return null
+            if (dayIndex === -1 || offset < 0 || offset > (GRID_END_HOUR - GRID_START_HOUR) * HOUR_HEIGHT) return null
 
             return (
               <div

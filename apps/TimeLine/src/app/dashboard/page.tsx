@@ -533,7 +533,7 @@ function AdminScheduler() {
 
         <div className="overflow-auto">
           <div className="min-w-[1320px]">
-            <div className="sticky top-[73px] z-[2] grid grid-cols-[128px_repeat(5,minmax(232px,1fr))] border-b border-[#e1dfdd] bg-white dark:border-border dark:bg-card">
+            <div className="sticky top-0 z-[2] grid grid-cols-[128px_repeat(5,minmax(232px,1fr))] border-b border-[#e1dfdd] bg-white dark:border-border dark:bg-card">
               <div className="border-r border-[#e1dfdd] px-3 py-2 text-xs font-semibold uppercase text-muted-foreground dark:border-border">
                 Анги
               </div>
