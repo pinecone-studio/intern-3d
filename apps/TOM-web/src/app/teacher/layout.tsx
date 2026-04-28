@@ -10,7 +10,7 @@ export default async function TeacherLayout({
   await requireServerUser(['teacher']);
 
   return (
-    <div className="min-h-screen bg-[#f4f7fb]">
+    <div className="tom-teacher-shell min-h-screen bg-[#f4f7fb]">
       <div className="mx-auto max-w-6xl p-10">
         <TeacherHeader />
         <main className="mt-6 min-w-0">{children}</main>

@@ -14,10 +14,10 @@ import {
 import { useTomSession } from '@/app/_providers/tom-session-provider';
 
 const navItems = [
-  { href: '/teacher', label: 'Самбар', icon: LayoutDashboard },
+  { href: '/teacher', label: 'Home', icon: LayoutDashboard },
   { href: '/teacher/clubs', label: 'Клубүүд', icon: Users },
-  { href: '/teacher/events', label: 'Арга хэмжээнүүд', icon: CalendarDays },
-  { href: '/teacher/club-detail', label: 'Клубийн дэлгэрэнгүй', icon: ListCheck },
+  { href: '/teacher/events', label: 'Events', icon: CalendarDays },
+  { href: '/teacher/club-detail', label: 'Details', icon: ListCheck },
 ] as const;
 
 function normalizePathname(pathname: string) {
@@ -47,19 +47,39 @@ export default function TeacherHeader() {
   return (
     <header className="rounded-[28px] border border-[#dce7f8] bg-white/95 px-5 py-4 shadow-soft">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#1a3560] text-white shadow-[0_10px_22px_rgba(24,58,112,0.18)]">
+        <Link href="/" className="flex min-w-0 items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#1a3560] text-white shadow-[0_10px_22px_rgba(24,58,112,0.18)]">
             <GraduationCap className="h-5 w-5" />
           </div>
-          <div>
-            <p className="text-sm font-semibold text-[#1a3560]">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-[#1a3560]">
               Сургуулийн клубүүд
             </p>
-            <p className="text-xs text-[#7a90af]">
+            <p className="truncate text-xs text-[#7a90af]">
               {user ? `${user.name} · Багш` : 'Багшийн хэсэг'}
             </p>
           </div>
         </Link>
+
+        <nav className="flex flex-nowrap items-center gap-2 overflow-x-auto">
+          {navItems.map(({ href, label, icon: Icon }) => {
+            const isActive = activeHref === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`inline-flex flex-none items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition ${
+                  isActive
+                    ? 'bg-[#1a3560] text-white shadow-[0_12px_24px_rgba(24,58,112,0.22)]'
+                    : 'text-[#4a6080] hover:bg-[#eef4ff] hover:text-[#1a3560]'
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
 
         <button
           type="button"
@@ -71,26 +91,6 @@ export default function TeacherHeader() {
           {isAuthenticating ? 'Гарч байна...' : 'Гарах'}
         </button>
       </div>
-
-      <nav className="mt-4 flex overflow-x-auto rounded-xl border border-[#e2eaf5] bg-[#f7faff] p-1">
-        {navItems.map(({ href, label, icon: Icon }) => {
-          const isActive = activeHref === href;
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={`inline-flex flex-none items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
-                isActive
-                  ? 'bg-white text-[#0f1f3d] shadow-sm ring-1 ring-[#e2eaf5]'
-                  : 'text-[#7a90af] hover:text-[#0f1f3d]'
-              }`}
-            >
-              <Icon className="h-4 w-4 shrink-0" />
-              {label}
-            </Link>
-          );
-        })}
-      </nav>
     </header>
   );
 }
