@@ -4,8 +4,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, Search, ShieldCheck, XCircle } from 'lucide-react';
 
 import { CapacityBar, StatusBadge } from '@/app/_components';
-import { useTomOptions } from '@/app/_hooks/useTomOptions';
-import type { Club, ClubRequest } from '@/lib/tom-types';
+import { useTomSession } from '@/app/_providers/tom-session-provider';
+import type { Club, ClubRequest, TomCurrentUser } from '@/lib/tom-types';
+
+type TeacherClubsResponse = {
+  user: TomCurrentUser;
+  teacherScopeName: string;
+  clubs: Club[];
+  requests: ClubRequest[];
+};
 
 async function readJson<T>(response: Response) {
   const data = (await response.json().catch(() => null)) as
@@ -33,11 +40,10 @@ async function apiRequest<T>(input: string, init?: RequestInit) {
 }
 
 export default function ClubsPage() {
-  const { options, isLoading: isOptionsLoading, errorMessage: optionsError } =
-    useTomOptions();
+  const { user } = useTomSession();
   const [clubs, setClubs] = useState<Club[]>([]);
   const [requests, setRequests] = useState<ClubRequest[]>([]);
-  const [selectedTeacher, setSelectedTeacher] = useState<string>('all');
+  const [teacherScopeName, setTeacherScopeName] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -49,28 +55,17 @@ export default function ClubsPage() {
   const loadData = async (nextMessage?: string) => {
     const query = new URLSearchParams();
 
-    if (selectedTeacher !== 'all') {
-      query.set('teacher', selectedTeacher);
-    }
-
     if (searchTerm.trim()) {
       query.set('q', searchTerm.trim());
     }
 
     const suffix = query.toString() ? `?${query.toString()}` : '';
+    const data = await apiRequest<TeacherClubsResponse>(`/api/teacher/clubs${suffix}`);
 
-    const [clubData, requestData] = await Promise.all([
-      apiRequest<{ clubs: Club[] }>(`/api/clubs${suffix}`),
-      apiRequest<{ requests: ClubRequest[] }>(
-        `/api/club-requests?requestStatus=pending${
-          suffix ? `&${query.toString()}` : ''
-        }`
-      ),
-    ]);
-
-    setClubs(clubData.clubs);
-    setRequests(requestData.requests);
-    setMessage(nextMessage || 'Клубийн мэдээллийг шинэчиллээ.');
+    setClubs(data.clubs);
+    setRequests(data.requests);
+    setTeacherScopeName(data.teacherScopeName);
+    setMessage(nextMessage || `${data.teacherScopeName} нэр дээрх клубүүдийг шинэчиллээ.`);
   };
 
   useEffect(() => {
@@ -102,7 +97,7 @@ export default function ClubsPage() {
     return () => {
       cancelled = true;
     };
-  }, [selectedTeacher, searchTerm]);
+  }, [searchTerm]);
 
   const runAction = async (action: () => Promise<void>, fallback: string) => {
     setIsSaving(true);
@@ -192,33 +187,18 @@ export default function ClubsPage() {
                 : 'Багшийн клубүүд'}
             </p>
             <p className="mt-1 text-sm">
-              {optionsError ||
-                errorMessage ||
+              {errorMessage ||
                 (isLoading
-                  ? 'Клубийн сонголт болон хүсэлтийн өгөгдлийг ачаалж байна.'
-                  : isOptionsLoading
-                  ? 'Клуб, хүсэлтийн өгөгдлийг ачаалж байна.'
+                  ? 'Таны багшийн нэр дээрх клуб, хүсэлтийн өгөгдлийг ачаалж байна.'
                   : isSaving
                   ? 'Сүүлд хийсэн өөрчлөлтийг хадгалж байна.'
                   : message)}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <label className="rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm text-[#4a6080]">
-              <span className="mr-2 font-semibold">Багш</span>
-              <select
-                value={selectedTeacher}
-                onChange={(event) => setSelectedTeacher(event.target.value)}
-                className="bg-transparent outline-none"
-              >
-                <option value="all">Бүх багш</option>
-                {options.teachers.map((teacher) => (
-                  <option key={teacher} value={teacher}>
-                    {teacher}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <div className="rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm font-semibold text-[#4a6080]">
+              {teacherScopeName || user?.teacherProfileName || user?.name || 'Багш'}
+            </div>
             <label className="flex items-center gap-2 rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm text-[#4a6080]">
               <Search className="h-4 w-4" />
               <input
@@ -267,7 +247,7 @@ export default function ClubsPage() {
             <div>
               <h2 className="text-xl font-semibold text-[#17304f]">Удирдаж буй клубүүд</h2>
               <p className="mt-1 text-sm text-[#6e84a3]">
-                Клубийн хүчин чадал, төлөв, багшийн мэдээллийг эндээс харж удирдана.
+                {teacherScopeName || user?.teacherProfileName || user?.name || 'Багш'} нэр дээрх клубүүдийг эндээс удирдана.
               </p>
             </div>
             <StatusBadge
@@ -365,7 +345,7 @@ export default function ClubsPage() {
             <div>
               <h2 className="text-xl font-semibold text-[#17304f]">Хүлээгдэж буй саналууд</h2>
               <p className="mt-1 text-sm text-[#6e84a3]">
-                Хүсэлтийг хурдан батлах эсвэл буцаах хэсэг.
+                Энэ багшийн нэр дээр ирсэн хүсэлтүүдийг хурдан батлах эсвэл буцаана.
               </p>
             </div>
           </div>

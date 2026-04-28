@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { CalendarDays, MapPin, Plus, Search, Trash2 } from 'lucide-react';
 
 import { StatusBadge } from '@/app/_components';
-import { useTomOptions } from '@/app/_hooks/useTomOptions';
-import type { EventStatus, SchoolEvent } from '@/lib/tom-types';
+import { useTomSession } from '@/app/_providers/tom-session-provider';
+import type { EventStatus, SchoolEvent, TomCurrentUser } from '@/lib/tom-types';
 
 const eventStatuses: EventStatus[] = [
   'upcoming',
@@ -27,7 +27,6 @@ type EventForm = {
   eventDate: string;
   startTime: string;
   endTime: string;
-  createdBy: string;
 };
 
 const emptyForm: EventForm = {
@@ -37,7 +36,12 @@ const emptyForm: EventForm = {
   eventDate: '',
   startTime: '',
   endTime: '',
-  createdBy: '',
+};
+
+type TeacherEventsResponse = {
+  user: TomCurrentUser;
+  teacherScopeName: string;
+  events: SchoolEvent[];
 };
 
 async function readJson<T>(response: Response) {
@@ -66,25 +70,18 @@ async function apiRequest<T>(input: string, init?: RequestInit) {
 }
 
 export default function EventsPage() {
-  const { options, isLoading: isOptionsLoading, errorMessage: optionsError } =
-    useTomOptions();
+  const { user } = useTomSession();
   const [events, setEvents] = useState<SchoolEvent[]>([]);
   const [form, setForm] = useState<EventForm>(emptyForm);
   const [statusFilter, setStatusFilter] = useState<'all' | EventStatus>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [teacherScopeName, setTeacherScopeName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [message, setMessage] = useState(
     'Арга хэмжээний мэдээллийг ачааллаа.'
   );
-
-  useEffect(() => {
-    setForm((current) => ({
-      ...current,
-      createdBy: current.createdBy || options.teachers[0] || current.createdBy,
-    }));
-  }, [options.teachers]);
 
   const loadData = async (nextMessage?: string) => {
     const query = new URLSearchParams();
@@ -98,12 +95,13 @@ export default function EventsPage() {
     }
 
     const suffix = query.toString() ? `?${query.toString()}` : '';
-    const eventData = await apiRequest<{ events: SchoolEvent[] }>(
-      `/api/events${suffix}`
+    const eventData = await apiRequest<TeacherEventsResponse>(
+      `/api/teacher/events${suffix}`
     );
 
     setEvents(eventData.events);
-    setMessage(nextMessage || 'Арга хэмжээний жагсаалтыг шинэчиллээ.');
+    setTeacherScopeName(eventData.teacherScopeName);
+    setMessage(nextMessage || `${eventData.teacherScopeName} нэр дээрх арга хэмжээнүүдийг шинэчиллээ.`);
   };
 
   useEffect(() => {
@@ -152,14 +150,11 @@ export default function EventsPage() {
 
   const createEvent = async () => {
     await runAction(async () => {
-      await apiRequest('/api/events', {
+      await apiRequest('/api/teacher/events', {
         method: 'POST',
         body: JSON.stringify(form),
       });
-      setForm({
-        ...emptyForm,
-        createdBy: options.teachers[0] ?? '',
-      });
+      setForm(emptyForm);
       await loadData(`${form.title} арга хэмжээ үүслээ.`);
     }, 'Арга хэмжээ үүсгэж чадсангүй.');
   };
@@ -217,18 +212,18 @@ export default function EventsPage() {
                 : 'Багшийн арга хэмжээнүүд'}
             </p>
             <p className="mt-1 text-sm">
-              {optionsError ||
-                errorMessage ||
+              {errorMessage ||
                 (isLoading
-                  ? 'Арга хэмжээний сонголт болон хуваарийг ачаалж байна.'
-                  : isOptionsLoading
-                  ? 'Арга хэмжээний жагсаалт болон хуваарийг ачаалж байна.'
+                  ? 'Таны багшийн нэр дээрх арга хэмжээнүүдийг ачаалж байна.'
                   : isSaving
                   ? 'Арга хэмжээний өөрчлөлтийг хадгалж байна.'
                   : message)}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
+            <div className="rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm font-semibold text-[#4a6080]">
+              {teacherScopeName || user?.teacherProfileName || user?.name || 'Багш'}
+            </div>
             <label className="rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm text-[#4a6080]">
               <span className="mr-2 font-semibold">Төлөв</span>
               <select
@@ -283,7 +278,7 @@ export default function EventsPage() {
             <div>
               <h2 className="text-xl font-semibold text-[#17304f]">Арга хэмжээ үүсгэх</h2>
               <p className="mt-1 text-sm text-[#6e84a3]">
-                Багшийн хуваариас шууд шинэ арга хэмжээ нэмнэ.
+                {teacherScopeName || user?.teacherProfileName || user?.name || 'Багш'} нэр дээр шууд шинэ арга хэмжээ нэмнэ.
               </p>
             </div>
           </div>
@@ -321,22 +316,9 @@ export default function EventsPage() {
                 placeholder="Байршил"
                 className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
               />
-              <select
-                value={form.createdBy}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    createdBy: event.target.value,
-                  }))
-                }
-                className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
-              >
-                {options.teachers.map((teacher) => (
-                  <option key={teacher} value={teacher}>
-                    {teacher}
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center rounded-2xl border border-[#d8e4f4] bg-[#f6f9ff] px-4 py-3 text-sm font-semibold text-[#5c7395]">
+                Үүсгэх нэр: {teacherScopeName || user?.teacherProfileName || user?.name || 'Багш'}
+              </div>
             </div>
             <div className="grid gap-4 md:grid-cols-3">
               <input

@@ -814,6 +814,7 @@ function normalizeEvent(input: EventInput, current?: SchoolEvent): SchoolEvent {
 
 export async function listEvents(params: {
   status?: string | null
+  createdBy?: string | null
   q?: string | null
 } = {}) {
   const db = getTomDb()
@@ -823,6 +824,11 @@ export async function listEvents(params: {
   if (params.status) {
     filters.push('e.status = ?')
     bindings.push(params.status)
+  }
+
+  if (params.createdBy) {
+    filters.push('e.created_by = ?')
+    bindings.push(params.createdBy)
   }
 
   if (params.q) {
