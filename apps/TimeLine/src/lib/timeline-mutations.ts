@@ -37,8 +37,17 @@ function toBlockEventType(type: EventType): string {
   return type
 }
 
-function toHour(time: string): number {
-  return Number(time.split(':')[0])
+function timeToMinutes(time: string): number {
+  const [hours, minutes] = time.split(':').map(Number)
+  return hours * 60 + minutes
+}
+
+function toStartHour(minutes: number): number {
+  return Math.floor(minutes / 60)
+}
+
+function toEndHour(minutes: number): number {
+  return Math.ceil(minutes / 60)
 }
 
 function shouldSaveAsOverride(input: ScheduleEventInput): boolean {
@@ -119,6 +128,8 @@ function toOverrideInsert(input: ScheduleEventInput, id: string, now: string, cr
 function toScheduleBlockInsert(input: ScheduleEventInput, id: string, now: string, createdBy: string) {
   const recurrence = toRecurrence(input)
   const date = getOverrideDate(input)
+  const startMinute = timeToMinutes(input.startTime)
+  const endMinute = timeToMinutes(input.endTime)
 
   return {
     id,
@@ -129,8 +140,10 @@ function toScheduleBlockInsert(input: ScheduleEventInput, id: string, now: strin
     description: normalizeOptionalText(input.notes),
     color: null,
     organizer: normalizeOptionalText(input.instructor),
-    startHour: toHour(input.startTime),
-    endHour: toHour(input.endTime),
+    startHour: toStartHour(startMinute),
+    endHour: toEndHour(endMinute),
+    startMinute,
+    endMinute,
     recurrence,
     specificDate: recurrence === 'one_time' ? date : null,
     daysOfWeek: recurrence === 'weekly' ? JSON.stringify(input.daysOfWeek) : null,

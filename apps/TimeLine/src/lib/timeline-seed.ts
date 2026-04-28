@@ -12,8 +12,17 @@ function toBlockEventType(type: EventType): string {
   return type
 }
 
-function toHour(time: string): number {
-  return Number(time.split(':')[0])
+function timeToMinutes(time: string): number {
+  const [hours, minutes] = time.split(':').map(Number)
+  return hours * 60 + minutes
+}
+
+function toStartHour(minutes: number): number {
+  return Math.floor(minutes / 60)
+}
+
+function toEndHour(minutes: number): number {
+  return Math.ceil(minutes / 60)
 }
 
 function toScheduleEventFromSchedule(schedule: typeof seedSchedules[number]): ScheduleEvent {
@@ -60,6 +69,8 @@ function toScheduleBlock(event: ScheduleEvent): typeof scheduleBlocksTable.$infe
   const isOneTime = event.isOverride || event.type === 'closed' || Boolean(event.date)
   const date = event.date ?? event.validFrom ?? '2026-04-01'
   const isDaily = !isOneTime && event.daysOfWeek.length >= 5
+  const startMinute = timeToMinutes(event.startTime)
+  const endMinute = timeToMinutes(event.endTime)
 
   return {
     id: event.id,
@@ -68,8 +79,10 @@ function toScheduleBlock(event: ScheduleEvent): typeof scheduleBlocksTable.$infe
     title: event.title,
     description: event.notes ?? null,
     organizer: event.instructor ?? null,
-    startHour: toHour(event.startTime),
-    endHour: toHour(event.endTime),
+    startHour: toStartHour(startMinute),
+    endHour: toEndHour(endMinute),
+    startMinute,
+    endMinute,
     recurrence: isOneTime ? 'one_time' : isDaily ? 'daily' : 'weekly',
     specificDate: isOneTime ? date : null,
     daysOfWeek: !isOneTime && !isDaily ? JSON.stringify(event.daysOfWeek) : null,
