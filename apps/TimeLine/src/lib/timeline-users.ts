@@ -1,8 +1,12 @@
-import { asc, eq } from 'drizzle-orm'
-import { getDrizzleDb } from '@/db/client'
-import { deviceAssignmentsTable, roomsTable, usersTable } from '@/db/schema'
+import { getTimelineDb } from '@/lib/d1'
 import { seedDeviceAssignments, seedRooms, seedUsers } from '@/lib/timeline-seed-fixtures'
 import type { Device, User } from '@/lib/types'
+
+type TimelineUserRow = User & {
+  deviceName: string | null
+  roomId: string | null
+  roomNumber: string | null
+}
 
 function mapAssignedDevice(userId: string, deviceName: string | null, roomId: string | null, roomNumber: string | null): Device | null {
   if (!deviceName || !roomId || !roomNumber) return null
@@ -17,18 +21,13 @@ function mapAssignedDevice(userId: string, deviceName: string | null, roomId: st
   }
 }
 
-function mapTimelineUser(
-  user: typeof usersTable.$inferSelect,
-  deviceName: string | null,
-  roomId: string | null,
-  roomNumber: string | null
-): User {
+function mapTimelineUser(row: TimelineUserRow): User {
   return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role as User['role'],
-    assignedDevice: mapAssignedDevice(user.id, deviceName, roomId, roomNumber),
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    role: row.role as User['role'],
+    assignedDevice: mapAssignedDevice(row.id, row.deviceName, row.roomId, row.roomNumber),
   }
 }
 
@@ -57,20 +56,22 @@ function listFallbackUsers(): User[] {
 
 export async function listTimelineUsers(): Promise<User[]> {
   try {
-    const db = getDrizzleDb()
-    const rows = await db
-      .select({
-        user: usersTable,
-        deviceName: deviceAssignmentsTable.deviceName,
-        roomId: deviceAssignmentsTable.roomId,
-        roomNumber: roomsTable.name,
-      })
-      .from(usersTable)
-      .leftJoin(deviceAssignmentsTable, eq(deviceAssignmentsTable.userId, usersTable.id))
-      .leftJoin(roomsTable, eq(deviceAssignmentsTable.roomId, roomsTable.id))
-      .orderBy(asc(usersTable.role), asc(usersTable.name))
+    const result = await getTimelineDb().prepare(`
+      SELECT
+        users.id AS id,
+        users.name AS name,
+        users.email AS email,
+        users.role AS role,
+        device_assignments.device_name AS deviceName,
+        device_assignments.room_id AS roomId,
+        rooms.name AS roomNumber
+      FROM users
+      LEFT JOIN device_assignments ON device_assignments.user_id = users.id
+      LEFT JOIN rooms ON device_assignments.room_id = rooms.id
+      ORDER BY users.role ASC, users.name ASC
+    `).all<TimelineUserRow>()
 
-    return rows.map((row) => mapTimelineUser(row.user, row.deviceName, row.roomId, row.roomNumber))
+    return result.results.map((row) => mapTimelineUser(row))
   } catch (error) {
     console.warn('Falling back to seed users because timeline users could not be loaded.', error)
     return listFallbackUsers()
@@ -79,22 +80,25 @@ export async function listTimelineUsers(): Promise<User[]> {
 
 export async function getTimelineUser(userId: string): Promise<User | null> {
   try {
-    const db = getDrizzleDb()
-    const [row] = await db
-      .select({
-        user: usersTable,
-        deviceName: deviceAssignmentsTable.deviceName,
-        roomId: deviceAssignmentsTable.roomId,
-        roomNumber: roomsTable.name,
-      })
-      .from(usersTable)
-      .leftJoin(deviceAssignmentsTable, eq(deviceAssignmentsTable.userId, usersTable.id))
-      .leftJoin(roomsTable, eq(deviceAssignmentsTable.roomId, roomsTable.id))
-      .where(eq(usersTable.id, userId))
-      .limit(1)
+    const result = await getTimelineDb().prepare(`
+      SELECT
+        users.id AS id,
+        users.name AS name,
+        users.email AS email,
+        users.role AS role,
+        device_assignments.device_name AS deviceName,
+        device_assignments.room_id AS roomId,
+        rooms.name AS roomNumber
+      FROM users
+      LEFT JOIN device_assignments ON device_assignments.user_id = users.id
+      LEFT JOIN rooms ON device_assignments.room_id = rooms.id
+      WHERE users.id = ?
+      LIMIT 1
+    `).bind(userId).all<TimelineUserRow>()
+    const row = result.results[0]
 
     if (!row) return null
-    return mapTimelineUser(row.user, row.deviceName, row.roomId, row.roomNumber)
+    return mapTimelineUser(row)
   } catch (error) {
     console.warn('Falling back to seed users because timeline user could not be loaded.', error)
     return listFallbackUsers().find((entry) => entry.id === userId) ?? null
