@@ -1,8 +1,8 @@
 import { requireServerUser } from '@/lib/tom-auth-server';
 
-import SideBar from './_components/sideBar';
+import TeacherHeader from './_components/header';
 
-export default async function StudentsLayout({
+export default async function TeacherLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -10,12 +10,11 @@ export default async function StudentsLayout({
   await requireServerUser(['teacher']);
 
   return (
-    <div className="min-h-screen bg-[#f4f7fb]">
-      <aside className="fixed left-0 top-0 z-[60] h-screen w-56">
-        <SideBar />
-      </aside>
-
-      <main className="ml-56 min-h-screen min-w-0 p-10">{children}</main>
+    <div className="tom-teacher-shell min-h-screen bg-[#f4f7fb]">
+      <div className="mx-auto max-w-6xl p-10">
+        <TeacherHeader />
+        <main className="mt-6 min-w-0">{children}</main>
+      </div>
     </div>
   );
 }

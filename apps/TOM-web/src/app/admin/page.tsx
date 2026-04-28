@@ -167,8 +167,6 @@ export function AdminDashboardContent({
     )
     .join(' ');
 
-  const activityArea = `${activityPath} L 100 100 L 0 100 Z`;
-
   const spotlightClubs = requests.slice(0, 3);
   const spotlightUsers = leaderboard.slice(0, 3);
   const activeClubStatusCount = activeClubs.filter(
@@ -313,89 +311,49 @@ export function AdminDashboardContent({
               </span>
             </div>
 
-            <div className="mt-6 h-[300px] overflow-hidden rounded-[28px] border border-[color:var(--border)] bg-[linear-gradient(180deg,_rgba(247,251,255,0.92),_rgba(255,255,255,0.94))] p-4">
-              <div className="relative h-full">
-                <div className="absolute inset-0 rounded-[24px] bg-[linear-gradient(180deg,_transparent_0%,_transparent_calc(100%-1px),_rgba(219,230,247,0.72)_calc(100%-1px))]" />
-                <div className="absolute inset-0 grid grid-cols-12 items-end gap-2 px-2 pb-8">
-                  {activitySeries.map((value, index) => (
+            <div className="mt-6 h-[300px] rounded-[20px] border border-[color:var(--border)] bg-white px-4 py-3">
+              <div className="relative h-[240px]">
+                <div className="absolute inset-0 rounded-[14px] bg-[linear-gradient(180deg,_rgba(245,249,255,0.72),_rgba(255,255,255,0.92))]" />
+                <div className="absolute inset-0">
+                  {[20, 40, 60, 80].map((line) => (
                     <div
-                      key={`${monthLabels[index]}-${value}`}
-                      className="flex h-full flex-col justify-end"
-                    >
-                      <div
-                        className="rounded-t-[18px] bg-[linear-gradient(180deg,_#6bb0f0_0%,_#99c8ff_52%,_#c8ddff_100%)] shadow-[0_12px_26px_rgba(88,134,221,0.18)]"
-                        style={{ height: `${value}%` }}
-                      />
-                    </div>
+                      key={line}
+                      className="absolute left-0 right-0 border-t border-dashed border-[#e6eef9]"
+                      style={{ top: `${100 - line}%` }}
+                    />
                   ))}
                 </div>
-
                 <svg
                   viewBox="0 0 100 100"
                   preserveAspectRatio="none"
-                  className="absolute inset-x-3 bottom-10 top-4 h-[calc(100%-1.75rem)] w-[calc(100%-1.5rem)]"
+                  className="absolute inset-x-2 inset-y-3 h-[calc(100%-1.5rem)] w-[calc(100%-1rem)]"
                 >
-                  <defs>
-                    <linearGradient
-                      id="admin-chart-area"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop
-                        offset="0%"
-                        stopColor="#6faef4"
-                        stopOpacity="0.34"
-                      />
-                      <stop
-                        offset="100%"
-                        stopColor="#6faef4"
-                        stopOpacity="0.03"
-                      />
-                    </linearGradient>
-                    <linearGradient
-                      id="admin-chart-line"
-                      x1="0"
-                      y1="0"
-                      x2="1"
-                      y2="0"
-                    >
-                      <stop offset="0%" stopColor="#4f8fe7" />
-                      <stop offset="100%" stopColor="#78b8ff" />
-                    </linearGradient>
-                  </defs>
-                  <path d={activityArea} fill="url(#admin-chart-area)" />
                   <path
                     d={activityPath}
                     fill="none"
-                    stroke="url(#admin-chart-line)"
-                    strokeWidth="2.5"
+                    stroke="#5c8fd6"
+                    strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                   {activitySeries.map((value, index) => {
                     const x = (index / (activitySeries.length - 1)) * 100;
-
                     return (
                       <circle
                         key={`${monthLabels[index]}-point`}
                         cx={x}
                         cy={100 - value}
-                        r="1.8"
-                        fill="#ffffff"
-                        stroke="#5a9cec"
-                        strokeWidth="1.2"
+                        r="1.35"
+                        fill="#5c8fd6"
                       />
                     );
                   })}
                 </svg>
-
-                <div className="absolute inset-x-0 bottom-2 flex justify-between px-2 text-[11px] text-[#6e84a5]">
-                  {monthLabels.map((month) => (
-                    <span key={month}>{month}</span>
-                  ))}
-                </div>
+              </div>
+              <div className="mt-3 grid grid-cols-6 gap-y-1 text-[11px] text-[#7389a8] sm:grid-cols-12">
+                {monthLabels.map((month) => (
+                  <span key={month} className="truncate text-center">{month}</span>
+                ))}
               </div>
             </div>
           </article>

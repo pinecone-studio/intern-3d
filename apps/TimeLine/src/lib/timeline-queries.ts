@@ -16,7 +16,7 @@ async function listMappedEventsForRooms(roomIds: string[]) {
       .select()
       .from(scheduleBlocksTable)
       .where(inArray(scheduleBlocksTable.roomId, roomIds))
-      .orderBy(asc(scheduleBlocksTable.roomId), asc(scheduleBlocksTable.startHour))
+      .orderBy(asc(scheduleBlocksTable.roomId), asc(scheduleBlocksTable.startMinute), asc(scheduleBlocksTable.startHour))
 
     return blocks
       .filter(block => block.isActive === 1)
@@ -99,7 +99,7 @@ export async function listScheduleEvents(params: { roomId?: string | null; dayOf
       .select()
       .from(scheduleBlocksTable)
       .where(blockFilters.length > 0 ? and(...blockFilters) : undefined)
-      .orderBy(asc(scheduleBlocksTable.roomId), asc(scheduleBlocksTable.startHour))
+      .orderBy(asc(scheduleBlocksTable.roomId), asc(scheduleBlocksTable.startMinute), asc(scheduleBlocksTable.startHour))
 
     const blockEvents = blocks
       .filter(block => block.isActive === 1)

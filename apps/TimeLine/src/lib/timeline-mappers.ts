@@ -70,14 +70,16 @@ function daysForBlock(block: ScheduleBlockRow): number[] {
 export function mapScheduleBlockRow(block: ScheduleBlockRow, instructor?: string): ScheduleEvent {
   const daysOfWeek = daysForBlock(block)
   const isOverride = block.recurrence === 'one_time'
+  const startMinute = block.startMinute ?? block.startHour * 60
+  const endMinute = block.endMinute ?? block.endHour * 60
 
   return {
     id: block.id,
     roomId: block.roomId,
     title: block.title,
     type: toBlockEventType(block.type),
-    startTime: `${String(block.startHour).padStart(2, '0')}:00`,
-    endTime: `${String(block.endHour).padStart(2, '0')}:00`,
+    startTime: minutesToTime(startMinute),
+    endTime: minutesToTime(endMinute),
     dayOfWeek: daysOfWeek[0] ?? 0,
     daysOfWeek,
     date: isOverride ? block.specificDate ?? block.validFrom : undefined,
@@ -87,6 +89,12 @@ export function mapScheduleBlockRow(block: ScheduleBlockRow, instructor?: string
     validFrom: isOverride ? undefined : block.validFrom,
     validUntil: isOverride ? undefined : block.validUntil ?? undefined,
   }
+}
+
+function minutesToTime(minutes: number): string {
+  const hours = Math.floor(minutes / 60)
+  const mins = minutes % 60
+  return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`
 }
 
 export function mapDeviceAssignmentRow(device: DeviceAssignmentRow, roomName: string): Device {

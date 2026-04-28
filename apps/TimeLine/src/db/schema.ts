@@ -94,6 +94,8 @@ export const scheduleBlocksTable = sqliteTable('schedule_blocks', {
   organizer: text('organizer'),
   startHour: integer('start_hour').notNull(),
   endHour: integer('end_hour').notNull(),
+  startMinute: integer('start_minute'),
+  endMinute: integer('end_minute'),
   recurrence: text('recurrence').notNull().default('one_time'),
   specificDate: text('specific_date'),
   daysOfWeek: text('days_of_week'),

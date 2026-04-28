@@ -983,6 +983,16 @@ export async function joinEvent(eventId: string, userId: string) {
     .run()
 }
 
+export async function isUserJoinedEvent(eventId: string, userId: string) {
+  const db = getTomDb()
+  const row = await db
+    .prepare('SELECT id FROM event_participants WHERE event_id = ? AND user_id = ? LIMIT 1')
+    .bind(eventId, userId)
+    .first<{ id: string }>()
+
+  return Boolean(row?.id)
+}
+
 export async function leaveEvent(eventId: string, userId: string) {
   const db = getTomDb()
   await db
@@ -1125,6 +1135,64 @@ export async function checkAndAwardBadges(userId: string): Promise<UserBadge[]> 
   return awarded
 }
 
+export async function listUserBadges(userId: string): Promise<Array<UserBadge & { badge: Badge }>> {
+  const db = getTomDb()
+  const result = await db
+    .prepare(
+      `SELECT ub.id,
+              ub.user_id,
+              ub.badge_id,
+              ub.awarded_at,
+              b.id AS b_id,
+              b.name AS b_name,
+              b.description AS b_description,
+              b.icon AS b_icon,
+              b.xp_threshold AS b_xp_threshold,
+              b.event_count_threshold AS b_event_count_threshold,
+              b.club_count_threshold AS b_club_count_threshold,
+              b.created_at AS b_created_at,
+              b.updated_at AS b_updated_at
+       FROM user_badges ub
+       JOIN badges b ON b.id = ub.badge_id
+       WHERE ub.user_id = ?
+       ORDER BY ub.awarded_at DESC`
+    )
+    .bind(userId)
+    .all<{
+      id: string
+      user_id: string
+      badge_id: string
+      awarded_at: string
+      b_id: string
+      b_name: string
+      b_description: string
+      b_icon: string
+      b_xp_threshold: number
+      b_event_count_threshold: number
+      b_club_count_threshold: number
+      b_created_at: string
+      b_updated_at: string
+    }>()
+
+  return result.results.map((row) => ({
+    id: row.id,
+    userId: row.user_id,
+    badgeId: row.badge_id,
+    awardedAt: row.awarded_at,
+    badge: {
+      id: row.b_id,
+      name: row.b_name,
+      description: row.b_description,
+      icon: row.b_icon,
+      xpThreshold: row.b_xp_threshold,
+      eventCountThreshold: row.b_event_count_threshold,
+      clubCountThreshold: row.b_club_count_threshold,
+      createdAt: row.b_created_at,
+      updatedAt: row.b_updated_at,
+    },
+  }))
+}
+
 export async function grantXp(userId: string, amount: number, reason: string, source: XpSource): Promise<XpLog> {
   const db = getTomDb()
   const id = crypto.randomUUID()
@@ -1255,4 +1323,17 @@ export async function seedTomDatabase({ reset = false }: { reset?: boolean } = {
     requests: initialRequests.length + initialSpamQueue.length,
     users: initialManagedUsers.length,
   }
+}
+
+export async function ensureTomUsersSeeded() {
+  const db = getTomDb()
+  const countRow = await db.prepare('SELECT COUNT(*) AS count FROM users').first<{ count: number }>()
+  const count = countRow?.count ?? 0
+
+  if (count === 0) {
+    await seedTomDatabase()
+    return { seeded: true }
+  }
+
+  return { seeded: false }
 }

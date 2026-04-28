@@ -13,7 +13,7 @@
       "binding": "TOM_DB",
       "database_name": "tom-db",
       "database_id": "d3a7cafe-bb00-411f-ae44-021c2b7a154d",
-      "preview_database_id": "TOM_DB",
+      "preview_database_id": "d3a7cafe-bb00-411f-ae44-021c2b7a154d",
       "migrations_dir": "migrations"
     }
   ]

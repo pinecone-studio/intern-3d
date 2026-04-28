@@ -1,14 +1,18 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useRole } from '@/lib/role-context'
 import { Badge } from '@/components/ui/badge'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Button } from '@/components/ui/button'
-import { SidebarTrigger } from '@/components/ui/sidebar'
 import { Monitor, LogOut, Orbit } from 'lucide-react'
+import type { User } from '@/lib/types'
+
+type UsersResponse = {
+  users: User[]
+}
 
 type ClockDisplay = {
   formattedDate: string
@@ -26,8 +30,11 @@ const createClockDisplay = (date: Date): ClockDisplay => ({
 
 export function DashboardTopbar() {
   const router = useRouter()
-  const { role, user, logout } = useRole()
+  const { role, user, logout, loginAs } = useRole()
   const [clockDisplay, setClockDisplay] = useState<ClockDisplay | null>(null)
+  const [users, setUsers] = useState<User[]>([])
+  const [loadingUsers, setLoadingUsers] = useState(true)
+  const [switchingUserId, setSwitchingUserId] = useState<string | null>(null)
 
   useEffect(() => {
     setClockDisplay(createClockDisplay(new Date()))
@@ -38,6 +45,29 @@ export function DashboardTopbar() {
     return () => window.clearInterval(intervalId)
   }, [])
 
+  useEffect(() => {
+    let active = true
+
+    const loadUsers = async () => {
+      setLoadingUsers(true)
+      try {
+        const response = await fetch('/api/users', { cache: 'no-store' })
+        const data = (await response.json().catch(() => ({ users: [] }))) as UsersResponse
+        if (!active) return
+        setUsers(response.ok ? (data.users ?? []) : [])
+      } finally {
+        if (active) {
+          setLoadingUsers(false)
+        }
+      }
+    }
+
+    void loadUsers()
+    return () => {
+      active = false
+    }
+  }, [])
+
   const formattedDate = clockDisplay?.formattedDate ?? '--/--/----'
   const formattedTime = clockDisplay?.formattedTime ?? '--:--'
 
@@ -46,12 +76,26 @@ export function DashboardTopbar() {
     router.push('/')
   }
 
+  const handleSwitchUser = async (userId: string) => {
+    if (!userId || userId === user?.id) return
+    setSwitchingUserId(userId)
+    try {
+      await loginAs(userId)
+    } finally {
+      setSwitchingUserId(null)
+    }
+  }
+
+  const userOptions = useMemo(
+    () => users.map((entry) => ({ id: entry.id, label: `${entry.name} (${entry.role === 'admin' ? 'Админ' : 'Сурагч'})` })),
+    [users],
+  )
+
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-background">
       <div className="mx-auto flex max-w-[1800px] flex-col gap-3 px-4 py-3 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <div className="flex items-center gap-3">
-            <SidebarTrigger className="md:inline-flex" />
             <Link href="/dashboard" className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-muted text-foreground">
                 <Orbit className="h-5 w-5" />
@@ -84,17 +128,23 @@ export function DashboardTopbar() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <ThemeToggle />
-          <Badge
-            variant="outline"
-            className={`rounded-md px-2 py-1 ${
-              role === 'admin'
-                ? 'text-foreground'
-                : 'text-muted-foreground'
-            }`}
+          <select
+            className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
+            value={user?.id ?? ''}
+            onChange={event => void handleSwitchUser(event.target.value)}
+            disabled={loadingUsers || switchingUserId != null}
+            aria-label="Хэрэглэгч сонгох"
           >
-            {role === 'admin' ? 'Админ горим' : 'Сурагч горим'}
-          </Badge>
+            <option value="" disabled>
+              {loadingUsers ? 'Хэрэглэгчид ачаалж байна...' : 'Хэрэглэгч сонгох'}
+            </option>
+            {userOptions.map(option => (
+              <option key={option.id} value={option.id}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <ThemeToggle />
           <Button variant="ghost" size="sm" className="rounded-md" onClick={() => void handleLogout()}>
             <LogOut className="h-4 w-4" />
             <span>Гарах</span>
