@@ -2,14 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bell, CalendarDays, GraduationCap, LogOut, Users } from 'lucide-react';
+import { Bell, CalendarDays, GraduationCap, LogOut, Sparkles, Users } from 'lucide-react';
 
 import { useTomSession } from '@/app/_providers/tom-session-provider';
 
 const navItems = [
+  { href: '/students', label: 'Home', icon: Bell },
   { href: '/students/clubs', label: 'Клубүүд', icon: Users },
-  { href: '/students/events', label: 'Дараагийн уулзалт', icon: CalendarDays },
-  { href: '/students', label: 'Мэдэгдэл', icon: Bell },
+  { href: '/students/events', label: 'Events', icon: CalendarDays },
+  { href: '/students/gamification', label: 'XP & Badge', icon: Sparkles },
 ] as const;
 
 function normalizePathname(pathname: string) {

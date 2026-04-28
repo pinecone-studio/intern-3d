@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { Plus, X } from 'lucide-react';
 
 import { CapacityBar } from '@/app/_components';
@@ -67,6 +67,8 @@ async function apiRequest<T>(input: string, init?: RequestInit) {
 
 type MembershipResponse = {
   joinedClubIds: string[];
+  awardedBadges?: Array<{ badge: { icon: string; name: string } }>;
+  gainedXp?: number;
 };
 
 export default function ClubsPage() {
@@ -80,6 +82,11 @@ export default function ClubsPage() {
   const [pendingClubId, setPendingClubId] = useState('');
   const [banner, setBanner] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [dayFilter, setDayFilter] = useState('all');
+  const [gradeFilter, setGradeFilter] = useState('all');
+  const deferredSearch = useDeferredValue(searchQuery);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogError, setDialogError] = useState('');
@@ -145,7 +152,48 @@ export default function ClubsPage() {
     [clubs, joinedSet]
   );
 
-  const displayedClubs = activeTab === 'mine' ? myClubs : otherClubs;
+  const allCategories = useMemo(
+    () => Array.from(new Set(clubs.map((club) => club.category).filter(Boolean))).sort((left, right) => left.localeCompare(right)),
+    [clubs]
+  );
+  const allDays = useMemo(
+    () => Array.from(new Set(clubs.map((club) => club.allowedDays).filter(Boolean))).sort((left, right) => left.localeCompare(right)),
+    [clubs]
+  );
+  const allGrades = useMemo(
+    () => Array.from(new Set(clubs.map((club) => club.gradeRange).filter(Boolean))).sort((left, right) => left.localeCompare(right)),
+    [clubs]
+  );
+
+  const filteredMyClubs = useMemo(() => {
+    return myClubs.filter((club) => {
+      if (categoryFilter !== 'all' && club.category !== categoryFilter) return false;
+      if (dayFilter !== 'all' && club.allowedDays !== dayFilter) return false;
+      if (gradeFilter !== 'all' && club.gradeRange !== gradeFilter) return false;
+      if (deferredSearch.trim()) {
+        const query = deferredSearch.trim().toLowerCase();
+        const haystack = `${club.name} ${club.teacherName} ${club.note} ${club.category} ${club.allowedDays} ${club.gradeRange}`.toLowerCase();
+        if (!haystack.includes(query)) return false;
+      }
+      return true;
+    });
+  }, [myClubs, categoryFilter, dayFilter, gradeFilter, deferredSearch]);
+
+  const filteredOtherClubs = useMemo(() => {
+    return otherClubs.filter((club) => {
+      if (categoryFilter !== 'all' && club.category !== categoryFilter) return false;
+      if (dayFilter !== 'all' && club.allowedDays !== dayFilter) return false;
+      if (gradeFilter !== 'all' && club.gradeRange !== gradeFilter) return false;
+      if (deferredSearch.trim()) {
+        const query = deferredSearch.trim().toLowerCase();
+        const haystack = `${club.name} ${club.teacherName} ${club.note} ${club.category} ${club.allowedDays} ${club.gradeRange}`.toLowerCase();
+        if (!haystack.includes(query)) return false;
+      }
+      return true;
+    });
+  }, [otherClubs, categoryFilter, dayFilter, gradeFilter, deferredSearch]);
+
+  const displayedClubs = activeTab === 'mine' ? filteredMyClubs : filteredOtherClubs;
 
   const openDialog = () => {
     setDialogError('');
@@ -187,7 +235,10 @@ export default function ClubsPage() {
       });
       setJoinedClubIds(data.joinedClubIds);
       updateClubMemberCount(clubId, 1);
-      setBanner('Клубт амжилттай нэгдлээ.');
+      const badgeMessage = data.awardedBadges?.length
+        ? ` Шинэ badge: ${data.awardedBadges.map((item) => `${item.badge.icon} ${item.badge.name}`).join(', ')}`
+        : '';
+      setBanner(`Клубт амжилттай нэгдлээ. +${data.gainedXp ?? 0} XP.${badgeMessage}`);
     } catch (error) {
       setErrorMessage(getErrorMessage(error, 'Клубт нэгдэж чадсангүй.'));
     } finally {
@@ -301,6 +352,45 @@ export default function ClubsPage() {
             {tab.label}
           </button>
         ))}
+      </div>
+
+      <div className="mt-4 grid gap-3 md:grid-cols-4">
+        <input
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder="Клуб хайх"
+          className="rounded-xl border border-[#e2eaf5] bg-white px-4 py-2.5 text-sm text-[#4b6284] outline-none transition focus:border-[#b8cef0]"
+        />
+        <select
+          value={categoryFilter}
+          onChange={(event) => setCategoryFilter(event.target.value)}
+          className="rounded-xl border border-[#e2eaf5] bg-white px-4 py-2.5 text-sm text-[#4b6284] outline-none"
+        >
+          <option value="all">Бүх category</option>
+          {allCategories.map((category) => (
+            <option key={category} value={category}>{category}</option>
+          ))}
+        </select>
+        <select
+          value={dayFilter}
+          onChange={(event) => setDayFilter(event.target.value)}
+          className="rounded-xl border border-[#e2eaf5] bg-white px-4 py-2.5 text-sm text-[#4b6284] outline-none"
+        >
+          <option value="all">Бүх өдөр</option>
+          {allDays.map((day) => (
+            <option key={day} value={day}>{day}</option>
+          ))}
+        </select>
+        <select
+          value={gradeFilter}
+          onChange={(event) => setGradeFilter(event.target.value)}
+          className="rounded-xl border border-[#e2eaf5] bg-white px-4 py-2.5 text-sm text-[#4b6284] outline-none"
+        >
+          <option value="all">Бүх анги</option>
+          {allGrades.map((grade) => (
+            <option key={grade} value={grade}>{grade}</option>
+          ))}
+        </select>
       </div>
 
       {isLoading ? (

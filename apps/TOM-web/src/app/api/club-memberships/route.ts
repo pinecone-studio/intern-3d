@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 
 import { getCurrentUserFromRequest } from '@/lib/tom-auth'
-import { getClub, joinClub, leaveClub, listClubMembershipsForUser } from '@/lib/tom-db'
+import { checkAndAwardBadges, getClub, grantXp, joinClub, leaveClub, listClubMembershipsForUser } from '@/lib/tom-db'
 import { badRequest, forbidden, notFound, ok, serverError, unauthorized } from '@/lib/tom-http'
 import { parseClubMembershipInput } from '@/lib/tom-validators'
 
@@ -39,11 +39,15 @@ export async function POST(request: NextRequest) {
     }
 
     const membership = await joinClub(input.clubId, currentUser.id)
+    await grantXp(currentUser.id, 15, `${club.name} клубт нэгдэв`, 'club')
+    const awardedBadges = await checkAndAwardBadges(currentUser.id)
     const memberships = await listClubMembershipsForUser(currentUser.id)
 
     return ok({
       membership,
       joinedClubIds: memberships.map((entry) => entry.clubId),
+      awardedBadges,
+      gainedXp: 15,
     })
   } catch (error) {
     return serverError('Failed to join club.', String(error))
