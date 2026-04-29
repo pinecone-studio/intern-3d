@@ -21,7 +21,7 @@ export function DeviceCard({ device, isUserDevice }: DeviceCardProps) {
         'rounded-md border-border p-3 shadow-none',
         isUserDevice && 'bg-muted'
       )}
-    >
+    >///
       <div className="flex items-start gap-3">
         <div className={cn(
           'flex h-10 w-10 items-center justify-center rounded-md border border-border bg-background text-muted-foreground'
@@ -54,6 +54,6 @@ export function DeviceCard({ device, isUserDevice }: DeviceCardProps) {
           </div>
         </div>
       </div>
-    </Card>////////
+    </Card>
   )
 }
