@@ -121,9 +121,9 @@ export function DashboardTopbar() {
             <Badge variant="outline" className="text-xs font-mono">
               {formattedTime}
             </Badge>
-            <span className="text-sm text-muted-foreground">
+            {/* <span className="text-sm text-muted-foreground">
               {formattedDate}
-            </span>
+            </span> */}
           </div>
         </div>
 
