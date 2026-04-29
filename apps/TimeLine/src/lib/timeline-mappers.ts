@@ -110,10 +110,11 @@ export function mapDeviceAssignmentRow(device: DeviceAssignmentRow, roomName: st
 
 export function mapRoomRow(room: RoomRow, events: ScheduleEvent[], devices: Device[], now = new Date()): Room {
   const currentEvent = getCurrentEvent(events, now)
+  const displayName = room.name === 'Event hall' && room.floor === 4 ? 'Event hall 4' : room.name
 
   return {
     id: room.id,
-    number: room.name,
+    number: displayName,
     floor: room.floor as Room['floor'],
     type: (room.type === 'event_hall' ? 'event-hall' : room.type) as Room['type'],
     status: getRoomStatusFromEvent(currentEvent),

@@ -68,7 +68,7 @@ export function DashboardTopbar() {
     }
   }, [])
 
-  const formattedDate = clockDisplay?.formattedDate ?? '--/--/----'
+  
   const formattedTime = clockDisplay?.formattedTime ?? '--:--'
 
   const handleLogout = async () => {
