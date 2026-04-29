@@ -123,6 +123,12 @@ select {
   transform: translateY(-1px);
 }
 
+.landing-button:focus-visible,
+.landing-nav a:focus-visible {
+  outline: 3px solid rgba(255, 228, 184, 0.92);
+  outline-offset: 4px;
+}
+
 .reveal {
   opacity: 0;
   transition:
