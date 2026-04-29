@@ -54,6 +54,6 @@ export function DeviceCard({ device, isUserDevice }: DeviceCardProps) {
           </div>
         </div>
       </div>
-    </Card>////////
+    </Card>
   )
 }
