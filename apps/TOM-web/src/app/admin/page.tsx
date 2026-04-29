@@ -36,37 +36,32 @@ const monthLabels = [
 ];
 
 const fieldClass =
-  'w-full rounded-[18px] border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-3 text-sm text-[color:var(--text)] outline-none transition placeholder:text-[#8aa0be] focus:border-[color:var(--primary)] focus:bg-white focus:ring-4 focus:ring-[color:var(--primary-soft)]';
+  'w-full rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] px-3 py-2 text-sm text-[color:var(--text)] outline-none transition placeholder:text-[#8aa0be] focus:border-[color:var(--primary)] focus:bg-white focus:ring-2 focus:ring-[color:var(--primary-soft)]';
 
 const panelClass =
-  'rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft backdrop-blur';
+  'rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)] p-4 shadow-sm backdrop-blur';
 
-const inputLabelClass = 'mb-2 block text-sm font-semibold text-[#5f7697]';
+const inputLabelClass = 'mb-1.5 block text-xs font-semibold text-[#5f7697]';
 
 export function AdminDashboardContent({
   activeSection,
 }: {
   activeSection: AdminSection | null;
 }) {
-  const {
-    options,
-    isLoading: isOptionsLoading,
-    errorMessage: optionsErrorMessage,
-  } = useTomOptions();
+  const { options } = useTomOptions();
   const {
     activeClubs,
     activeCount,
     approveRequest,
-    banner,
-    errorMessage,
+    canCreateEvent,
     events,
     eventForm,
+    eventFormError,
     handleCancelEvent,
     handleCreateEvent,
     handleCreateUser,
     handleDeleteEvent,
     handleToggleEventStatus,
-    isLoading,
     isSaving,
     pendingRequests,
     rejectRequest,
@@ -202,89 +197,43 @@ export function AdminDashboardContent({
       <div className="relative mx-auto max-w-[1440px] ">
         {!activeSection ? (
           <>
-            <section className="dashboard-entrance dashboard-entrance-delay-1 mt-6">
-              <div
-                className={`rounded-[28px] border px-5 py-4 shadow-soft ${
-                  errorMessage
-                    ? 'border-[#ffd2d5] bg-[#fff7f8] text-[#b23a49]'
-                    : 'border-[color:var(--border)] bg-white/85 text-[#56708f]'
-                }`}
-              >
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em]">
-                  {errorMessage
-                    ? 'Синхрончлолын алдаа'
-                    : isLoading
-                    ? 'Шууд өгөгдөл ачаалж байна'
-                    : isSaving
-                    ? 'Өөрчлөлт хадгалж байна'
-                    : 'Шууд синхрон'}
-                </p>
-                <p className="mt-1 text-sm">
-                {optionsErrorMessage ||
-                  errorMessage ||
-                  (isLoading
-                    ? 'Cloudflare D1 дээрх сонголт, өгөгдлийг админ самбар руу ачаалж байна.'
-                    : isOptionsLoading
-                    ? 'Cloudflare D1 дээрх өгөгдлийг админ самбар руу ачаалж байна.'
-                    : isSaving
-                      ? 'Сүүлд хийсэн өөрчлөлтийг API-аар хадгалж байна.'
-                      : banner)}
-                </p>
-              </div>
-              <span className="inline-flex items-center gap-2 rounded-full bg-[color:var(--primary-soft)] px-3 py-1.5 text-xs font-semibold text-[#4f6b8d]">
-                <span
-                  className={`h-2.5 w-2.5 rounded-full ${
-                    errorMessage
-                      ? 'bg-[#ff6b77]'
-                      : isLoading || isSaving
-                      ? 'bg-[#f2b84b]'
-                      : 'bg-emerald-400'
-                  }`}
-                />
-                {errorMessage ? 'Анхаарал шаардлагатай' : 'Холбогдсон'}
-              </span>
-            </div>
-          </div>
-            </section>
-
-            <section className="dashboard-entrance dashboard-entrance-delay-2 mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <section className="dashboard-entrance dashboard-entrance-delay-2 grid gap-3 md:grid-cols-3">
           {summaryCards.map((card) => {
             const Icon = card.icon;
 
             return (
               <article
                 key={card.label}
-                className={`${panelClass} relative min-h-[168px] overflow-hidden`}
+                className={`${panelClass} relative min-h-[96px] overflow-hidden`}
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div
-                    className={`flex h-12 w-12 items-center justify-center rounded-2xl ${card.tint} text-white shadow-[0_14px_28px_rgba(91,137,227,0.18)]`}
-                  >
-                    <Icon className="h-5 w-5" />
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${card.tint} text-white shadow-sm`}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-2xl font-semibold tracking-tight text-[#183153]">
+                        {card.value}
+                      </p>
+                      <p className="truncate text-xs text-[#6a819f]">{card.label}</p>
+                    </div>
                   </div>
                   <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${card.badge}`}
+                    className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${card.badge}`}
                   >
                     {card.delta}
                   </span>
-                </div>
-
-                <div className="mt-8">
-                  <p className="text-3xl font-semibold tracking-tight text-[#183153]">
-                    {card.value}
-                  </p>
-                  <p className="mt-2 text-sm text-[#6a819f]">{card.label}</p>
                 </div>
               </article>
             );
           })}
             </section>
 
-            <section className="dashboard-entrance dashboard-entrance-delay-3 mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.95fr)_minmax(340px,0.9fr)]">
-          <article className={`${panelClass} min-h-[430px]`}>
-            <div className="flex flex-wrap items-start justify-between gap-4">
+            <section className="dashboard-entrance dashboard-entrance-delay-3 mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.8fr)_minmax(280px,0.75fr)]">
+          <article className={panelClass}>
+            <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2 text-[color:var(--primary)]">
                   <ChartColumnIncreasing className="h-4 w-4" />
@@ -292,18 +241,18 @@ export function AdminDashboardContent({
                     Платформын идэвхжил
                   </p>
                 </div>
-                <p className="mt-2 text-sm text-[#6c829f]">
+                <p className="mt-1 text-xs text-[#6c829f]">
                   Сүүлийн 12 сарын клуб батлах, идэвхжил, хяналтын үзүүлэлтүүд.
                 </p>
               </div>
-              <span className="inline-flex items-center rounded-full bg-[color:var(--primary-soft)] px-4 py-2 text-sm font-semibold text-[#365f91]">
+              <span className="inline-flex items-center rounded-full bg-[color:var(--primary-soft)] px-3 py-1.5 text-xs font-semibold text-[#365f91]">
                 Last 12 months
               </span>
             </div>
 
-            <div className="mt-6 h-[300px] rounded-[20px] border border-[color:var(--border)] bg-white px-4 py-3">
-              <div className="relative h-[240px]">
-                <div className="absolute inset-0 rounded-[14px] bg-[linear-gradient(180deg,_rgba(245,249,255,0.72),_rgba(255,255,255,0.92))]" />
+            <div className="mt-4 h-[190px] rounded-xl border border-[color:var(--border)] bg-white px-3 py-2.5">
+              <div className="relative h-[145px]">
+                <div className="absolute inset-0 rounded-xl bg-[linear-gradient(180deg,_rgba(245,249,255,0.72),_rgba(255,255,255,0.92))]" />
                 <div className="absolute inset-0">
                   {[20, 40, 60, 80].map((line) => (
                     <div
@@ -340,7 +289,7 @@ export function AdminDashboardContent({
                   })}
                 </svg>
               </div>
-              <div className="mt-3 grid grid-cols-6 gap-y-1 text-[11px] text-[#7389a8] sm:grid-cols-12">
+              <div className="mt-2 grid grid-cols-6 gap-y-1 text-[10px] text-[#7389a8] sm:grid-cols-12">
                 {monthLabels.map((month) => (
                   <span key={month} className="truncate text-center">{month}</span>
                 ))}
@@ -351,20 +300,20 @@ export function AdminDashboardContent({
           <article className={panelClass}>
             <div className="flex items-center gap-2">
               <Trophy className="h-4 w-4 text-[color:var(--primary)]" />
-              <p className="text-lg font-semibold text-[#183153]">
+              <p className="text-base font-semibold text-[#183153]">
                 Тэргүүлэгчид
               </p>
             </div>
 
-            <div className="mt-5 space-y-4">
+            <div className="mt-3 space-y-2.5">
               {spotlightUsers.map((user, index) => (
                 <div
                   key={user.id}
-                  className="flex items-center justify-between gap-4 rounded-[24px] bg-[color:var(--surface)] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
+                  className="flex items-center justify-between gap-3 rounded-xl bg-[color:var(--surface)] px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
                 >
-                  <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex min-w-0 items-center gap-2.5">
                     <div
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
                         index === 0
                           ? 'bg-[#f5bf50] text-[#6b4a00]'
                           : index === 1
@@ -377,7 +326,7 @@ export function AdminDashboardContent({
                       {user.rank}
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate font-semibold text-[#183153]">
+                      <p className="truncate text-sm font-semibold text-[#183153]">
                         {user.name}
                       </p>
                       <p className="truncate text-xs text-[#6983a4]">
@@ -392,7 +341,7 @@ export function AdminDashboardContent({
                   </div>
 
                   <div className="text-right">
-                    <p className="text-base font-semibold text-[color:var(--primary)]">
+                    <p className="text-sm font-semibold text-[color:var(--primary)]">
                       {user.points.toLocaleString()}
                     </p>
                     <p className="text-xs text-[#8195af]">
@@ -405,27 +354,27 @@ export function AdminDashboardContent({
           </article>
             </section>
 
-            <section className="dashboard-entrance dashboard-entrance-delay-4 mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+            <section className="dashboard-entrance dashboard-entrance-delay-4 mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
               <article className={panelClass}>
-                <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2">
                       <ChartColumnIncreasing className="h-4 w-4 text-[color:var(--primary)]" />
-                      <p className="text-lg font-semibold text-[#183153]">
+                      <p className="text-base font-semibold text-[#183153]">
                         Аналитикийн тойм
                       </p>
                     </div>
-                    <p className="mt-2 text-sm text-[#6c829f]">
+                    <p className="mt-1 text-xs text-[#6c829f]">
                       Хэрэглэгч, клуб, хүсэлт, арга хэмжээний мэдээлэл одоо админ
                       самбар дээр нэг дор харагдана.
                     </p>
                   </div>
-                  <span className="rounded-full bg-[color:var(--primary-soft)] px-4 py-2 text-sm font-semibold text-[#365f91]">
+                  <span className="rounded-full bg-[color:var(--primary-soft)] px-3 py-1.5 text-xs font-semibold text-[#365f91]">
                     Шууд өгөгдөл
                   </span>
                 </div>
 
-                <div className="mt-6 space-y-5">
+                <div className="mt-4 space-y-3">
                   {analyticsBars.map(([label, value]) => (
                     <div key={label}>
                       <div className="mb-2 flex items-center justify-between text-sm">
@@ -434,7 +383,7 @@ export function AdminDashboardContent({
                         </span>
                         <span className="text-[#6c829f]">{value}</span>
                       </div>
-                      <div className="h-3 overflow-hidden rounded-full bg-[color:var(--surface)]">
+                      <div className="h-2 overflow-hidden rounded-full bg-[color:var(--surface)]">
                         <div
                           className="h-full rounded-full bg-[color:var(--primary)]"
                           style={{
@@ -453,12 +402,12 @@ export function AdminDashboardContent({
               <article className={panelClass}>
                 <div className="flex items-center gap-2">
                   <CalendarDays className="h-4 w-4 text-[color:var(--primary)]" />
-                  <p className="text-lg font-semibold text-[#183153]">
+                  <p className="text-base font-semibold text-[#183153]">
                     Үндсэн үзүүлэлтүүд
                   </p>
                 </div>
 
-                <div className="mt-5 grid gap-3">
+                <div className="mt-3 grid gap-2">
                   {[
                     ['Багш', teacherCount],
                     ['Идэвхтэй клуб', activeClubStatusCount],
@@ -470,7 +419,7 @@ export function AdminDashboardContent({
                   ].map(([label, value]) => (
                     <div
                       key={label}
-                      className="flex items-center justify-between rounded-2xl bg-[color:var(--surface)] px-4 py-3"
+                      className="flex items-center justify-between rounded-xl bg-[color:var(--surface)] px-3 py-2"
                     >
                       <span className="text-sm font-medium text-[#5f7697]">
                         {label}
@@ -1094,6 +1043,7 @@ export function AdminDashboardContent({
                     <span className={inputLabelClass}>Арга хэмжээний гарчиг</span>
                     <input
                       type="text"
+                      required
                       value={eventForm.title}
                       onChange={(e) =>
                         updateEventField('title', e.target.value)
@@ -1107,6 +1057,7 @@ export function AdminDashboardContent({
                     <span className={inputLabelClass}>Огноо</span>
                     <input
                       type="date"
+                      required
                       value={eventForm.eventDate}
                       onChange={(e) =>
                         updateEventField('eventDate', e.target.value)
@@ -1167,12 +1118,16 @@ export function AdminDashboardContent({
                   </label>
                 </div>
 
+                {eventFormError ? (
+                  <div className="mt-4 rounded-2xl border border-[#ffd2d5] bg-[#fff7f8] px-4 py-3 text-sm font-semibold text-[#b23a49]">
+                    {eventFormError}
+                  </div>
+                ) : null}
+
                 <div className="mt-5 flex flex-wrap items-center gap-3">
                   <button
                     type="submit"
-                    disabled={
-                      isSaving || !eventForm.title || !eventForm.eventDate
-                    }
+                    disabled={!canCreateEvent}
                     className="rounded-full bg-[color:var(--primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(79,114,213,0.22)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-[#b5d0f3]"
                   >
                     Арга хэмжээ үүсгээд автоматаар нэмэх

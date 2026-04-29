@@ -1,9 +1,5 @@
-import {
-  initialActiveClubs,
-  initialManagedUsers,
-  initialRequests,
-} from '@/app/admin/admin-data'
 import { getTomDb } from '@/lib/d1'
+import { seedActiveClubs, seedClubRequests, seedManagedUsers } from '@/lib/tom-seed-data'
 import type {
   Badge,
   BadgeInput,
@@ -1540,7 +1536,7 @@ export async function seedTomDatabase({ reset = false }: { reset?: boolean } = {
     await db.prepare('DELETE FROM users').run()
   }
 
-  for (const request of initialRequests) {
+  for (const request of seedClubRequests) {
     await upsertClubRequest({
       clubName: request.clubName,
       teacherName: request.teacher,
@@ -1558,7 +1554,7 @@ export async function seedTomDatabase({ reset = false }: { reset?: boolean } = {
     }, request.id)
   }
 
-  for (const club of initialActiveClubs) {
+  for (const club of seedActiveClubs) {
     await upsertClub({
       name: club.clubName,
       teacherName: club.teacher,
@@ -1578,7 +1574,7 @@ export async function seedTomDatabase({ reset = false }: { reset?: boolean } = {
     }, club.id)
   }
 
-  for (const user of initialManagedUsers) {
+  for (const user of seedManagedUsers) {
     await upsertUser({
       name: user.name,
       email: user.email,
@@ -1594,9 +1590,9 @@ export async function seedTomDatabase({ reset = false }: { reset?: boolean } = {
 
   return {
     ok: true,
-    clubs: initialActiveClubs.length,
-    requests: initialRequests.length,
-    users: initialManagedUsers.length,
+    clubs: seedActiveClubs.length,
+    requests: seedClubRequests.length,
+    users: seedManagedUsers.length,
   }
 }
 

@@ -1,3 +1,6 @@
+import type { NextRequest } from 'next/server'
+
+import { requireApiUser } from '@/lib/tom-api-auth'
 import { deleteEvent, getEvent, upsertEvent } from '@/lib/tom-db'
 import { notFound, ok, serverError } from '@/lib/tom-http'
 import type { EventStatus } from '@/lib/tom-types'
@@ -16,8 +19,11 @@ export async function GET(_req: Request, { params }: Params) {
   }
 }
 
-export async function PATCH(request: Request, { params }: Params) {
+export async function PATCH(request: NextRequest, { params }: Params) {
   try {
+    const auth = await requireApiUser(request, ['admin', 'teacher'], { activeOnly: true })
+    if (auth.response) return auth.response
+
     const { eventId } = await params
     const current = await getEvent(eventId)
     if (!current) return notFound('Event олдсонгүй.')
@@ -50,8 +56,11 @@ export async function PATCH(request: Request, { params }: Params) {
   }
 }
 
-export async function DELETE(_req: Request, { params }: Params) {
+export async function DELETE(request: NextRequest, { params }: Params) {
   try {
+    const auth = await requireApiUser(request, ['admin', 'teacher'], { activeOnly: true })
+    if (auth.response) return auth.response
+
     const { eventId } = await params
     const deleted = await deleteEvent(eventId)
     if (!deleted) return notFound('Event олдсонгүй.')

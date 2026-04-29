@@ -1,10 +1,16 @@
+import type { NextRequest } from 'next/server'
+
+import { requireAdmin } from '@/lib/tom-api-auth'
 import { badRequest, ok, serverError } from '@/lib/tom-http'
 import { listClubRequests, upsertClubRequest } from '@/lib/tom-db'
 import { parseClubRequestInput } from '@/lib/tom-validators'
 
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAdmin(request)
+    if (auth.response) return auth.response
+
     const { searchParams } = new URL(request.url)
     const requests = await listClubRequests({
       requestStatus: searchParams.get('requestStatus'),

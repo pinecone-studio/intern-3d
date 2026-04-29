@@ -193,6 +193,7 @@ export function useAdminDashboard(options: TomFormOptions) {
   const [summary, setSummary] = useState<DashboardSummary>(emptySummary);
   const [banner, setBanner] = useState(defaultBanner);
   const [errorMessage, setErrorMessage] = useState('');
+  const [eventFormError, setEventFormError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -491,13 +492,23 @@ export function useAdminDashboard(options: TomFormOptions) {
   };
 
   const updateEventField = (field: keyof EventForm, value: string) => {
+    setEventFormError('');
     setEventForm((current) => ({ ...current, [field]: value }));
   };
 
-  const resetEventForm = () => setEventForm(initialEventForm);
+  const resetEventForm = () => {
+    setEventForm(initialEventForm);
+    setEventFormError('');
+  };
 
   const handleCreateEvent = async () => {
-    const title = eventForm.title.trim() || 'Нэргүй арга хэмжээ';
+    const title = eventForm.title.trim();
+    const eventDate = eventForm.eventDate.trim();
+
+    if (!title || !eventDate) {
+      setEventFormError('Гарчиг болон огноо заавал оруулна уу.');
+      return;
+    }
 
     await runMutation(async () => {
       await apiRequest<{ event: ApiEvent }>('/api/events', {
@@ -506,7 +517,7 @@ export function useAdminDashboard(options: TomFormOptions) {
           title,
           description: eventForm.description,
           location: eventForm.location,
-          eventDate: eventForm.eventDate,
+          eventDate,
           startTime: eventForm.startTime,
           endTime: eventForm.endTime,
           createdBy: 'Админ самбар',
@@ -570,6 +581,8 @@ export function useAdminDashboard(options: TomFormOptions) {
   );
   const activeCount = summary.activeClubs;
   const thresholdReachedCount = summary.thresholdReachedRequests;
+  const canCreateEvent =
+    Boolean(eventForm.title.trim()) && Boolean(eventForm.eventDate.trim()) && !isSaving;
 
   return {
     activeClubs,
@@ -579,6 +592,7 @@ export function useAdminDashboard(options: TomFormOptions) {
     errorMessage,
     events,
     eventForm,
+    eventFormError,
     form,
     handleCreate,
     handleCreateEvent,
@@ -596,6 +610,7 @@ export function useAdminDashboard(options: TomFormOptions) {
     summary,
     thresholdReachedCount,
     thresholdGoal,
+    canCreateEvent,
     resetForm,
     updateEventField,
     updateUserField,

@@ -1,3 +1,6 @@
+import type { NextRequest } from 'next/server'
+
+import { requireAdmin } from '@/lib/tom-api-auth'
 import { autoJoinAllUsers, listEvents, upsertEvent } from '@/lib/tom-db'
 import { badRequest, ok, serverError } from '@/lib/tom-http'
 
@@ -14,8 +17,11 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAdmin(request)
+    if (auth.response) return auth.response
+
     const body = (await request.json()) as Record<string, unknown>
 
     const title = typeof body.title === 'string' ? body.title.trim() : ''

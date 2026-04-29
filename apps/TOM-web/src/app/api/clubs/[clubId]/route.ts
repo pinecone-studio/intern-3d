@@ -1,3 +1,6 @@
+import type { NextRequest } from 'next/server'
+
+import { requireAdmin } from '@/lib/tom-api-auth'
 import { badRequest, notFound, ok, serverError } from '@/lib/tom-http'
 import { deleteClub, getClub, upsertClub } from '@/lib/tom-db'
 import { parseClubInput } from '@/lib/tom-validators'
@@ -15,8 +18,11 @@ export async function GET(_request: Request, context: { params: Promise<{ clubId
   }
 }
 
-export async function PATCH(request: Request, context: { params: Promise<{ clubId: string }> }) {
+export async function PATCH(request: NextRequest, context: { params: Promise<{ clubId: string }> }) {
   try {
+    const auth = await requireAdmin(request)
+    if (auth.response) return auth.response
+
     const { clubId } = await context.params
     const body = (await request.json().catch(() => ({}))) as Record<string, unknown>
     const current = await getClub(clubId)
@@ -32,8 +38,11 @@ export async function PATCH(request: Request, context: { params: Promise<{ clubI
   }
 }
 
-export async function DELETE(_request: Request, context: { params: Promise<{ clubId: string }> }) {
+export async function DELETE(request: NextRequest, context: { params: Promise<{ clubId: string }> }) {
   try {
+    const auth = await requireAdmin(request)
+    if (auth.response) return auth.response
+
     const { clubId } = await context.params
     const deleted = await deleteClub(clubId)
     if (!deleted) return notFound('Club not found.')

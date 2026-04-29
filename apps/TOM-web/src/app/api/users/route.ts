@@ -1,3 +1,6 @@
+import type { NextRequest } from 'next/server'
+
+import { requireAdmin } from '@/lib/tom-api-auth'
 import { badRequest, ok, serverError } from '@/lib/tom-http'
 import { ensureTomUsersSeeded, listUsers, upsertUser } from '@/lib/tom-db'
 import { parseUserInput } from '@/lib/tom-validators'
@@ -20,8 +23,11 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAdmin(request)
+    if (auth.response) return auth.response
+
     const body = (await request.json().catch(() => ({}))) as Record<string, unknown>
     const input = parseUserInput(body)
     if (!input) return badRequest('User name and email are required.')
