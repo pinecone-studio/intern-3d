@@ -65,7 +65,6 @@ export function DashboardTopbar() {
     }
   }, [])
 
-  const formattedDate = clockDisplay?.formattedDate ?? '--/--/----'
   const formattedTime = clockDisplay?.formattedTime ?? '--:--'
 
   const handleSwitchUser = async (userId: string) => {
@@ -114,7 +113,7 @@ export function DashboardTopbar() {
               {formattedTime}
             </Badge>
             <span className="text-sm text-muted-foreground">
-              {formattedDate}
+              {clockDisplay?.formattedDate ?? '--/--/----'}
             </span>
           </div>
         </div>
