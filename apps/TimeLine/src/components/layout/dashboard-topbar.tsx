@@ -65,7 +65,7 @@ export function DashboardTopbar() {
     }
   }, [])
 
-  
+  const formattedDate = clockDisplay?.formattedDate ?? '--/--/----'
   const formattedTime = clockDisplay?.formattedTime ?? '--:--'
 
   const handleSwitchUser = async (userId: string) => {
@@ -95,9 +95,6 @@ export function DashboardTopbar() {
               <div className="min-w-0">
                 <p className="text-sm font-semibold leading-none text-foreground">
                   Academic TimeLine
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Academy room scheduler
                 </p>
               </div>
             </Link>
