@@ -34,7 +34,8 @@ export function getMonthStart(date: Date): Date {
 
 function getCalendarGridStart(date: Date): Date {
   const monthStart = getMonthStart(date)
-  return addDays(monthStart, -monthStart.getDay())
+  const day = monthStart.getDay() === 0 ? 7 : monthStart.getDay()
+  return addDays(monthStart, -(day - 1))
 }
 
 export function getMonthDays(date: Date): Date[] {
