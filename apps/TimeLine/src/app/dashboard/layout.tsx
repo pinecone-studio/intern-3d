@@ -1,23 +1,44 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { useRole } from '@/lib/role-context'
 import { DashboardTopbar } from '@/components/layout/dashboard-topbar'
+import type { User } from '@/lib/types'
+
+type UsersResponse = {
+  users: User[]
+}
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const router = useRouter()
-  const { role, loading } = useRole()
+  const { role, loading, loginAs } = useRole()
 
   useEffect(() => {
-    if (!loading && !role) {
-      router.replace('/')
+    if (loading || role) return
+
+    let active = true
+
+    const loginAsDefaultAdmin = async () => {
+      try {
+        const response = await fetch('/api/users', { cache: 'no-store' })
+        const data = (await response.json().catch(() => ({ users: [] }))) as UsersResponse
+        if (!response.ok || !active) return
+        const adminUser = (data.users ?? []).find((entry) => entry.role === 'admin')
+        if (!adminUser) return
+        await loginAs(adminUser.id)
+      } catch {
+        // Keep loading UI if auto-login fails.
+      }
     }
-  }, [loading, role, router])
+
+    void loginAsDefaultAdmin()
+    return () => {
+      active = false
+    }
+  }, [loading, loginAs, role])
 
   if (loading || !role) {
     return (

@@ -2,12 +2,10 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useRole } from '@/lib/role-context'
 import { Badge } from '@/components/ui/badge'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { Button } from '@/components/ui/button'
-import { Monitor, LogOut, Orbit } from 'lucide-react'
+import { Monitor, Orbit } from 'lucide-react'
 import type { User } from '@/lib/types'
 
 type UsersResponse = {
@@ -29,8 +27,7 @@ const createClockDisplay = (date: Date): ClockDisplay => ({
 })
 
 export function DashboardTopbar() {
-  const router = useRouter()
-  const { role, user, logout, loginAs } = useRole()
+  const { role, user, loginAs } = useRole()
   const [clockDisplay, setClockDisplay] = useState<ClockDisplay | null>(null)
   const [users, setUsers] = useState<User[]>([])
   const [loadingUsers, setLoadingUsers] = useState(true)
@@ -70,11 +67,6 @@ export function DashboardTopbar() {
 
   const formattedDate = clockDisplay?.formattedDate ?? '--/--/----'
   const formattedTime = clockDisplay?.formattedTime ?? '--:--'
-
-  const handleLogout = async () => {
-    await logout()
-    router.push('/')
-  }
 
   const handleSwitchUser = async (userId: string) => {
     if (!userId || userId === user?.id) return
@@ -145,10 +137,6 @@ export function DashboardTopbar() {
             ))}
           </select>
           <ThemeToggle />
-          <Button variant="ghost" size="sm" className="rounded-md" onClick={() => void handleLogout()}>
-            <LogOut className="h-4 w-4" />
-            <span>Гарах</span>
-          </Button>
         </div>
       </div>
     </header>
