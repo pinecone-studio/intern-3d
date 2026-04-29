@@ -39,6 +39,8 @@ export type ScheduleEventMutationInput = {
   daysOfWeek: number[]
   date?: string | null
   isOverride: boolean
+  instructor?: string | null
+  notes?: string | null
   validFrom?: string | null
   validUntil?: string | null
 }

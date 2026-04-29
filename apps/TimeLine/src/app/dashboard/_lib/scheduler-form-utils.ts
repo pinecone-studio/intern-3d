@@ -31,7 +31,25 @@ export function createSchedulerMutationInput(selection: Selection, form: DraftFo
   const selectionTimeRange = getSelectionTimeRange(selection)
   const startTime = normalizeTimelineTime(options.preserveSelectionTime ? selectionTimeRange.startTime : form.startTime)
   const endTime = normalizeTimelineTime(options.preserveSelectionTime ? selectionTimeRange.endTime : form.endTime)
-  return { roomId: selection.roomId, title: form.title.trim(), type: form.type, startTime, endTime, daysOfWeek: options.forceWeekly ? [selection.dayOfWeek] : form.recurrence === 'daily' ? WORK_DAYS.map((day) => day.value) : [selection.dayOfWeek], date: isOneTime ? form.date : null, isOverride: isOneTime, validFrom: isOneTime ? null : form.validFrom || null, validUntil: isOneTime ? null : form.validUntil || null }
+  return { roomId: selection.roomId, title: form.title.trim(), type: form.type, startTime, endTime, daysOfWeek: options.forceWeekly ? [selection.dayOfWeek] : form.recurrence === 'daily' ? WORK_DAYS.map((day) => day.value) : [selection.dayOfWeek], date: isOneTime ? form.date : null, isOverride: isOneTime, validFrom: isOneTime ? null : form.validFrom || null, validUntil: isOneTime ? null : form.validUntil || null, notes: form.notes.trim() || null }
+}
+
+export function createMutationInputFromEvent(event: ScheduleEvent, overrides: Partial<ScheduleEventMutationInput> = {}): ScheduleEventMutationInput {
+  const isOverride = overrides.isOverride ?? event.isOverride
+  return {
+    roomId: overrides.roomId ?? event.roomId,
+    title: overrides.title ?? event.title,
+    type: overrides.type ?? event.type,
+    startTime: normalizeTimelineTime(overrides.startTime ?? event.startTime),
+    endTime: normalizeTimelineTime(overrides.endTime ?? event.endTime),
+    daysOfWeek: overrides.daysOfWeek ?? event.daysOfWeek,
+    date: isOverride ? overrides.date ?? event.date ?? null : null,
+    isOverride,
+    instructor: overrides.instructor ?? event.instructor ?? null,
+    notes: overrides.notes ?? event.notes ?? null,
+    validFrom: isOverride ? null : overrides.validFrom ?? event.validFrom ?? null,
+    validUntil: isOverride ? null : overrides.validUntil ?? event.validUntil ?? null,
+  }
 }
 
 export function buildLocalEvent(selection: Selection, form: DraftForm, options: MutationInputOptions = {}): ScheduleEvent {

@@ -1,16 +1,18 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import Page from '../src/app/page'
 import { RoleProvider } from '../src/lib/role-context'
 
 const push = jest.fn()
+const replace = jest.fn()
 
 jest.mock('next/navigation', () => ({
-  useRouter: () => ({ push }),
+  useRouter: () => ({ push, replace }),
 }))
 
 describe('Page', () => {
   beforeEach(() => {
     push.mockReset()
+    replace.mockReset()
     global.fetch = jest.fn(async (input) => {
       const url = typeof input === 'string' ? input : input instanceof Request ? input.url : String(input)
 
@@ -45,17 +47,15 @@ describe('Page', () => {
     }) as unknown as typeof fetch
   })
 
-  it('should render DB-backed user selection successfully', async () => {
+  it('should redirect to the dashboard', async () => {
     render(
       <RoleProvider>
         <Page />
       </RoleProvider>
     )
 
-    expect(screen.getByText('Нэвтрэх')).toBeTruthy()
-
     await waitFor(() => {
-      expect(screen.getByText('Ariun Admin')).toBeTruthy()
+      expect(replace).toHaveBeenCalledWith('/dashboard')
     })
   })
 })
