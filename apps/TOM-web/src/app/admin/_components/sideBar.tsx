@@ -49,7 +49,7 @@ const navItems = [
   },
 ];
 
-export default function AdminLayout() {
+export default function SideBar() {
   const router = useRouter();
   const pathname = usePathname();
   const { user, logout, isAuthenticating } = useTomSession();
@@ -57,12 +57,11 @@ export default function AdminLayout() {
     pathname !== '/' && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
   const activeHref =
     navItems.find(({ href }) => normalizedPathname === href)?.href ??
-        navItems
-          .filter(
-            ({ href }) =>
-              href !== '/admin' && normalizedPathname.startsWith(`${href}/`)
-          )
-          .sort((left, right) => right.href.length - left.href.length)[0]?.href;
+    navItems
+      .filter(
+        ({ href }) => href !== '/admin' && normalizedPathname.startsWith(`${href}/`)
+      )
+      .sort((left, right) => right.href.length - left.href.length)[0]?.href;
 
   async function handleLogout() {
     try {
@@ -74,54 +73,52 @@ export default function AdminLayout() {
   }
 
   return (
-    <div className="flex h-full w-56 flex-col border-r border-[#e2eaf5] bg-white shadow-[2px_0_12px_rgba(20,50,100,0.06)]">
-      <Link href="/">
-        <div className="flex items-center gap-3 border-b border-[#e8eef8] px-5 py-5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#1a3560] text-sm font-bold text-white">
-            <GraduationCap />
+    <header className="rounded-[28px] border border-[#dce7f8] bg-white/95 px-5 py-4 shadow-soft">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <Link href="/" className="flex min-w-0 items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#1a3560] text-white shadow-[0_10px_22px_rgba(24,58,112,0.18)]">
+            <GraduationCap className="h-5 w-5" />
           </div>
-          <div>
-            <p className="text-sm font-semibold text-[#1a3560]">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-[#1a3560]">
               Сургуулийн клубүүд
             </p>
-            <p className="text-xs text-[#7a90af]">
+            <p className="truncate text-xs text-[#7a90af]">
               {user ? `${user.name} · Админ` : 'Админы харагдац'}
             </p>
           </div>
-        </div>
-      </Link>
+        </Link>
 
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-        {navItems.map(({ href, label, icon: Icon }) => {
-          const isActive = activeHref === href;
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-[#1a3560] text-white shadow-[0_4px_12px_rgba(26,53,96,0.25)]'
-                  : 'text-[#4a6080] hover:bg-[#eef4ff] hover:text-[#1a3560]'
-              }`}
-            >
-              <Icon className="h-4 w-4 shrink-0" />
-              {label}
-            </Link>
-          );
-        })}
-      </nav>
+        <nav className="flex flex-1 flex-wrap items-center justify-center gap-2">
+          {navItems.map(({ href, label, icon: Icon }) => {
+            const isActive = activeHref === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-semibold transition ${
+                  isActive
+                    ? 'bg-[#1a3560] text-white shadow-[0_12px_24px_rgba(24,58,112,0.22)]'
+                    : 'text-[#4a6080] hover:bg-[#eef4ff] hover:text-[#1a3560]'
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
 
-      <div className="border-t border-[#e8eef8] p-3">
         <button
           type="button"
           onClick={() => void handleLogout()}
           disabled={isAuthenticating}
-          className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[#4a6080] transition-colors hover:bg-[#eef4ff] hover:text-[#1a3560]"
+          className="inline-flex items-center gap-2 rounded-full border border-[#e2eaf5] bg-white px-4 py-2 text-sm font-semibold text-[#4a6080] transition hover:bg-[#eef4ff] hover:text-[#1a3560] disabled:cursor-not-allowed disabled:opacity-60"
         >
           <LogOut className="h-4 w-4 shrink-0" />
           {isAuthenticating ? 'Гарч байна...' : 'Гарах'}
         </button>
       </div>
-    </div>
+    </header>
   );
 }

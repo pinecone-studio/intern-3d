@@ -307,18 +307,18 @@ export function AdminDashboardContent({
                 </p>
               </div>
               <span className="inline-flex items-center rounded-full bg-[color:var(--primary-soft)] px-4 py-2 text-sm font-semibold text-[#365f91]">
-                Last 12 months
+                Сүүлийн 12 сар
               </span>
             </div>
 
-            <div className="mt-6 h-[300px] rounded-[20px] border border-[color:var(--border)] bg-white px-4 py-3">
+            <div className="mt-6 h-[300px] rounded-[20px] border border-[color:var(--border)] bg-white/85 p-4 shadow-soft transition-shadow hover:shadow-glow">
               <div className="relative h-[240px]">
-                <div className="absolute inset-0 rounded-[14px] bg-[linear-gradient(180deg,_rgba(245,249,255,0.72),_rgba(255,255,255,0.92))]" />
+                <div className="absolute inset-0 rounded-[14px] bg-[linear-gradient(180deg,_rgba(245,249,255,0.75),_rgba(255,255,255,0.95))]" />
                 <div className="absolute inset-0">
-                  {[20, 40, 60, 80].map((line) => (
+                  {[25, 50, 75].map((line) => (
                     <div
                       key={line}
-                      className="absolute left-0 right-0 border-t border-dashed border-[#e6eef9]"
+                      className="absolute left-0 right-0 border-t border-[#e6eef9] opacity-70"
                       style={{ top: `${100 - line}%` }}
                     />
                   ))}
@@ -326,15 +326,23 @@ export function AdminDashboardContent({
                 <svg
                   viewBox="0 0 100 100"
                   preserveAspectRatio="none"
-                  className="absolute inset-x-2 inset-y-3 h-[calc(100%-1.5rem)] w-[calc(100%-1rem)]"
+                  className="absolute inset-x-3 inset-y-4 h-[calc(100%-1.5rem)] w-[calc(100%-1.5rem)]"
                 >
+                  <defs>
+                    <linearGradient id="activityStroke" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#3b82f6" />
+                      <stop offset="100%" stopColor="#6366f1" />
+                    </linearGradient>
+                  </defs>
+
                   <path
                     d={activityPath}
                     fill="none"
-                    stroke="#5c8fd6"
-                    strokeWidth="2"
+                    stroke="url(#activityStroke)"
+                    strokeWidth="2.6"
                     strokeLinecap="round"
                     strokeLinejoin="round"
+                    className="activity-line-draw"
                   />
                   {activitySeries.map((value, index) => {
                     const x = (index / (activitySeries.length - 1)) * 100;
@@ -343,16 +351,20 @@ export function AdminDashboardContent({
                         key={`${monthLabels[index]}-point`}
                         cx={x}
                         cy={100 - value}
-                        r="1.35"
-                        fill="#5c8fd6"
+                        r="1.65"
+                        fill="#ffffff"
+                        stroke="url(#activityStroke)"
+                        strokeWidth="1"
                       />
                     );
                   })}
                 </svg>
               </div>
-              <div className="mt-3 grid grid-cols-6 gap-y-1 text-[11px] text-[#7389a8] sm:grid-cols-12">
+              <div className="mt-3 grid grid-cols-6 gap-y-1 px-1 text-[10px] text-[#7389a8] sm:grid-cols-12">
                 {monthLabels.map((month) => (
-                  <span key={month} className="truncate text-center">{month}</span>
+                  <span key={month} className="truncate text-center opacity-90">
+                    {month}
+                  </span>
                 ))}
               </div>
             </div>
@@ -1158,13 +1170,7 @@ export function AdminDashboardContent({
               </div>
 
               <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-                <form
-                className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  void handleCreateEvent();
-                }}
-              >
+                <div className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft">
                 <div>
                   <div className="flex items-center gap-2">
                     <CalendarDays className="h-4 w-4 text-[color:var(--primary)]" />
@@ -1261,7 +1267,8 @@ export function AdminDashboardContent({
 
                 <div className="mt-5 flex flex-wrap items-center gap-3">
                   <button
-                    type="submit"
+                    type="button"
+                    onClick={() => void handleCreateEvent()}
                     disabled={
                       isSaving || !eventForm.title || !eventForm.eventDate
                     }
@@ -1277,7 +1284,7 @@ export function AdminDashboardContent({
                     Цэвэрлэх
                   </button>
                 </div>
-              </form>
+              </div>
 
               <div className="space-y-4">
                 <div className="flex items-center gap-2">

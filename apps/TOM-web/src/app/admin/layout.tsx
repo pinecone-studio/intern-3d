@@ -4,7 +4,7 @@ import { requireServerUser } from '@/lib/tom-auth-server';
 
 import SideBar from './_components/sideBar';
 
-export default async function StudentsLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -13,15 +13,15 @@ export default async function StudentsLayout({
 
   return (
     <div className="min-h-screen bg-[#f4f7fb]">
-      <aside className="fixed left-0 top-0 z-[60] h-screen w-56">
+      <div className="mx-auto max-w-6xl p-10">
         <Suspense fallback={null}>
           <SideBar />
         </Suspense>
-      </aside>
 
-      <main className="ml-56 min-h-screen min-w-0 p-10">
-        <Suspense fallback={null}>{children}</Suspense>
-      </main>
+        <main className="mt-6 min-w-0">
+          <Suspense fallback={null}>{children}</Suspense>
+        </main>
+      </div>
     </div>
   );
 }
