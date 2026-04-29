@@ -8,11 +8,6 @@ const nameHelperBanner = `var __name = globalThis.__name || function(target, val
 };
 globalThis.__name = __name;`;
 
-if (process.env.NODE_ENV === 'development') {
-  const { initOpenNextCloudflareForDev } = require('@opennextjs/cloudflare');
-  initOpenNextCloudflareForDev();
-}
-
 /**
  * @type {import('@nx/next/plugins/with-nx').WithNxOptions}
  **/
@@ -35,4 +30,13 @@ const plugins = [
   withNx,
 ];
 
-module.exports = composePlugins(...plugins)(nextConfig);
+const config = composePlugins(...plugins)(nextConfig);
+
+module.exports = async (phase, context) => {
+  if (process.env.NODE_ENV === 'development') {
+    const { initOpenNextCloudflareForDev } = await import('@opennextjs/cloudflare');
+    initOpenNextCloudflareForDev();
+  }
+
+  return config(phase, context);
+};
