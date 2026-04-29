@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { CalendarDays, MapPin, Search, Users } from 'lucide-react';
 
@@ -170,6 +171,12 @@ export default function EventsPage() {
                   <p className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" /> {event.participantCount}/{EVENT_DEFAULT_CAPACITY}</p>
                 </div>
                 <div className="mt-4 flex items-center gap-2">
+                  <Link
+                    href={`/students/events/${event.id}`}
+                    className="rounded-full border border-[#d7e4f4] px-4 py-2 text-xs font-semibold text-[#4a6080] transition hover:bg-[#eef4ff]"
+                  >
+                    Дэлгэрэнгүй
+                  </Link>
                   {isJoined ? (
                     <button
                       type="button"

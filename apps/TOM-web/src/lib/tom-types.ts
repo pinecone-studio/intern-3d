@@ -139,6 +139,33 @@ export type EventInput = Partial<Omit<SchoolEvent, 'id' | 'createdAt' | 'updated
   eventDate: string
 }
 
+export type PublicUser = {
+  id: string
+  name: string
+  role: UserRole
+}
+
+export type EventPost = {
+  id: string
+  eventId: string
+  title: string
+  body: string
+  author: PublicUser
+  likeCount: number
+  likedByMe: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export type EventPostComment = {
+  id: string
+  postId: string
+  body: string
+  author: PublicUser
+  createdAt: string
+  updatedAt: string
+}
+
 export type ClubInput = Partial<Omit<Club, 'id' | 'createdAt' | 'updatedAt'>> & {
   name: string
 }

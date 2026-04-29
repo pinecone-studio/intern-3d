@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import {
   BadgeAlert,
   CalendarDays,
@@ -1269,6 +1270,12 @@ export function AdminDashboardContent({
                               <Users className="h-3 w-3" />
                               {event.participantCount} оролцогч
                             </span>
+                            <Link
+                              href={`/admin/events/${event.id}`}
+                              className="rounded-full border border-[color:var(--border)] bg-white px-3 py-1 text-xs font-semibold text-[#183153] transition hover:bg-[color:var(--surface)]"
+                            >
+                              Постууд
+                            </Link>
                             <button
                               type="button"
                               onClick={() =>

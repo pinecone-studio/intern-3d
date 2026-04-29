@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { CalendarDays, MapPin, Plus, Search, Trash2 } from 'lucide-react';
 
@@ -428,6 +429,12 @@ export default function EventsPage() {
                   </p>
 
                   <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
+                    <Link
+                      href={`/teacher/events/${event.id}`}
+                      className="rounded-full border border-[#d8e4f4] bg-white px-3 py-2 font-semibold text-[#17304f] transition hover:bg-[#eef4ff]"
+                    >
+                      Постууд
+                    </Link>
                     {eventStatuses.map((status) => (
                       <button
                         key={status}
