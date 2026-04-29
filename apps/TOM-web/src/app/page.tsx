@@ -135,7 +135,8 @@ export default function HomePage() {
           </h1>
           <p className="mt-3 max-w-xl text-base leading-7 text-[#5f7697]">
             Database дээр байгаа хэрэглэгчдээс нэгийг нь сонгоод шууд session үүсгэн нэвтэрнэ.
-            Role card эсвэл hardcoded flow ашиглахгүй.
+            Role card эсвэл hardcoded flow ашиглахгүй. Ингэснээр бодит demo
+            хэрэглэгчээр урсгал бүрийг хурдан шалгаж болно.
           </p>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
