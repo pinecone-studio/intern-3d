@@ -1,7 +1,7 @@
 export const navItems = [
   'How it works',
   'Features',
-  'Resources',
+  'Prototype',
   'Roles',
 ] as const;
 
@@ -77,7 +77,7 @@ export const footerColumns = [
   },
   {
     title: 'Resources',
-    links: ['Club schedule', 'Seat tracking', 'Request flow'],
+    links: ['Club schedule', 'Seat tracking', 'CSV prototype'],
   },
   {
     title: 'School system',
