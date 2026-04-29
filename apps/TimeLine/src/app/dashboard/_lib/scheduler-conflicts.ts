@@ -5,7 +5,10 @@ import { timeToMinutes } from '@/app/dashboard/_lib/scheduler-time-utils'
 import type { ScheduleEventMutationInput } from '@/app/dashboard/_lib/scheduler-types'
 import type { Room, ScheduleEvent } from '@/lib/types'
 
-type ConflictCandidate = ScheduleEventMutationInput & { excludeEventId?: string | null }
+type ConflictCandidate = ScheduleEventMutationInput & {
+  excludeEventId?: string | null
+  sourceOccurrence?: { dateIso: string; event: ScheduleEvent } | null
+}
 
 type ScheduleConflict = {
   dateIso: string
@@ -57,9 +60,17 @@ function getConflictDate(candidate: ScheduleEventMutationInput, event: ScheduleE
   return getFirstRecurringConflictDate(candidate, event)
 }
 
+function isSourceOccurrence(candidate: ConflictCandidate, event: ScheduleEvent) {
+  if (!candidate.sourceOccurrence) return false
+  if (!candidate.isOverride || candidate.date !== candidate.sourceOccurrence.dateIso) return false
+  const source = candidate.sourceOccurrence.event
+  if (event.id !== source.id) return false
+  return eventOccursInWeekOnDay(event, getDayOfWeekValue(new Date(`${candidate.sourceOccurrence.dateIso}T00:00:00`)), candidate.sourceOccurrence.dateIso)
+}
+
 export function findScheduleConflict(candidate: ConflictCandidate, events: ScheduleEvent[], rooms: Room[]): ScheduleConflict | null {
   const roomNumber = rooms.find((room) => room.id === candidate.roomId)?.number ?? candidate.roomId
-  const conflict = events.find((event) => event.id !== candidate.excludeEventId && event.roomId === candidate.roomId && overlapsTime(candidate, event) && getConflictDate(candidate, event))
+  const conflict = events.find((event) => event.id !== candidate.excludeEventId && !isSourceOccurrence(candidate, event) && event.roomId === candidate.roomId && overlapsTime(candidate, event) && getConflictDate(candidate, event))
   if (!conflict) return null
   return { dateIso: getConflictDate(candidate, conflict) ?? getCandidateDate(candidate), roomNumber, event: conflict }
 }
