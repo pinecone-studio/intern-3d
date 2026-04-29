@@ -27,10 +27,18 @@ type SchedulerWeekViewProps = {
   weekDates: string[]
 }
 
+function safeParseDragPayload(rawPayload: string) {
+  try {
+    return JSON.parse(rawPayload) as { eventId: string; sourceDateIso: string; sourceDayOfWeek: number }
+  } catch {
+    return null
+  }
+}
+
 export function SchedulerWeekView({ errorMessage, events, loading, onContextMenu, onEditEvent, onEventDrop, onPointerDown, onPointerEnter, onPointerUp, rooms, selectedRoomTab, selectedRoomView, selections, weekDates }: SchedulerWeekViewProps) {
   const findDraggedEvent = (dragEvent: React.DragEvent) => {
     const rawPayload = dragEvent.dataTransfer.getData('application/json')
-    const payload = rawPayload ? JSON.parse(rawPayload) as { eventId: string; sourceDateIso: string; sourceDayOfWeek: number } : null
+    const payload = rawPayload ? safeParseDragPayload(rawPayload) : null
     const eventId = payload?.eventId ?? dragEvent.dataTransfer.getData('text/plain')
     const event = events.find((candidate) => candidate.id === eventId) ?? null
     if (!event || !payload) return null
