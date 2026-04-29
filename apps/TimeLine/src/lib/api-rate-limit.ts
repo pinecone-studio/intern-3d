@@ -66,4 +66,4 @@ export function applyRateLimitHeaders(response: Response, options: RateLimitOpti
   response.headers.set('X-RateLimit-Remaining', String(remaining))
   response.headers.set('X-RateLimit-Reset', String(Math.floor(resetAt / 1000)))
   return response
-}
+}//
