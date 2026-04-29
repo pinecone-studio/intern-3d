@@ -3,9 +3,9 @@ import './global.css';
 import { TomSessionProvider } from './_providers/tom-session-provider';
 
 export const metadata = {
-  title: 'Ухаалаг ажлын орчны самбар',
+  title: 'TOM Club Management',
   description:
-    'Ажил, бүлэг, эвент, мэдлэгийн сан, шалгалт, санал асуулгыг нэг дор төвлөрүүлсэн дотоод систем.',
+    'Team TOM club management workspace for students, teachers, and admins.',
 };
 
 export default function RootLayout({
