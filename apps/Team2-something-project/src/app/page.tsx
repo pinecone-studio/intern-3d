@@ -1,15 +1,17 @@
+import { CsvJsonConverter } from '../components/csv-json-converter';
+
 const cards = [
   {
-    title: 'App Router Ready',
-    text: 'This project now uses the shared Next.js app structure from the workspace.',
+    title: 'CSV Parsing',
+    text: 'The standalone Node script was converted into app-safe parsing logic.',
   },
   {
-    title: 'Nx Targets',
-    text: 'Use build, dev, and start through the local Nx CLI.',
+    title: 'Live Preview',
+    text: 'Paste CSV into the page and inspect the generated JSON instantly.',
   },
   {
-    title: 'Workspace Safe',
-    text: 'The broken Nx config and lockfile issues were repaired first.',
+    title: 'Reusable Utility',
+    text: 'The parser now lives in a shared helper that can be reused by routes or components.',
   },
 ];
 
@@ -20,10 +22,13 @@ export default function Page() {
         <p className="eyebrow">Team 2</p>
         <h1>something-project</h1>
         <p className="lede">
+          This page now includes the CSV-to-JSON logic from your external
+          `index.js` file, adapted for the Next.js app inside this Nx
+          workspace.
         </p>
         <div className="command-row">
           <code>npm exec nx -- dev something-project</code>
-          <code>npm exec nx -- build something-project</code>
+          <code>npm exec nx -- test something-project</code>
         </div>
       </section>
 
@@ -35,6 +40,8 @@ export default function Page() {
           </article>
         ))}
       </section>
+
+      <CsvJsonConverter />
     </main>
   );
 }
