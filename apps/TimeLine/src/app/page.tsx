@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useRole } from '@/lib/role-context'
-import { Button } from '@/components/ui/button'
+import { LoginSummaryCards } from '@/app/_components/login-summary-cards'
+import { LoginUserOption } from '@/app/_components/login-user-option'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { GraduationCap, ShieldCheck, Clock, Monitor } from 'lucide-react'
+import { Clock } from 'lucide-react'
 import type { User } from '@/lib/types'
 
 type UsersResponse = {
@@ -112,45 +113,10 @@ export default function LoginPage() {
             ) : (
               <>
                 {adminUsers.map((entry) => (
-                  <Button
-                    key={entry.id}
-                    variant="outline"
-                    className="h-auto w-full justify-start gap-4 p-4 hover:bg-primary/5 hover:border-primary/50 transition-all"
-                    disabled={submittingUserId != null}
-                    onClick={() => void handleUserSelect(entry)}
-                  >
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-blue-500/20 bg-blue-500/10">
-                      <ShieldCheck className="h-6 w-6 text-blue-400" />
-                    </div>
-                    <div className="flex flex-col items-start text-left">
-                      <span className="font-semibold text-foreground">{entry.name}</span>
-                      <span className="text-sm text-muted-foreground">
-                        Хуваарь удирдах, төхөөрөмж хянах
-                      </span>
-                    </div>
-                  </Button>
+                  <LoginUserOption key={entry.id} disabled={submittingUserId != null} user={entry} onSelect={handleUserSelect} />
                 ))}
-
                 {studentUsers.map((entry) => (
-                  <Button
-                    key={entry.id}
-                    variant="outline"
-                    className="h-auto w-full justify-start gap-4 p-4 hover:bg-primary/5 hover:border-primary/50 transition-all"
-                    disabled={submittingUserId != null}
-                    onClick={() => void handleUserSelect(entry)}
-                  >
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-emerald-500/20 bg-emerald-500/10">
-                      <GraduationCap className="h-6 w-6 text-emerald-400" />
-                    </div>
-                    <div className="flex flex-col items-start text-left">
-                      <span className="font-semibold text-foreground">{entry.name}</span>
-                      <span className="text-sm text-muted-foreground">
-                        {entry.assignedDevice
-                          ? `Таны iMac: ${entry.assignedDevice.name} / Анги ${entry.assignedDevice.roomNumber}`
-                          : 'Сул өрөө хайх, өөрийн iMac харах'}
-                      </span>
-                    </div>
-                  </Button>
+                  <LoginUserOption key={entry.id} disabled={submittingUserId != null} user={entry} onSelect={handleUserSelect} />
                 ))}
               </>
             )}
@@ -161,16 +127,7 @@ export default function LoginPage() {
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-2 gap-3 pt-4">
-          <div className="flex items-center gap-2 rounded-lg border border-border/50 bg-card/30 p-3">
-            <Monitor className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">10 лаборатори</span>
-          </div>
-          <div className="flex items-center gap-2 rounded-lg border border-border/50 bg-card/30 p-3">
-            <Clock className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">Шууд хуваарь</span>
-          </div>
-        </div>
+        <LoginSummaryCards />
 
         <p className="text-center text-xs text-muted-foreground/60">
           Программ хангамжийн сургуулийн дотоод систем
