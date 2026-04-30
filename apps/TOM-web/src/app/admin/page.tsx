@@ -93,6 +93,10 @@ export function AdminDashboardContent({
     resetEventForm();
   };
 
+  const pausedClubsCount = activeClubs.filter(
+    (club) => club.clubStatus !== 'active'
+  ).length;
+
   const summaryCards = [
     {
       label: 'Нийт хэрэглэгч',
@@ -105,7 +109,7 @@ export function AdminDashboardContent({
     {
       label: 'Идэвхтэй клуб',
       value: activeCount,
-      delta: `+${activeClubs.length}`,
+      delta: pausedClubsCount > 0 ? `${pausedClubsCount} түр зогссон` : '·',
       icon: ShieldCheck,
       tint: 'bg-gradient-teacher',
       badge: 'bg-[#eaf8ff] text-[#1f95ca]',
