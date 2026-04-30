@@ -163,31 +163,6 @@ export default function AdminTeacherPage() {
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setActiveRoster('teachers')}
-            className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
-              activeRoster === 'teachers'
-                ? 'bg-[color:var(--primary)] text-white'
-                : 'border border-[color:var(--border)] bg-white text-[#56708f] hover:bg-[color:var(--surface)]'
-            }`}
-          >
-            Багш
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveRoster('students')}
-            className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
-              activeRoster === 'students'
-                ? 'bg-[color:var(--primary)] text-white'
-                : 'border border-[color:var(--border)] bg-white text-[#56708f] hover:bg-[color:var(--surface)]'
-            }`}
-          >
-            Сурагч
-          </button>
-        </div>
-
         {errorMessage ? (
           <p className="mt-3 rounded-xl border border-[#ffd2d5] bg-[#fff7f8] px-3 py-2 text-sm text-[#b23a49]">
             {errorMessage}
@@ -284,7 +259,7 @@ export default function AdminTeacherPage() {
             </div>
           ) : (
             <section className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)] p-4 shadow-sm">
-              <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h2 className="text-lg font-semibold text-[#183153]">
                     {activeListTitle} ({activeList.length})
@@ -292,6 +267,30 @@ export default function AdminTeacherPage() {
                   <p className="text-sm text-[#6f86a7]">
                     {activeListDescription}
                   </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveRoster('teachers')}
+                    className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+                      activeRoster === 'teachers'
+                        ? 'bg-[color:var(--primary)] text-white'
+                        : 'border border-[color:var(--border)] bg-white text-[#56708f] hover:bg-[color:var(--surface)]'
+                    }`}
+                  >
+                    Багш
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveRoster('students')}
+                    className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+                      activeRoster === 'students'
+                        ? 'bg-[color:var(--primary)] text-white'
+                        : 'border border-[color:var(--border)] bg-white text-[#56708f] hover:bg-[color:var(--surface)]'
+                    }`}
+                  >
+                    Сурагч
+                  </button>
                 </div>
               </div>
 
