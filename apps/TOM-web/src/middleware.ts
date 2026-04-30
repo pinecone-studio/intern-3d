@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const TOM_SESSION_COOKIE_NAME = 'tom_session'
 
-function requiresSession(pathname: string, method: string) {
+function requiresSession(pathname: string, method: string): boolean {
   if (pathname === '/api/club-requests') return true
   if (pathname.startsWith('/api/club-requests/')) return true
   if (pathname === '/api/seed') return true
-  if (pathname === '/api/users' || pathname.startsWith('/api/users/')) return true
+  if ((pathname === '/api/users' || pathname.startsWith('/api/users/')) && method !== 'GET') return true
   if (pathname === '/api/xp/grant') return true
   if (pathname === '/api/xp/config' && method !== 'GET') return true
   if (pathname.startsWith('/api/xp/') && pathname !== '/api/xp/config') return true
@@ -17,7 +17,7 @@ function requiresSession(pathname: string, method: string) {
   return false
 }
 
-export function proxy(request: NextRequest) {
+export default function middleware(request: NextRequest) {
   if (!requiresSession(request.nextUrl.pathname, request.method)) {
     return NextResponse.next()
   }
