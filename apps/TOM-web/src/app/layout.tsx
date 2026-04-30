@@ -6,6 +6,7 @@ export const metadata = {
   title: 'TOM Club Management',
   description:
     'Team TOM club management workspace for students, teachers, and admins.',
+  themeColor: '#f4f7fb',
 };
 
 export default function RootLayout({
