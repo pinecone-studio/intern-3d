@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 
 import { getCurrentUserFromRequest } from '@/lib/tom-auth'
-import { listClubRequests, listClubs } from '@/lib/tom-db'
+import { listClubRequests, listClubs, listEvents } from '@/lib/tom-db'
 import { forbidden, ok, serverError, unauthorized } from '@/lib/tom-http'
 
 export async function GET(request: NextRequest) {
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     }
 
     const teacherScopeName = currentUser.teacherProfileName || currentUser.name
-    const [requests, clubs] = await Promise.all([
+    const [requests, clubs, events] = await Promise.all([
       listClubRequests({
         requestStatus: 'pending',
         teacher: teacherScopeName,
@@ -21,16 +21,29 @@ export async function GET(request: NextRequest) {
       listClubs({
         teacher: teacherScopeName,
       }),
+      listEvents({
+        createdBy: teacherScopeName,
+      }),
     ])
+    const thresholdReachedRequests = requests.filter(
+      (request) => request.interestCount >= 7 || request.interestCount >= request.studentLimit
+    )
+    const priorityRequests = thresholdReachedRequests.slice(0, 3)
+    const upcomingEvents = events
+      .filter((event) => event.status === 'upcoming' || event.status === 'ongoing')
+      .slice(0, 3)
 
     return ok({
       user: currentUser,
       teacherScopeName,
       requests,
       clubs,
+      priorityRequests,
+      upcomingEvents,
       summary: {
         pendingRequests: requests.length,
-        thresholdReachedRequests: requests.filter((request) => request.interestCount >= 7).length,
+        thresholdReachedRequests: thresholdReachedRequests.length,
+        upcomingEvents: upcomingEvents.length,
       },
     })
   } catch (error) {

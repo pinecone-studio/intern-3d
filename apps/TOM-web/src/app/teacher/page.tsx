@@ -1,21 +1,25 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import {
   AlertCircle,
   Calendar,
+  CalendarDays,
   CheckCircle2,
   ClipboardList,
+  MapPin,
   ShieldCheck,
   XCircle,
 } from 'lucide-react';
 
 import { useTomSession } from '@/app/_providers/tom-session-provider';
-import type { Club, ClubRequest, TomCurrentUser } from '@/lib/tom-types';
+import type { Club, ClubRequest, SchoolEvent, TomCurrentUser } from '@/lib/tom-types';
 
 type Summary = {
   pendingRequests: number;
   thresholdReachedRequests: number;
+  upcomingEvents: number;
 };
 
 type TeacherDashboardResponse = {
@@ -23,6 +27,8 @@ type TeacherDashboardResponse = {
   teacherScopeName: string;
   requests: ClubRequest[];
   clubs: Club[];
+  priorityRequests: ClubRequest[];
+  upcomingEvents: SchoolEvent[];
   summary: Summary;
 };
 
@@ -58,7 +64,10 @@ export default function TeacherDashboard() {
   const [summary, setSummary] = useState<Summary>({
     pendingRequests: 0,
     thresholdReachedRequests: 0,
+    upcomingEvents: 0,
   });
+  const [priorityRequests, setPriorityRequests] = useState<ClubRequest[]>([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<SchoolEvent[]>([]);
   const [teacherScopeName, setTeacherScopeName] = useState('');
   const [, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -73,6 +82,8 @@ export default function TeacherDashboard() {
     setSummary(data.summary);
     setRequests(data.requests);
     setClubs(data.clubs);
+    setPriorityRequests(data.priorityRequests);
+    setUpcomingEvents(data.upcomingEvents);
     setTeacherScopeName(data.teacherScopeName);
     setMessage(nextMessage || `${data.teacherScopeName} нэрээр багшийн өгөгдлийг ачааллаа.`);
   };
@@ -209,19 +220,26 @@ export default function TeacherDashboard() {
         icon: Calendar,
         accent: 'bg-gradient-student',
       },
+      {
+        label: 'Удахгүй болох',
+        value: summary.upcomingEvents,
+        icon: CalendarDays,
+        accent: 'bg-gradient-primary',
+      },
     ],
     [
       clubs.length,
       inactiveCount,
       summary.pendingRequests,
       summary.thresholdReachedRequests,
+      summary.upcomingEvents,
     ]
   );
 
   return (
     <div className="min-h-screen font-sans text-[color:var(--foreground)]">
       <main className="container mx-auto space-y-8 ">
-        <section className="grid gap-4 md:grid-cols-4">
+        <section className="grid gap-4 md:grid-cols-5">
           {stats.map((stat) => {
             const Icon = stat.icon;
 
@@ -246,6 +264,97 @@ export default function TeacherDashboard() {
               </div>
             );
           })}
+        </section>
+
+        <section className="grid gap-6 xl:grid-cols-2">
+          <div className="shadow-soft rounded-3xl border border-[color:var(--border)] bg-[color:var(--card)] p-6 text-[color:var(--card-foreground)]">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-base font-semibold leading-none tracking-tight">
+                  Анхаарах хүсэлтүүд
+                </div>
+                <p className="mt-1 text-xs text-[color:var(--muted-foreground)]">
+                  Сонирхлын босго эсвэл багтаамждаа хүрсэн хүсэлтүүд
+                </p>
+              </div>
+              <AlertCircle className="h-5 w-5 text-[color:var(--warning-foreground)]" />
+            </div>
+
+            <div className="mt-5 space-y-3">
+              {priorityRequests.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-[color:var(--border)] p-5 text-sm text-[color:var(--muted-foreground)]">
+                  Яаралтай шийдэх хүсэлт одоогоор алга.
+                </div>
+              ) : (
+                priorityRequests.map((request) => (
+                  <div
+                    key={request.id}
+                    className="rounded-2xl border border-[color:var(--border)] bg-white/80 p-4"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="font-medium">{request.clubName}</p>
+                        <p className="mt-1 text-xs text-[color:var(--muted-foreground)]">
+                          {request.createdBy} · {request.allowedDays || 'Өдөр алга'}
+                        </p>
+                      </div>
+                      <div className="rounded-full bg-[color:var(--warning)]/20 px-2.5 py-1 text-xs font-semibold text-[color:var(--warning-foreground)]">
+                        {request.interestCount}/{request.studentLimit}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="shadow-soft rounded-3xl border border-[color:var(--border)] bg-[color:var(--card)] p-6 text-[color:var(--card-foreground)]">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-base font-semibold leading-none tracking-tight">
+                  Удахгүй болох арга хэмжээ
+                </div>
+                <p className="mt-1 text-xs text-[color:var(--muted-foreground)]">
+                  Багшийн нэр дээр үүссэн ойрын event-үүд
+                </p>
+              </div>
+              <Link
+                href="/teacher/events"
+                className="rounded-full border border-[color:var(--input)] px-3 py-1.5 text-xs font-semibold text-[color:var(--foreground)] transition hover:bg-[color:var(--accent)]"
+              >
+                Бүгдийг харах
+              </Link>
+            </div>
+
+            <div className="mt-5 space-y-3">
+              {upcomingEvents.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-[color:var(--border)] p-5 text-sm text-[color:var(--muted-foreground)]">
+                  Удахгүй болох арга хэмжээ алга.
+                </div>
+              ) : (
+                upcomingEvents.map((event) => (
+                  <Link
+                    key={event.id}
+                    href={`/teacher/events/${event.id}`}
+                    className="block rounded-2xl border border-[color:var(--border)] bg-white/80 p-4 transition hover:bg-[color:var(--muted)]/50"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="font-medium">{event.title}</p>
+                        <p className="mt-1 text-xs text-[color:var(--muted-foreground)]">
+                          {event.eventDate} · {event.startTime || '--:--'}
+                        </p>
+                      </div>
+                      <div className="inline-flex items-center gap-1 rounded-full bg-[color:var(--primary-soft)] px-2.5 py-1 text-xs font-semibold text-[color:var(--primary)]">
+                        <MapPin className="h-3 w-3" />
+                        {event.location || 'Байршилгүй'}
+                      </div>
+                    </div>
+                  </Link>
+                ))
+              )}
+            </div>
+          </div>
         </section>
 
         <section>
