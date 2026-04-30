@@ -16,6 +16,10 @@ export function forbidden(message: string, details?: unknown) {
   return NextResponse.json({ error: message, details }, { status: 403 })
 }
 
+export function conflict(message: string, details?: unknown) {
+  return NextResponse.json({ error: message, details }, { status: 409 })
+}
+
 export function notFound(message: string) {
   return NextResponse.json({ error: message }, { status: 404 })
 }

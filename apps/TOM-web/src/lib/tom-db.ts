@@ -679,6 +679,12 @@ export async function getUser(id: string) {
   return row ? mapUserRow(row) : null
 }
 
+export async function getUserByEmail(email: string) {
+  const db = getTomDb()
+  const row = await db.prepare('SELECT * FROM users WHERE email = ? LIMIT 1').bind(email).first<UserRow>()
+  return row ? mapUserRow(row) : null
+}
+
 export async function upsertUser(input: UserInput, id?: string) {
   const db = getTomDb()
   const current = id ? await getUser(id) : null
