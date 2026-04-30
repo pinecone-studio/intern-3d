@@ -49,7 +49,8 @@ export default function AdminTeacherPage() {
     activeRoster === 'teachers'
       ? 'Бүртгэлтэй багш одоогоор байхгүй байна.'
       : 'Бүртгэлтэй сурагч одоогоор байхгүй байна.';
-  const activeListTargetRole = activeRoster === 'teachers' ? 'student' : 'teacher';
+  const activeListTargetRole =
+    activeRoster === 'teachers' ? 'student' : 'teacher';
 
   const renderUserCard = (
     user: ManagedUser,
@@ -191,7 +192,9 @@ export default function AdminTeacherPage() {
               <input
                 type="text"
                 value={userForm.name}
-                onChange={(event) => updateUserField('name', event.target.value)}
+                onChange={(event) =>
+                  updateUserField('name', event.target.value)
+                }
                 placeholder="Жишээ: Бат-Эрдэнэ багш"
                 className={fieldClass}
               />
@@ -202,7 +205,9 @@ export default function AdminTeacherPage() {
               <input
                 type="email"
                 value={userForm.email}
-                onChange={(event) => updateUserField('email', event.target.value)}
+                onChange={(event) =>
+                  updateUserField('email', event.target.value)
+                }
                 placeholder="teacher@example.edu"
                 className={fieldClass}
               />
@@ -212,7 +217,9 @@ export default function AdminTeacherPage() {
               <span className={inputLabelClass}>Үүрэг</span>
               <select
                 value={userForm.role}
-                onChange={(event) => updateUserField('role', event.target.value)}
+                onChange={(event) =>
+                  updateUserField('role', event.target.value)
+                }
                 className={fieldClass}
               >
                 <option value="teacher">Багш</option>
@@ -258,8 +265,8 @@ export default function AdminTeacherPage() {
               Багш, сурагчийн мэдээллийг ачаалж байна...
             </div>
           ) : (
-            <section className="overflow-hidden rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-4 shadow-sm">
-              <div className="sticky top-0 z-20 -mx-4 -mt-4 mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-[color:var(--border)] bg-[color:var(--card)] px-4 py-4 backdrop-blur">
+            <section className="overflow-hidden rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] shadow-sm">
+              <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-[color:var(--border)] bg-[color:var(--card)] px-4 py-4 backdrop-blur">
                 <div>
                   <h2 className="text-lg font-semibold text-[#183153]">
                     {activeListTitle} ({activeList.length})
@@ -294,15 +301,19 @@ export default function AdminTeacherPage() {
                 </div>
               </div>
 
-              {activeList.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-[color:var(--border)] bg-[color:var(--surface)] p-6 text-center text-sm text-[#6f86a7]">
-                  {activeListEmpty}
-                </div>
-              ) : (
-                <div className="space-y-2.5">
-                  {activeList.map((user) => renderUserCard(user, activeListTargetRole))}
-                </div>
-              )}
+              <div className="p-4">
+                {activeList.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-[color:var(--border)] bg-[color:var(--surface)] p-6 text-center text-sm text-[#6f86a7]">
+                    {activeListEmpty}
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    {activeList.map((user) =>
+                      renderUserCard(user, activeListTargetRole)
+                    )}
+                  </div>
+                )}
+              </div>
             </section>
           )}
         </div>
