@@ -28,6 +28,7 @@ export type ScheduleEvent = {
   id: string
   roomId: string
   title: string
+  groupId?: string
   type: EventType
   startTime: string
   endTime: string

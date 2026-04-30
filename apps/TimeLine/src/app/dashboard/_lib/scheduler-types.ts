@@ -31,9 +31,15 @@ export type DraftForm = {
   notes: string
 }
 
+export type MoveScope = 'occurrence' | 'series' | 'group'
+export type PendingEventMove = { event: ScheduleEvent; selection: Selection; sourceDateIso: string; sourceDayOfWeek: number; targetDateIso: string }
+export type MoveDraft = { id: string; pending: PendingEventMove; scope: MoveScope; conflicts: string[]; title: string }
+export type MoveConflictPreview = { scope: MoveScope; conflicts: string[] }
+
 export type ScheduleEventMutationInput = {
   roomId: string
   title: string
+  groupId?: string | null
   type: EventType
   startTime: string
   endTime: string

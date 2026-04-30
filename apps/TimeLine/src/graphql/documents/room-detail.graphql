@@ -10,6 +10,7 @@ query GetRoomDetail($roomId: ID!) {
         id
         roomId
         title
+        groupId
         type
         startTime
         endTime
@@ -26,6 +27,7 @@ query GetRoomDetail($roomId: ID!) {
         id
         roomId
         title
+        groupId
         type
         startTime
         endTime
@@ -51,6 +53,7 @@ query GetRoomDetail($roomId: ID!) {
       id
       roomId
       title
+      groupId
       type
       startTime
       endTime

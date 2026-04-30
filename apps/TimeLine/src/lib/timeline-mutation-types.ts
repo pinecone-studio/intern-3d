@@ -6,6 +6,7 @@ export const DEFAULT_VALID_UNTIL = '2026-12-31'
 export type ScheduleEventInput = {
   roomId: string
   title: string
+  groupId?: string | null
   type: EventType
   startTime: string
   endTime: string
