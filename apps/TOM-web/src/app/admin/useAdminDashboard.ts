@@ -29,12 +29,22 @@ type DashboardSummary = {
   thresholdReachedRequests: number;
 };
 
+export type LeaderboardEntry = {
+  id: string;
+  name: string;
+  role: ManagedUser['role'];
+  accountStatus: ManagedUser['accountStatus'];
+  clubCount: number;
+  points: number;
+};
+
 type DashboardSnapshot = {
   summary: DashboardSummary;
   requests: ClubRequest[];
   clubs: ActiveClub[];
   users: ManagedUser[];
   events: ApiEvent[];
+  leaderboard: LeaderboardEntry[];
 };
 
 const defaultBanner =
@@ -53,6 +63,10 @@ function getErrorMessage(error: unknown, fallback: string) {
   }
 
   return fallback;
+}
+
+function ensureArray<T>(value: T[] | null | undefined): T[] {
+  return Array.isArray(value) ? value : [];
 }
 
 async function readJson<T>(response: Response) {
@@ -191,6 +205,7 @@ export function useAdminDashboard(options: TomFormOptions) {
   const [activeClubs, setActiveClubs] = useState<ActiveClub[]>([]);
   const [users, setUsers] = useState<ManagedUser[]>([]);
   const [events, setEvents] = useState<ApiEvent[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [summary, setSummary] = useState<DashboardSummary>(emptySummary);
   const [banner, setBanner] = useState(defaultBanner);
   const [errorMessage, setErrorMessage] = useState('');
@@ -233,29 +248,35 @@ export function useAdminDashboard(options: TomFormOptions) {
   }, [options.allowedDays, options.gradeRanges, options.teachers]);
 
   const loadDashboardSnapshot = async (): Promise<DashboardSnapshot> => {
-    const [summaryData, requestData, clubData, userData, eventData] = await Promise.all([
-      apiRequest<{ summary: DashboardSummary }>('/api/dashboard/summary'),
-      apiRequest<{ requests: ApiClubRequest[] }>('/api/club-requests'),
-      apiRequest<{ clubs: ApiClub[] }>('/api/clubs'),
-      apiRequest<{ users: ApiManagedUser[] }>('/api/users'),
-      apiRequest<{ events: ApiEvent[] }>('/api/events').catch(() => ({ events: [] })),
-    ]);
+    const [summaryData, requestData, clubData, userData, eventData, leaderboardData] =
+      await Promise.all([
+        apiRequest<{ summary: DashboardSummary }>('/api/dashboard/summary'),
+        apiRequest<{ requests: ApiClubRequest[] }>('/api/club-requests'),
+        apiRequest<{ clubs: ApiClub[] }>('/api/clubs'),
+        apiRequest<{ users: ApiManagedUser[] }>('/api/users'),
+        apiRequest<{ events: ApiEvent[] }>('/api/events').catch(() => ({ events: [] })),
+        apiRequest<{ leaderboard: LeaderboardEntry[] }>(
+          '/api/dashboard/leaderboard?limit=5'
+        ).catch(() => ({ leaderboard: [] as LeaderboardEntry[] })),
+      ]);
 
     return {
-      summary: summaryData.summary,
-      requests: requestData.requests.map(mapRequest),
-      clubs: clubData.clubs.map(mapClub),
-      users: userData.users.map(mapUser),
-      events: eventData.events,
+      summary: summaryData.summary ?? emptySummary,
+      requests: ensureArray<ApiClubRequest>(requestData.requests).map(mapRequest),
+      clubs: ensureArray<ApiClub>(clubData.clubs).map(mapClub),
+      users: ensureArray<ApiManagedUser>(userData.users).map(mapUser),
+      events: ensureArray<ApiEvent>(eventData.events),
+      leaderboard: ensureArray<LeaderboardEntry>(leaderboardData.leaderboard),
     };
   };
 
   const applySnapshot = (snapshot: DashboardSnapshot, nextBanner?: string) => {
-    setSummary(snapshot.summary);
-    setRequests(snapshot.requests);
-    setActiveClubs(snapshot.clubs);
-    setUsers(snapshot.users);
-    setEvents(snapshot.events);
+    setSummary(snapshot.summary ?? emptySummary);
+    setRequests(ensureArray(snapshot.requests));
+    setActiveClubs(ensureArray(snapshot.clubs));
+    setUsers(ensureArray(snapshot.users));
+    setEvents(ensureArray(snapshot.events));
+    setLeaderboard(ensureArray(snapshot.leaderboard));
     setBanner(nextBanner ?? defaultBanner);
   };
 
@@ -616,6 +637,7 @@ export function useAdminDashboard(options: TomFormOptions) {
     handleToggleEventStatus,
     isLoading,
     isSaving,
+    leaderboard,
     pendingRequests,
     rejectRequest,
     requests,

@@ -30,7 +30,7 @@ jobs:
           node-version: 24
           cache: npm
 
-      - run: npm install
+      - run: npm ci
 
       - name: Build deployable projects
         run: |
@@ -41,8 +41,10 @@ jobs:
       - name: Create artifact bundles
         run: |
           mkdir -p artifacts
-          tar -czf artifacts/api-dist.tar.gz -C apps/api dist
-          tar -czf artifacts/web-next.tar.gz -C apps/web .next public package.json next.config.js
+          test -d apps/TOM-api/dist
+          test -d apps/TOM-web/.next
+          tar -czf artifacts/api-dist.tar.gz -C apps/TOM-api dist package.json
+          tar -czf artifacts/web-next.tar.gz -C apps/TOM-web .next public package.json next.config.js
 
       - name: Upload API artifact
         uses: actions/upload-artifact@v4

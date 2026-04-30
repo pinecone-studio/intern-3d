@@ -11,8 +11,8 @@
         "cache": true,
         "executor": "@nx/js:prune-lockfile",
         "outputs": [
-          "{workspaceRoot}/apps/api/dist/package.json",
-          "{workspaceRoot}/apps/api/dist/package-lock.json"
+          "{workspaceRoot}/apps/TOM-api/dist/package.json",
+          "{workspaceRoot}/apps/TOM-api/dist/package-lock.json"
         ],
         "options": {
           "buildTarget": "build"
@@ -24,7 +24,7 @@
         ],
         "cache": true,
         "outputs": [
-          "{workspaceRoot}/apps/api/dist/workspace_modules"
+          "{workspaceRoot}/apps/TOM-api/dist/workspace_modules"
         ],
         "executor": "@nx/js:copy-workspace-modules",
         "options": {
