@@ -319,7 +319,7 @@ export default function ClubsPage() {
             onClick={() => setActiveTab(tab.key)}
             className={`rounded-lg px-5 py-2 text-sm font-semibold transition-colors ${
               activeTab === tab.key
-                ? 'bg-white text-[#0f1f3d] shadow-sm ring-1 ring-[#e2eaf5]'
+                ? 'bg-[#49a0e3] text-white shadow-sm'
                 : 'text-black hover:text-[#0f1f3d]'
             }`}
           >
