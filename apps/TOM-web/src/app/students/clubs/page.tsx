@@ -1,6 +1,6 @@
 'use client';
 
-import { useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Plus, X } from 'lucide-react';
 
 import { CapacityBar } from '@/app/_components';
@@ -48,7 +48,9 @@ async function readJson<T>(response: Response) {
     | null;
 
   if (!response.ok) {
-    throw new Error(data?.error || `Хүсэлт амжилтгүй боллоо (код: ${response.status}).`);
+    throw new Error(
+      data?.error || `Хүсэлт амжилтгүй боллоо (код: ${response.status}).`
+    );
   }
 
   return data as T;
@@ -82,23 +84,23 @@ export default function ClubsPage() {
   const [pendingClubId, setPendingClubId] = useState('');
   const [banner, setBanner] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [dayFilter, setDayFilter] = useState('all');
-  const [gradeFilter, setGradeFilter] = useState('all');
-  const deferredSearch = useDeferredValue(searchQuery);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogError, setDialogError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [form, setForm] = useState<ClubRequestForm>(() => createInitialForm(options));
+  const [form, setForm] = useState<ClubRequestForm>(() =>
+    createInitialForm(options)
+  );
 
   useEffect(() => {
     setForm((current) => ({
       ...current,
-      teacherName: current.teacherName || options.teachers[0] || current.teacherName,
-      allowedDays: current.allowedDays || options.allowedDays[0] || current.allowedDays,
-      gradeRange: current.gradeRange || options.gradeRanges[0] || current.gradeRange,
+      teacherName:
+        current.teacherName || options.teachers[0] || current.teacherName,
+      allowedDays:
+        current.allowedDays || options.allowedDays[0] || current.allowedDays,
+      gradeRange:
+        current.gradeRange || options.gradeRanges[0] || current.gradeRange,
     }));
   }, [options.allowedDays, options.gradeRanges, options.teachers]);
 
@@ -120,7 +122,9 @@ export default function ClubsPage() {
         }
       } catch (error) {
         if (!cancelled) {
-          setErrorMessage(getErrorMessage(error, 'Клубуудын жагсаалтыг ачаалж чадсангүй.'));
+          setErrorMessage(
+            getErrorMessage(error, 'Клубуудын жагсаалтыг ачаалж чадсангүй.')
+          );
         }
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -152,48 +156,7 @@ export default function ClubsPage() {
     [clubs, joinedSet]
   );
 
-  const allCategories = useMemo(
-    () => Array.from(new Set(clubs.map((club) => club.category).filter(Boolean))).sort((left, right) => left.localeCompare(right)),
-    [clubs]
-  );
-  const allDays = useMemo(
-    () => Array.from(new Set(clubs.map((club) => club.allowedDays).filter(Boolean))).sort((left, right) => left.localeCompare(right)),
-    [clubs]
-  );
-  const allGrades = useMemo(
-    () => Array.from(new Set(clubs.map((club) => club.gradeRange).filter(Boolean))).sort((left, right) => left.localeCompare(right)),
-    [clubs]
-  );
-
-  const filteredMyClubs = useMemo(() => {
-    return myClubs.filter((club) => {
-      if (categoryFilter !== 'all' && club.category !== categoryFilter) return false;
-      if (dayFilter !== 'all' && club.allowedDays !== dayFilter) return false;
-      if (gradeFilter !== 'all' && club.gradeRange !== gradeFilter) return false;
-      if (deferredSearch.trim()) {
-        const query = deferredSearch.trim().toLowerCase();
-        const haystack = `${club.name} ${club.teacherName} ${club.note} ${club.category} ${club.allowedDays} ${club.gradeRange}`.toLowerCase();
-        if (!haystack.includes(query)) return false;
-      }
-      return true;
-    });
-  }, [myClubs, categoryFilter, dayFilter, gradeFilter, deferredSearch]);
-
-  const filteredOtherClubs = useMemo(() => {
-    return otherClubs.filter((club) => {
-      if (categoryFilter !== 'all' && club.category !== categoryFilter) return false;
-      if (dayFilter !== 'all' && club.allowedDays !== dayFilter) return false;
-      if (gradeFilter !== 'all' && club.gradeRange !== gradeFilter) return false;
-      if (deferredSearch.trim()) {
-        const query = deferredSearch.trim().toLowerCase();
-        const haystack = `${club.name} ${club.teacherName} ${club.note} ${club.category} ${club.allowedDays} ${club.gradeRange}`.toLowerCase();
-        if (!haystack.includes(query)) return false;
-      }
-      return true;
-    });
-  }, [otherClubs, categoryFilter, dayFilter, gradeFilter, deferredSearch]);
-
-  const displayedClubs = activeTab === 'mine' ? filteredMyClubs : filteredOtherClubs;
+  const displayedClubs = activeTab === 'mine' ? myClubs : otherClubs;
 
   const openDialog = () => {
     setDialogError('');
@@ -229,16 +192,23 @@ export default function ClubsPage() {
     setPendingClubId(clubId);
 
     try {
-      const data = await apiRequest<MembershipResponse>('/api/club-memberships', {
-        method: 'POST',
-        body: JSON.stringify({ clubId }),
-      });
+      const data = await apiRequest<MembershipResponse>(
+        '/api/club-memberships',
+        {
+          method: 'POST',
+          body: JSON.stringify({ clubId }),
+        }
+      );
       setJoinedClubIds(data.joinedClubIds);
       updateClubMemberCount(clubId, 1);
       const badgeMessage = data.awardedBadges?.length
-        ? ` Шинэ badge: ${data.awardedBadges.map((item) => `${item.badge.icon} ${item.badge.name}`).join(', ')}`
+        ? ` Шинэ badge: ${data.awardedBadges
+            .map((item) => `${item.badge.icon} ${item.badge.name}`)
+            .join(', ')}`
         : '';
-      setBanner(`Клубт амжилттай нэгдлээ. +${data.gainedXp ?? 0} XP.${badgeMessage}`);
+      setBanner(
+        `Клубт амжилттай нэгдлээ. +${data.gainedXp ?? 0} XP.${badgeMessage}`
+      );
     } catch (error) {
       setErrorMessage(getErrorMessage(error, 'Клубт нэгдэж чадсангүй.'));
     } finally {
@@ -254,10 +224,13 @@ export default function ClubsPage() {
     setPendingClubId(clubId);
 
     try {
-      const data = await apiRequest<MembershipResponse & { ok: true }>('/api/club-memberships', {
-        method: 'DELETE',
-        body: JSON.stringify({ clubId }),
-      });
+      const data = await apiRequest<MembershipResponse & { ok: true }>(
+        '/api/club-memberships',
+        {
+          method: 'DELETE',
+          body: JSON.stringify({ clubId }),
+        }
+      );
       setJoinedClubIds(data.joinedClubIds);
       updateClubMemberCount(clubId, -1);
       setBanner('Клубээс гарлаа.');
@@ -317,8 +290,7 @@ export default function ClubsPage() {
           onClick={openDialog}
           className="inline-flex items-center gap-2 rounded-2xl bg-[#1a3560] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(26,53,96,0.25)] transition hover:opacity-90"
         >
-          <Plus className="h-4 w-4" />
-          + Клуб үүсгэх
+          <Plus className="h-4 w-4" />+ Клуб үүсгэх
         </button>
       </div>
 
@@ -335,10 +307,12 @@ export default function ClubsPage() {
       )}
 
       <div className="mt-5 inline-flex rounded-xl border border-[#e2eaf5] bg-white p-1">
-        {([
-          { key: 'mine', label: 'Миний клубууд' },
-          { key: 'other', label: 'Бусад клубууд' },
-        ] as const).map((tab) => (
+        {(
+          [
+            { key: 'mine', label: 'Миний клубууд' },
+            { key: 'other', label: 'Бусад клубууд' },
+          ] as const
+        ).map((tab) => (
           <button
             key={tab.key}
             type="button"
@@ -346,51 +320,12 @@ export default function ClubsPage() {
             className={`rounded-lg px-5 py-2 text-sm font-semibold transition-colors ${
               activeTab === tab.key
                 ? 'bg-white text-[#0f1f3d] shadow-sm ring-1 ring-[#e2eaf5]'
-                : 'text-[#7a90af] hover:text-[#0f1f3d]'
+                : 'text-black hover:text-[#0f1f3d]'
             }`}
           >
             {tab.label}
           </button>
         ))}
-      </div>
-
-      <div className="mt-4 grid gap-3 md:grid-cols-4">
-        <input
-          value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
-          placeholder="Клуб хайх"
-          className="rounded-xl border border-[#e2eaf5] bg-white px-4 py-2.5 text-sm text-[#4b6284] outline-none transition focus:border-[#b8cef0]"
-        />
-        <select
-          value={categoryFilter}
-          onChange={(event) => setCategoryFilter(event.target.value)}
-          className="rounded-xl border border-[#e2eaf5] bg-white px-4 py-2.5 text-sm text-[#4b6284] outline-none"
-        >
-          <option value="all">Бүх category</option>
-          {allCategories.map((category) => (
-            <option key={category} value={category}>{category}</option>
-          ))}
-        </select>
-        <select
-          value={dayFilter}
-          onChange={(event) => setDayFilter(event.target.value)}
-          className="rounded-xl border border-[#e2eaf5] bg-white px-4 py-2.5 text-sm text-[#4b6284] outline-none"
-        >
-          <option value="all">Бүх өдөр</option>
-          {allDays.map((day) => (
-            <option key={day} value={day}>{day}</option>
-          ))}
-        </select>
-        <select
-          value={gradeFilter}
-          onChange={(event) => setGradeFilter(event.target.value)}
-          className="rounded-xl border border-[#e2eaf5] bg-white px-4 py-2.5 text-sm text-[#4b6284] outline-none"
-        >
-          <option value="all">Бүх анги</option>
-          {allGrades.map((grade) => (
-            <option key={grade} value={grade}>{grade}</option>
-          ))}
-        </select>
       </div>
 
       {isLoading ? (
@@ -414,7 +349,9 @@ export default function ClubsPage() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h3 className="text-base font-bold text-[#0f1f3d]">{club.name}</h3>
+                    <h3 className="text-base font-bold text-[#0f1f3d]">
+                      {club.name}
+                    </h3>
                     <p className="mt-1.5 text-sm text-[#6b7fa3]">
                       {club.teacherName || 'Тодорхойгүй багш'}
                     </p>
@@ -457,7 +394,10 @@ export default function ClubsPage() {
                       {club.startDate} – {club.endDate}
                     </p>
                   ) : null}
-                  <CapacityBar current={club.interestCount} total={club.studentLimit} />
+                  <CapacityBar
+                    current={club.interestCount}
+                    total={club.studentLimit}
+                  />
                 </div>
               </div>
             );
@@ -470,7 +410,9 @@ export default function ClubsPage() {
           <div className="w-full max-w-2xl rounded-[28px] bg-white shadow-xl">
             <div className="flex items-center justify-between border-b border-[#e2eaf5] px-6 py-4">
               <div>
-                <h2 className="text-lg font-bold text-[#183153]">Клуб үүсгэх</h2>
+                <h2 className="text-lg font-bold text-[#183153]">
+                  Клуб үүсгэх
+                </h2>
                 <p className="mt-1 text-sm text-[#6f86a7]">
                   Клубын мэдээллээ бөглөөд админд илгээнэ үү.
                 </p>

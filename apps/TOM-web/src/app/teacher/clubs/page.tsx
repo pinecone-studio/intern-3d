@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Search, ShieldCheck, XCircle } from 'lucide-react';
+import { CheckCircle2, ShieldCheck, XCircle } from 'lucide-react';
 
 import { CapacityBar, StatusBadge } from '@/app/_components';
 import { useTomOptions } from '@/app/_hooks/useTomOptions';
@@ -82,7 +82,6 @@ export default function ClubsPage() {
   const [clubs, setClubs] = useState<Club[]>([]);
   const [requests, setRequests] = useState<ClubRequest[]>([]);
   const [teacherScopeName, setTeacherScopeName] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
   const [clubRequestForm, setClubRequestForm] = useState<ClubRequestForm>(() =>
     createInitialClubRequestForm(options)
   );
@@ -92,15 +91,8 @@ export default function ClubsPage() {
   const [message, setMessage] = useState('Клубийн мэдээллийг D1-ээс ачааллаа.');
 
   const loadData = async (nextMessage?: string) => {
-    const query = new URLSearchParams();
-
-    if (searchTerm.trim()) {
-      query.set('q', searchTerm.trim());
-    }
-
-    const suffix = query.toString() ? `?${query.toString()}` : '';
     const data = await apiRequest<TeacherClubsResponse>(
-      `/api/teacher/clubs${suffix}`
+      '/api/teacher/clubs'
     );
 
     setClubs(data.clubs);
@@ -150,7 +142,7 @@ export default function ClubsPage() {
     return () => {
       cancelled = true;
     };
-  }, [searchTerm]);
+  }, []);
 
   const runAction = async (action: () => Promise<void>, fallback: string) => {
     setIsSaving(true);
@@ -299,7 +291,7 @@ export default function ClubsPage() {
   const inputClass =
     'w-full rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm text-[#17304f] outline-none transition placeholder:text-[#8fa3bf] focus:border-[#4f72d5] focus:ring-2 focus:ring-[#dce8ff]';
   const labelClass =
-    'mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-[#7a90af]';
+    'mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-black';
 
   return (
     <div className="space-y-6">
@@ -337,15 +329,6 @@ export default function ClubsPage() {
                 user?.name ||
                 'Багш'}
             </div>
-            <label className="flex items-center gap-2 rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm text-[#4a6080]">
-              <Search className="h-4 w-4" />
-              <input
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Клуб хайх"
-                className="w-36 bg-transparent outline-none placeholder:text-[#8aa0be]"
-              />
-            </label>
           </div>
         </div>
       </section>
@@ -409,7 +392,7 @@ export default function ClubsPage() {
           <div className="mt-5 space-y-4">
             {clubs.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-[#d6e1ef] px-4 py-10 text-center text-sm text-[#7d93b2]">
-                Энэ шүүлт дээр клуб олдсонгүй.
+                Одоогоор клуб олдсонгүй.
               </div>
             ) : (
               clubs.map((club) => (
@@ -451,7 +434,7 @@ export default function ClubsPage() {
 
                   <div className="mt-4 grid gap-4 md:grid-cols-2">
                     <div>
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7a90af]">
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-black">
                         Багтаамж
                       </p>
                       <CapacityBar
