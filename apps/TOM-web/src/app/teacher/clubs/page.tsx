@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   Users,
+  X,
   XCircle,
 } from 'lucide-react';
 
@@ -46,7 +47,7 @@ type ClubRequestForm = {
   note: string;
 };
 
-type ClubsTab = 'clubs' | 'requests' | 'new';
+type ClubsTab = 'clubs' | 'requests';
 type ClubStatusFilter = 'all' | Club['status'];
 
 function createInitialClubRequestForm(
@@ -96,6 +97,7 @@ export default function ClubsPage() {
   const [requests, setRequests] = useState<ClubRequest[]>([]);
   const [teacherScopeName, setTeacherScopeName] = useState('');
   const [activeTab, setActiveTab] = useState<ClubsTab>('clubs');
+  const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<ClubStatusFilter>('all');
   const [clubRequestForm, setClubRequestForm] = useState<ClubRequestForm>(() =>
@@ -214,6 +216,8 @@ export default function ClubsPage() {
       });
 
       setClubRequestForm(createInitialClubRequestForm(options));
+      setIsRequestDialogOpen(false);
+      setActiveTab('requests');
       await loadData(`${clubName} клубийн хүсэлт илгээгдлээ.`);
     }, 'Клубийн хүсэлт үүсгэж чадсангүй.');
   };
@@ -339,7 +343,6 @@ export default function ClubsPage() {
       count: requests.length,
       icon: ClipboardList,
     },
-    { key: 'new', label: 'Шинэ хүсэлт', icon: Plus },
   ];
 
   const inputClass =
@@ -349,6 +352,23 @@ export default function ClubsPage() {
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-[#183153]">Клубүүд</h1>
+          <p className="mt-1 text-sm text-[#6a819f]">
+            Өөрийн клубүүд, хүсэлтүүд болон шинэ club request
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setIsRequestDialogOpen(true)}
+          className="flex items-center gap-2 rounded-2xl bg-[#49a0e3] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(26,53,96,0.25)] transition hover:opacity-90"
+        >
+          <Plus className="h-4 w-4" />
+          Шинэ хүсэлт
+        </button>
+      </div>
+
       <section
         className={`rounded-[28px] border px-5 py-4 shadow-soft ${
           errorMessage
@@ -603,174 +623,6 @@ export default function ClubsPage() {
         </section>
       ) : null}
 
-      {activeTab === 'new' ? (
-        <section className="rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-6 shadow-soft">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-semibold text-[#17304f]">
-                Шинэ клубийн хүсэлт
-              </h2>
-              <p className="mt-1 text-sm text-[#6e84a3]">
-                {teacherScopeName ||
-                  user?.teacherProfileName ||
-                  user?.name ||
-                  'Багш'}{' '}
-                нэр дээр admin руу илгээгдэнэ.
-              </p>
-            </div>
-            <StatusBadge type="review" text="Club request" />
-          </div>
-
-          <form
-            className="mt-5 space-y-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void submitClubRequest();
-            }}
-          >
-            <label className="block">
-              <span className={labelClass}>Клубийн нэр</span>
-              <input
-                type="text"
-                value={clubRequestForm.clubName}
-                onChange={(event) =>
-                  updateClubRequestField('clubName', event.target.value)
-                }
-                className={inputClass}
-                placeholder="Жишээ: Роботик клуб"
-              />
-            </label>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="block">
-                <span className={labelClass}>Анги</span>
-                <select
-                  value={clubRequestForm.gradeRange}
-                  onChange={(event) =>
-                    updateClubRequestField('gradeRange', event.target.value)
-                  }
-                  className={inputClass}
-                >
-                  {options.gradeRanges.length > 0 ? null : (
-                    <option value="">Сонголт ачаалагдаагүй</option>
-                  )}
-                  {options.gradeRanges.map((gradeRange) => (
-                    <option key={gradeRange} value={gradeRange}>
-                      {gradeRange}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="block">
-                <span className={labelClass}>Өдөр</span>
-                <select
-                  value={clubRequestForm.allowedDays}
-                  onChange={(event) =>
-                    updateClubRequestField('allowedDays', event.target.value)
-                  }
-                  className={inputClass}
-                >
-                  {options.allowedDays.length > 0 ? null : (
-                    <option value="">Сонголт ачаалагдаагүй</option>
-                  )}
-                  {options.allowedDays.map((allowedDay) => (
-                    <option key={allowedDay} value={allowedDay}>
-                      {allowedDay}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="block">
-                <span className={labelClass}>Эхлэх огноо</span>
-                <input
-                  type="date"
-                  value={clubRequestForm.startDate}
-                  onChange={(event) =>
-                    updateClubRequestField('startDate', event.target.value)
-                  }
-                  className={inputClass}
-                />
-              </label>
-
-              <label className="block">
-                <span className={labelClass}>Дуусах огноо</span>
-                <input
-                  type="date"
-                  value={clubRequestForm.endDate}
-                  onChange={(event) =>
-                    updateClubRequestField('endDate', event.target.value)
-                  }
-                  className={inputClass}
-                />
-              </label>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="block">
-                <span className={labelClass}>Сурагчийн лимит</span>
-                <input
-                  type="number"
-                  min="1"
-                  value={clubRequestForm.studentLimit}
-                  onChange={(event) =>
-                    updateClubRequestField('studentLimit', event.target.value)
-                  }
-                  className={inputClass}
-                />
-              </label>
-
-              <label className="block">
-                <span className={labelClass}>Сонирхлын тоо</span>
-                <input
-                  type="number"
-                  min="0"
-                  value={clubRequestForm.interestCount}
-                  onChange={(event) =>
-                    updateClubRequestField('interestCount', event.target.value)
-                  }
-                  className={inputClass}
-                />
-              </label>
-            </div>
-
-            <label className="block">
-              <span className={labelClass}>Тайлбар</span>
-              <textarea
-                value={clubRequestForm.note}
-                onChange={(event) =>
-                  updateClubRequestField('note', event.target.value)
-                }
-                className={`${inputClass} min-h-[108px] resize-y`}
-                placeholder="Клубийн зорилго, онцлог, нэмэлт мэдээлэл"
-              />
-            </label>
-
-            <div className="flex flex-wrap gap-3 pt-1">
-              <button
-                type="submit"
-                disabled={isSaving}
-                className="inline-flex items-center gap-2 rounded-full bg-[#49a0e3] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <CheckCircle2 className="h-4 w-4" />
-                Club request үүсгэх
-              </button>
-              <button
-                type="button"
-                onClick={resetClubRequestForm}
-                disabled={isSaving}
-                className="rounded-full border border-[#d8e4f4] px-4 py-2 text-sm font-semibold text-[#17304f] transition hover:bg-[#f3f7fd] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Цэвэрлэх
-              </button>
-            </div>
-          </form>
-        </section>
-      ) : null}
-
       {activeTab === 'requests' ? (
         <section className="rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-6 shadow-soft">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -872,6 +724,197 @@ export default function ClubsPage() {
             )}
           </div>
         </section>
+      ) : null}
+
+      {isRequestDialogOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              setIsRequestDialogOpen(false);
+            }
+          }}
+        >
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-2xl">
+            <div className="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7f93b1]">
+                  Club request
+                </p>
+                <h2 className="mt-1 text-[1.05rem] font-semibold text-[#183153]">
+                  Шинэ клубийн хүсэлт
+                </h2>
+                <p className="mt-1 text-sm text-[#6a819f]">
+                  {teacherScopeName ||
+                    user?.teacherProfileName ||
+                    user?.name ||
+                    'Багш'}{' '}
+                  нэр дээр admin руу илгээгдэнэ.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsRequestDialogOpen(false)}
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#6a819f] transition hover:bg-[#eef4ff] hover:text-[#1a3560]"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form
+              className="space-y-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void submitClubRequest();
+              }}
+            >
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="block">
+                  <span className={labelClass}>Клубийн нэр</span>
+                  <input
+                    type="text"
+                    value={clubRequestForm.clubName}
+                    onChange={(event) =>
+                      updateClubRequestField('clubName', event.target.value)
+                    }
+                    className={inputClass}
+                    placeholder="Жишээ: Роботик клуб"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className={labelClass}>Анги</span>
+                  <select
+                    value={clubRequestForm.gradeRange}
+                    onChange={(event) =>
+                      updateClubRequestField('gradeRange', event.target.value)
+                    }
+                    className={inputClass}
+                  >
+                    {options.gradeRanges.length > 0 ? null : (
+                      <option value="">Сонголт ачаалагдаагүй</option>
+                    )}
+                    {options.gradeRanges.map((gradeRange) => (
+                      <option key={gradeRange} value={gradeRange}>
+                        {gradeRange}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="block">
+                  <span className={labelClass}>Өдөр</span>
+                  <select
+                    value={clubRequestForm.allowedDays}
+                    onChange={(event) =>
+                      updateClubRequestField('allowedDays', event.target.value)
+                    }
+                    className={inputClass}
+                  >
+                    {options.allowedDays.length > 0 ? null : (
+                      <option value="">Сонголт ачаалагдаагүй</option>
+                    )}
+                    {options.allowedDays.map((allowedDay) => (
+                      <option key={allowedDay} value={allowedDay}>
+                        {allowedDay}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="block">
+                  <span className={labelClass}>Эхлэх огноо</span>
+                  <input
+                    type="date"
+                    value={clubRequestForm.startDate}
+                    onChange={(event) =>
+                      updateClubRequestField('startDate', event.target.value)
+                    }
+                    className={inputClass}
+                  />
+                </label>
+
+                <label className="block">
+                  <span className={labelClass}>Дуусах огноо</span>
+                  <input
+                    type="date"
+                    value={clubRequestForm.endDate}
+                    onChange={(event) =>
+                      updateClubRequestField('endDate', event.target.value)
+                    }
+                    className={inputClass}
+                  />
+                </label>
+
+                <label className="block">
+                  <span className={labelClass}>Сурагчийн лимит</span>
+                  <input
+                    type="number"
+                    min="1"
+                    value={clubRequestForm.studentLimit}
+                    onChange={(event) =>
+                      updateClubRequestField('studentLimit', event.target.value)
+                    }
+                    className={inputClass}
+                  />
+                </label>
+
+                <label className="block">
+                  <span className={labelClass}>Сонирхлын тоо</span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={clubRequestForm.interestCount}
+                    onChange={(event) =>
+                      updateClubRequestField(
+                        'interestCount',
+                        event.target.value
+                      )
+                    }
+                    className={inputClass}
+                  />
+                </label>
+              </div>
+
+              <label className="block">
+                <span className={labelClass}>Тайлбар</span>
+                <textarea
+                  value={clubRequestForm.note}
+                  onChange={(event) =>
+                    updateClubRequestField('note', event.target.value)
+                  }
+                  className={`${inputClass} min-h-[108px] resize-y`}
+                  placeholder="Клубийн зорилго, онцлог, нэмэлт мэдээлэл"
+                />
+              </label>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="rounded-full bg-[#49a0e3] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(79,114,213,0.22)] transition hover:opacity-90 disabled:opacity-50"
+                >
+                  {isSaving ? 'Илгээж байна...' : 'Хүсэлт илгээх'}
+                </button>
+                <button
+                  type="button"
+                  onClick={resetClubRequestForm}
+                  disabled={isSaving}
+                  className="rounded-full border border-[color:var(--border)] bg-white px-5 py-2.5 text-sm font-semibold text-[#56708f] transition hover:bg-[color:var(--surface)] disabled:opacity-50"
+                >
+                  Цэвэрлэх
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsRequestDialogOpen(false)}
+                  className="rounded-full border border-[color:var(--border)] bg-white px-5 py-2.5 text-sm font-semibold text-[#56708f] transition hover:bg-[color:var(--surface)]"
+                >
+                  Цуцлах
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       ) : null}
     </div>
   );
