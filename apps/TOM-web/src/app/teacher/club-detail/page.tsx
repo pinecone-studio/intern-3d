@@ -92,7 +92,9 @@ export default function DetailPage() {
     }
 
     const suffix = query.toString() ? `?${query.toString()}` : '';
-    const clubData = await apiRequest<{ clubs: Club[] }>(`/api/clubs${suffix}`);
+    const clubData = await apiRequest<{ clubs: Club[] }>(
+      `/api/teacher/clubs${suffix}`
+    );
     setClubs(clubData.clubs);
 
     setSelectedClubId((current) => {
