@@ -32,14 +32,14 @@ jobs:
           node-version: 24
           cache: npm
 
+      - run: npm ci
+
       - name: Validate team scope
         run: node scripts/validate-team-scope.mjs
 
       - name: Resolve CI scope
         id: ci_scope
         run: node scripts/resolve-ci-scope.mjs
-
-      - run: npm install
 
       - name: Check Nx sync
         run: npm exec nx -- sync:check
