@@ -76,6 +76,8 @@ export default function ClubsPage() {
   const [requests, setRequests] = useState<ClubRequest[]>([]);
   const [teacherScopeName, setTeacherScopeName] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [rejectingRequest, setRejectingRequest] = useState<ClubRequest | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
   const [clubRequestForm, setClubRequestForm] = useState<ClubRequestForm>(() =>
     createInitialClubRequestForm(options)
   );
@@ -228,12 +230,34 @@ export default function ClubsPage() {
     }, 'Хүсэлт баталж kickoff event үүсгэж чадсангүй.');
   };
 
-  const rejectRequest = async (request: ClubRequest) => {
+  const startRejectRequest = (request: ClubRequest) => {
+    setRejectingRequest(request);
+    setRejectReason(request.flaggedReason || '');
+    setErrorMessage('');
+  };
+
+  const closeRejectDialog = () => {
+    if (isSaving) return;
+    setRejectingRequest(null);
+    setRejectReason('');
+  };
+
+  const rejectRequest = async () => {
+    if (!rejectingRequest) return;
+
     await runAction(async () => {
-      await apiRequest(`/api/club-requests/${request.id}/reject`, {
+      await apiRequest(`/api/club-requests/${rejectingRequest.id}/reject`, {
         method: 'POST',
+        body: JSON.stringify({
+          flaggedReason:
+            rejectReason.trim() ||
+            'Багшийн талаас нэмэлт тодруулга шаардлагатай гэж тэмдэглэв.',
+        }),
       });
-      await loadData(`${request.clubName} хүсэлт татгалзагдлаа.`);
+      const rejectedName = rejectingRequest.clubName;
+      setRejectingRequest(null);
+      setRejectReason('');
+      await loadData(`${rejectedName} хүсэлт татгалзагдлаа.`);
     }, 'Хүсэлт татгалзаж чадсангүй.');
   };
 
@@ -688,7 +712,7 @@ export default function ClubsPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => void rejectRequest(request)}
+                        onClick={() => startRejectRequest(request)}
                         disabled={isSaving}
                         className="inline-flex items-center gap-2 rounded-full border border-[#d8e4f4] px-4 py-2 text-sm font-semibold text-[#17304f] transition hover:bg-[#fff3f4] disabled:cursor-not-allowed disabled:opacity-50"
                       >
@@ -703,6 +727,53 @@ export default function ClubsPage() {
           </article>
         </div>
       </section>
+
+      {rejectingRequest ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0f1f3d]/35 px-4">
+          <div className="w-full max-w-lg rounded-[28px] border border-[#dce7f8] bg-white p-6 shadow-soft">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#b84553]">
+                Хүсэлт татгалзах
+              </p>
+              <h2 className="mt-2 text-xl font-semibold text-[#17304f]">
+                {rejectingRequest.clubName}
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-[#6e84a3]">
+                Татгалзсан шалтгааныг хадгалснаар хүсэлтийн түүхэнд тайлбар үлдэнэ.
+              </p>
+            </div>
+
+            <label className="mt-5 block">
+              <span className={labelClass}>Шалтгаан</span>
+              <textarea
+                value={rejectReason}
+                onChange={(event) => setRejectReason(event.target.value)}
+                className={`${inputClass} min-h-[120px] resize-y`}
+                placeholder="Жишээ: Хуваарь давхцаж байгаа тул дахин санал оруулна уу."
+              />
+            </label>
+
+            <div className="mt-5 flex flex-wrap justify-end gap-3">
+              <button
+                type="button"
+                onClick={closeRejectDialog}
+                disabled={isSaving}
+                className="rounded-full border border-[#d8e4f4] px-4 py-2 text-sm font-semibold text-[#17304f] transition hover:bg-[#f3f7fd] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Болих
+              </button>
+              <button
+                type="button"
+                onClick={() => void rejectRequest()}
+                disabled={isSaving}
+                className="rounded-full bg-[#b84553] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#9f3547] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Татгалзах
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

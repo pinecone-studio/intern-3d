@@ -17,7 +17,15 @@ export async function POST(request: NextRequest, context: { params: Promise<{ re
       return forbidden('Only admins or the assigned teacher can reject this request.')
     }
 
-    const clubRequest = await rejectClubRequest(requestId)
+    const body = (await request.json().catch(() => ({}))) as Record<string, unknown>
+    const flaggedReason =
+      typeof body.flaggedReason === 'string'
+        ? body.flaggedReason.trim()
+        : typeof body.reason === 'string'
+        ? body.reason.trim()
+        : ''
+
+    const clubRequest = await rejectClubRequest(requestId, flaggedReason || null)
     if (!clubRequest) return notFound('Club request not found.')
 
     return ok({ request: clubRequest })

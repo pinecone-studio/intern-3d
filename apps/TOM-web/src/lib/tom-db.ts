@@ -617,7 +617,7 @@ export async function approveClubRequest(id: string) {
   return { request: approvedRequest, club }
 }
 
-export async function rejectClubRequest(id: string) {
+export async function rejectClubRequest(id: string, flaggedReason?: string | null) {
   const request = await getClubRequest(id)
   if (!request) return null
 
@@ -635,7 +635,7 @@ export async function rejectClubRequest(id: string) {
       note: request.note,
       requestStatus: 'rejected',
       clubStatus: 'paused',
-      flaggedReason: request.flaggedReason ?? null,
+      flaggedReason: flaggedReason ?? request.flaggedReason ?? null,
     },
     id
   )
