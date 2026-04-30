@@ -317,6 +317,11 @@ export function AdminDashboardContent({
             </div>
 
             <div className="mt-3 space-y-2.5">
+              {spotlightUsers.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-[color:var(--border)] bg-[color:var(--surface)] px-3 py-6 text-center text-xs text-[#6983a4]">
+                  Тэргүүлэгч хэрэглэгч одоогоор алга.
+                </div>
+              ) : null}
               {spotlightUsers.map((user, index) => (
                 <div
                   key={user.id}
