@@ -1,9 +1,7 @@
+import type { GetSchedulerDataQuery } from '@/graphql/generated'
 import type { EventType, Room, ScheduleEvent } from '@/lib/types'
 
-export type SchedulerQueryResult = {
-  rooms: Room[]
-  events: ScheduleEvent[]
-}
+export type SchedulerQueryResult = GetSchedulerDataQuery
 
 export type Selection = {
   roomId: string

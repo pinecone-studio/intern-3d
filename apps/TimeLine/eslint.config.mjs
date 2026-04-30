@@ -18,7 +18,7 @@ export default [
   { plugins: { '@next/next': nextEslintPluginNext, '@typescript-eslint': typescriptEslint.plugin, import: importPlugin, 'no-secrets': noSecretsPlugin, promise: promisePlugin, react: reactPlugin, spellcheck: spellcheckPlugin, unicorn: unicornPlugin }, settings: { react: { version: 'detect' } } },
   ...baseConfig,
   ...nx.configs['flat/react-typescript'],
-  { ignores: ['.next/**/*', '.open-next/**/*', '.wrangler/**/*', '**/out-tsc', 'cloudflare-env.d.ts'] },
+  { ignores: ['.next/**/*', '.open-next/**/*', '.wrangler/**/*', '**/out-tsc', 'cloudflare-env.d.ts', 'src/graphql/generated.ts'] },
   { files: ['**/_components/**/*.{ts,tsx,js,jsx}', '**/_features/**/*.{ts,tsx,js,jsx}'], rules: { 'import/no-default-export': 'error' } },
   { files: ['**/*.jsx', '**/*.tsx'], ignores: ['**/*.spec.ts', '**/*.spec.tsx', '**/*.spec.js', '**/*.spec.jsx', '**/*.cy.ts', '**/*.cy.tsx'], rules: { 'react/function-component-definition': 'off' } },
   { files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'], rules: { 'max-lines': ['error', { max: 160, skipBlankLines: true, skipComments: true }], camelcase: ['error', { properties: 'always' }], '@nx/enforce-module-boundaries': ['error', { enforceBuildableLibDependency: true, allow: [], depConstraints: defaultDepConstraints }] } },

@@ -1,11 +1,7 @@
-import type { EventType, Room, ScheduleEvent } from '@/lib/types'
+import type { GetRoomDetailQuery } from '@/graphql/generated'
+import type { EventType } from '@/lib/types'
 
-export type RoomDetailQueryResult = {
-  room: {
-    room: Room
-    events: ScheduleEvent[]
-  } | null
-}
+export type RoomDetailQueryResult = GetRoomDetailQuery
 
 export type EventFormData = {
   title: string

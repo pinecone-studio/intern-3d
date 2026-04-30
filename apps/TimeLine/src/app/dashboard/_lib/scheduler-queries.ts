@@ -1,20 +1,6 @@
-import { gql } from '@apollo/client'
-
-export const GET_SCHEDULER_DATA = gql`
-  query GetSchedulerData($floor: Int, $search: String) {
-    rooms(floor: $floor, search: $search) { id number floor type status currentEvent { id roomId title type startTime endTime dayOfWeek daysOfWeek date isOverride instructor notes validFrom validUntil } nextEvent { id roomId title type startTime endTime dayOfWeek daysOfWeek date isOverride instructor notes validFrom validUntil } devices { id name roomId roomNumber status assignedTo } }
-    events { id roomId title type startTime endTime dayOfWeek daysOfWeek date isOverride instructor notes validFrom validUntil }
-  }
-`
-
-export const CREATE_SCHEDULE_EVENT = gql`
-  mutation CreateScheduleEvent($input: ScheduleEventInput!) { createScheduleEvent(input: $input) { room { id } } }
-`
-
-export const UPDATE_SCHEDULE_EVENT = gql`
-  mutation UpdateScheduleEvent($id: ID!, $input: ScheduleEventInput!) { updateScheduleEvent(id: $id, input: $input) { room { id } } }
-`
-
-export const DELETE_SCHEDULE_EVENT = gql`
-  mutation DeleteScheduleEvent($id: ID!) { deleteScheduleEvent(id: $id) }
-`
+export {
+  CreateScheduleEventDocument as CREATE_SCHEDULE_EVENT,
+  DeleteScheduleEventDocument as DELETE_SCHEDULE_EVENT,
+  GetSchedulerDataDocument as GET_SCHEDULER_DATA,
+  UpdateScheduleEventDocument as UPDATE_SCHEDULE_EVENT,
+} from '@/graphql/generated'

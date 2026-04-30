@@ -1,0 +1,65 @@
+query GetSchedulerData($floor: Int, $search: String) {
+  rooms(floor: $floor, search: $search) {
+    id
+    number
+    floor
+    type
+    status
+    currentEvent {
+      id
+      roomId
+      title
+      type
+      startTime
+      endTime
+      dayOfWeek
+      daysOfWeek
+      date
+      isOverride
+      instructor
+      notes
+      validFrom
+      validUntil
+    }
+    nextEvent {
+      id
+      roomId
+      title
+      type
+      startTime
+      endTime
+      dayOfWeek
+      daysOfWeek
+      date
+      isOverride
+      instructor
+      notes
+      validFrom
+      validUntil
+    }
+    devices {
+      id
+      name
+      roomId
+      roomNumber
+      status
+      assignedTo
+    }
+  }
+  events {
+    id
+    roomId
+    title
+    type
+    startTime
+    endTime
+    dayOfWeek
+    daysOfWeek
+    date
+    isOverride
+    instructor
+    notes
+    validFrom
+    validUntil
+  }
+}

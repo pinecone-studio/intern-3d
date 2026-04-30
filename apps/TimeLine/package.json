@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "build": "next build --webpack",
+    "db:generate": "drizzle-kit generate --config drizzle.config.ts",
+    "graphql:codegen": "graphql-codegen --config codegen.ts",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "cf-typegen": "npx wrangler types --config wrangler.jsonc --env-interface CloudflareEnv cloudflare-env.d.ts"
@@ -33,6 +35,11 @@
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^6.3.1",
+    "@graphql-codegen/typed-document-node": "^6.1.8",
+    "@graphql-codegen/typescript": "^5.0.10",
+    "@graphql-codegen/typescript-operations": "^5.1.0",
+    "drizzle-kit": "^0.31.10",
     "tailwindcss-animate": "^1.0.7",
     "wrangler": "^4.49.1"
   }

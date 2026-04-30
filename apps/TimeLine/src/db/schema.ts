@@ -67,26 +67,11 @@ export const deviceAssignmentsTable = sqliteTable('device_assignments', {
   userId: text('user_id').references(() => usersTable.id, { onDelete: 'set null' }),
 })
 
-export const cohortsTable = sqliteTable('cohorts', {
-  id: text('id').primaryKey(),
-  name: text('name').notNull(),
-  roomId: text('room_id')
-    .notNull()
-    .references(() => roomsTable.id, { onDelete: 'restrict' }),
-  startDate: text('start_date').notNull(),
-  endDate: text('end_date').notNull(),
-  status: text('status').notNull().default('upcoming'),
-  notes: text('notes'),
-  createdAt: text('created_at').notNull(),
-  updatedAt: text('updated_at').notNull(),
-})
-
 export const scheduleBlocksTable = sqliteTable('schedule_blocks', {
   id: text('id').primaryKey(),
   roomId: text('room_id')
     .notNull()
     .references(() => roomsTable.id, { onDelete: 'cascade' }),
-  cohortId: text('cohort_id').references(() => cohortsTable.id, { onDelete: 'set null' }),
   type: text('type').notNull(),
   title: text('title').notNull(),
   description: text('description'),
@@ -112,5 +97,4 @@ export type RoomRow = typeof roomsTable.$inferSelect
 export type ScheduleRow = typeof schedulesTable.$inferSelect
 export type ScheduleOverrideRow = typeof scheduleOverridesTable.$inferSelect
 export type DeviceAssignmentRow = typeof deviceAssignmentsTable.$inferSelect
-export type CohortRow = typeof cohortsTable.$inferSelect
 export type ScheduleBlockRow = typeof scheduleBlocksTable.$inferSelect
