@@ -18,6 +18,9 @@ export default function AdminTeacherPage() {
   const [activeRoster, setActiveRoster] = useState<'teachers' | 'students'>(
     'teachers'
   );
+  const [pendingBanUser, setPendingBanUser] = useState<ManagedUser | null>(
+    null
+  );
   const { options } = useTomOptions();
   const {
     errorMessage,
@@ -120,7 +123,7 @@ export default function AdminTeacherPage() {
           </button>
           <button
             type="button"
-            onClick={() => void toggleUserBan(user.id)}
+            onClick={() => setPendingBanUser(user)}
             disabled={isSaving}
             className="rounded-full border border-[#f4b5ba] bg-white px-3 py-1.5 text-xs font-semibold text-[#de4a58] transition hover:bg-[#fff6f7] disabled:opacity-50"
           >
@@ -318,6 +321,54 @@ export default function AdminTeacherPage() {
           )}
         </div>
       </section>
+
+      {pendingBanUser ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+          <div className="w-full max-w-md rounded-[28px] bg-white shadow-xl">
+            <div className="border-b border-[#e2eaf5] px-6 py-4">
+              <h2 className="text-lg font-bold text-[#183153]">
+                {pendingBanUser.accountStatus === 'banned'
+                  ? 'Хориг цуцлах уу?'
+                  : 'Хэрэглэгчийг хориглох уу?'}
+              </h2>
+              <p className="mt-1 text-sm text-[#6f86a7]">
+                {pendingBanUser.accountStatus === 'banned'
+                  ? `${pendingBanUser.name} дээрх хоригийг цуцалбал дахин ашиглах боломжтой болно.`
+                  : `${pendingBanUser.name} дээрх хоригийг баталгаажуулбал тухайн хэрэглэгчийн эрх хаагдана.`}
+              </p>
+            </div>
+
+            <div className="px-6 py-5">
+              <div className="rounded-2xl border border-dashed border-[#d7e2ef] bg-[#f8fbff] p-4 text-sm text-[#60789a]">
+                Үргэлжлүүлэх үү?
+              </div>
+
+              <div className="mt-5 flex flex-wrap items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPendingBanUser(null)}
+                  className="rounded-full border border-[color:var(--border)] bg-white px-5 py-2.5 text-sm font-semibold text-[#56708f] transition hover:bg-[color:var(--surface)]"
+                >
+                  No
+                </button>
+                <button
+                  type="button"
+                  disabled={isSaving}
+                  onClick={async () => {
+                    const user = pendingBanUser;
+                    setPendingBanUser(null);
+                    if (!user) return;
+                    await toggleUserBan(user.id);
+                  }}
+                  className="rounded-full bg-[color:var(--primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(79,114,213,0.22)] transition hover:opacity-90 disabled:opacity-50"
+                >
+                  Yes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
