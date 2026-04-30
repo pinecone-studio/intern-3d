@@ -21,21 +21,6 @@ import { useAdminDashboard } from './useAdminDashboard';
 
 export type AdminSection = 'requests' | 'users' | 'clubs' | 'events';
 
-const monthLabels = [
-  '1 сар',
-  '2 сар',
-  '3 сар',
-  '4 сар',
-  '5 сар',
-  '6 сар',
-  '7 сар',
-  '8 сар',
-  '9 сар',
-  '10 сар',
-  '11 сар',
-  '12 сар',
-];
-
 const fieldClass =
   'w-full rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] px-3 py-2 text-sm text-[color:var(--text)] outline-none transition placeholder:text-[#8aa0be] focus:border-[color:var(--primary)] focus:bg-white focus:ring-2 focus:ring-[color:var(--primary-soft)]';
 
@@ -113,7 +98,6 @@ export function AdminDashboardContent({
   const { options } = useTomOptions();
   const {
     activeClubs,
-    activeCount,
     approveRequest,
     canCreateEvent,
     events,
@@ -132,7 +116,6 @@ export function AdminDashboardContent({
     resetEventForm,
     resetUserForm,
     thresholdGoal,
-    thresholdReachedCount,
     toggleClubStatus,
     toggleUserBan,
     toggleUserRestriction,
@@ -152,40 +135,6 @@ export function AdminDashboardContent({
     setIsEventDialogOpen(false);
     resetEventForm();
   };
-
-  const pausedClubsCount = activeClubs.filter(
-    (club) => club.clubStatus !== 'active'
-  ).length;
-
-  const summaryCards = [
-    {
-      label: 'Нийт хэрэглэгч',
-      value: summary.totalUsers,
-      delta: '+4.2%',
-      icon: Users,
-      tint: 'bg-gradient-primary',
-      badge: 'bg-[#edf3ff] text-[#4f72d5]',
-    },
-    {
-      label: 'Идэвхтэй клуб',
-      value: activeCount,
-      delta: pausedClubsCount > 0 ? `${pausedClubsCount} түр зогссон` : '·',
-      icon: ShieldCheck,
-      tint: 'bg-gradient-teacher',
-      badge: 'bg-[#eaf8ff] text-[#1f95ca]',
-    },
-    {
-      label: 'Хүлээгдэж буй хүсэлт',
-      value: summary.pendingRequests,
-      delta:
-        thresholdReachedCount > 0
-          ? `${thresholdReachedCount} босго давсан`
-          : '·',
-      icon: CalendarDays,
-      tint: 'bg-gradient-student',
-      badge: 'bg-[#eef4ff] text-[#4f77d6]',
-    },
-  ];
 
   const safeUsers = Array.isArray(users) ? users : [];
   const leaderboardSource =
@@ -215,36 +164,6 @@ export function AdminDashboardContent({
             (user.role === 'teacher' ? 220 : 0) +
             (user.accountStatus === 'active' ? 160 : 0),
     }));
-
-  const activitySeries = [
-    summary.pendingRequests * 8 + 22,
-    activeClubs.length * 10 + 28,
-    summary.totalUsers * 2 + 34,
-    thresholdReachedCount * 11 + 18,
-    pendingRequests.length * 6 + 24,
-    requests.length * 5 + 24,
-    activeCount * 12 + 26,
-    summary.pendingRequests * 6 + 42,
-    thresholdReachedCount * 8 + 35,
-    summary.totalUsers * 3 + 39,
-    events.length * 7 + 20,
-    activeClubs.length * 7 + 48,
-  ].map((value) => Math.min(92, Math.max(18, value)));
-
-  const activityPath = activitySeries
-    .map(
-      (value, index) =>
-        `${index === 0 ? 'M' : 'L'} ${
-          (index / (activitySeries.length - 1)) * 100
-        } ${100 - value}`
-    )
-    .join(' ');
-
-  const hasActivityData =
-    summary.totalUsers > 0 ||
-    activeClubs.length > 0 ||
-    requests.length > 0 ||
-    events.length > 0;
 
   const spotlightClubs = requests.slice(0, 3);
   const spotlightUsers = leaderboard.slice(0, 3);
@@ -349,45 +268,9 @@ export function AdminDashboardContent({
 
   return (
     <main className="relative min-h-screen overflow-hidden text-[color:var(--foreground)]">
-      <div className="relative mx-auto max-w-[1440px] ">
+      <div className="relative mx-auto">
         {!activeSection ? (
           <>
-            <section className="dashboard-entrance dashboard-entrance-delay-2 grid gap-3 md:grid-cols-3">
-              {summaryCards.map((card) => {
-                const Icon = card.icon;
-
-                return (
-                  <article
-                    key={card.label}
-                    className={`${panelClass} relative min-h-[96px] overflow-hidden`}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex min-w-0 items-center gap-3">
-                        <div
-                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${card.tint} text-white shadow-sm`}
-                        >
-                          <Icon className="h-4 w-4" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-2xl font-semibold tracking-tight text-[#183153]">
-                            {card.value}
-                          </p>
-                          <p className="truncate text-xs text-[#6a819f]">
-                            {card.label}
-                          </p>
-                        </div>
-                      </div>
-                      <span
-                        className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${card.badge}`}
-                      >
-                        {card.delta}
-                      </span>
-                    </div>
-                  </article>
-                );
-              })}
-            </section>
-
             <section className="dashboard-entrance dashboard-entrance-delay-3 mt-4">
               <article className={`${panelClass} p-5`}>
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -473,84 +356,7 @@ export function AdminDashboardContent({
               </article>
             </section>
 
-            <section className="dashboard-entrance dashboard-entrance-delay-3 mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.8fr)_minmax(280px,0.75fr)]">
-              <article className={panelClass}>
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <div className="flex items-center gap-2 text-[color:var(--primary)]">
-                      <ChartColumnIncreasing className="h-4 w-4" />
-                      <p className="text-sm font-semibold text-[#183153]">
-                        Платформын идэвхжил
-                      </p>
-                    </div>
-                    <p className="mt-1 text-xs text-[#6c829f]">
-                      Сүүлийн 12 сарын клуб Зөвшөөрөх, идэвхжил, хяналтын
-                      үзүүлэлтүүд.
-                    </p>
-                  </div>
-                  <span className="inline-flex items-center rounded-full bg-[color:var(--primary-soft)] px-3 py-1.5 text-xs font-semibold text-[#365f91]">
-                    Last 12 months
-                  </span>
-                </div>
-
-                <div className="mt-4 h-[190px] rounded-xl border border-[color:var(--border)] bg-white px-3 py-2.5">
-                  {!hasActivityData ? (
-                    <div className="flex h-full items-center justify-center text-xs text-[#6983a4]">
-                      Идэвхжлийн өгөгдөл одоогоор алга.
-                    </div>
-                  ) : (
-                    <>
-                      <div className="relative h-[145px]">
-                        <div className="absolute inset-0 rounded-xl bg-[linear-gradient(180deg,_rgba(245,249,255,0.72),_rgba(255,255,255,0.92))]" />
-                        <div className="absolute inset-0">
-                          {[20, 40, 60, 80].map((line) => (
-                            <div
-                              key={line}
-                              className="absolute left-0 right-0 border-t border-dashed border-[#e6eef9]"
-                              style={{ top: `${100 - line}%` }}
-                            />
-                          ))}
-                        </div>
-                        <svg
-                          viewBox="0 0 100 100"
-                          preserveAspectRatio="none"
-                          className="absolute inset-x-2 inset-y-3 h-[calc(100%-1.5rem)] w-[calc(100%-1rem)]"
-                        >
-                          <path
-                            d={activityPath}
-                            fill="none"
-                            stroke="#5c8fd6"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                          {activitySeries.map((value, index) => {
-                            const x =
-                              (index / (activitySeries.length - 1)) * 100;
-                            return (
-                              <circle
-                                key={`${monthLabels[index]}-point`}
-                                cx={x}
-                                cy={100 - value}
-                                r="1.35"
-                                fill="#5c8fd6"
-                              />
-                            );
-                          })}
-                        </svg>
-                      </div>
-                      <div className="mt-2 grid grid-cols-6 gap-y-1 text-[10px] text-[#7389a8] sm:grid-cols-12">
-                        {monthLabels.map((month) => (
-                          <span key={month} className="truncate text-center">
-                            {month}
-                          </span>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-              </article>
-
+            <section className="dashboard-entrance dashboard-entrance-delay-3 mt-4 grid gap-4 xl:grid-cols-3">
               <article className={panelClass}>
                 <div className="flex items-center gap-2">
                   <Trophy className="h-4 w-4 text-[color:var(--primary)]" />
@@ -611,9 +417,7 @@ export function AdminDashboardContent({
                   ))}
                 </div>
               </article>
-            </section>
 
-            <section className="dashboard-entrance dashboard-entrance-delay-4 mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
               <article className={panelClass}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
