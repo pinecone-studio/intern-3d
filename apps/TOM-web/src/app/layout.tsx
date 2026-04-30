@@ -17,7 +17,9 @@ export default function RootLayout({
   return (
     <html lang="mn">
       <body className="min-h-screen bg-[#f4f7fb]">
+        {/*  */}
         <TomSessionProvider>{children}</TomSessionProvider>
+        {/*  */}
       </body>
     </html>
   );
