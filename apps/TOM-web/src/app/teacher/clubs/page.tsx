@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, Search, ShieldCheck, XCircle } from 'lucide-react';
 
 import { CapacityBar, StatusBadge } from '@/app/_components';
+import { useDebouncedValue } from '@/app/_hooks/useDebouncedValue';
 import { useTomOptions } from '@/app/_hooks/useTomOptions';
 import { useTomSession } from '@/app/_providers/tom-session-provider';
 import type { Club, ClubRequest, TomCurrentUser, TomFormOptions } from '@/lib/tom-types';
@@ -76,6 +77,7 @@ export default function ClubsPage() {
   const [requests, setRequests] = useState<ClubRequest[]>([]);
   const [teacherScopeName, setTeacherScopeName] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebouncedValue(searchTerm);
   const [clubRequestForm, setClubRequestForm] = useState<ClubRequestForm>(() =>
     createInitialClubRequestForm(options)
   );
@@ -89,8 +91,8 @@ export default function ClubsPage() {
   const loadData = async (nextMessage?: string) => {
     const query = new URLSearchParams();
 
-    if (searchTerm.trim()) {
-      query.set('q', searchTerm.trim());
+    if (debouncedSearchTerm.trim()) {
+      query.set('q', debouncedSearchTerm.trim());
     }
 
     const suffix = query.toString() ? `?${query.toString()}` : '';
@@ -139,7 +141,7 @@ export default function ClubsPage() {
     return () => {
       cancelled = true;
     };
-  }, [searchTerm]);
+  }, [debouncedSearchTerm]);
 
   const runAction = async (action: () => Promise<void>, fallback: string) => {
     setIsSaving(true);

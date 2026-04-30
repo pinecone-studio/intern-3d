@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { CalendarDays, MapPin, Plus, Search, Trash2 } from 'lucide-react';
 
 import { StatusBadge } from '@/app/_components';
+import { useDebouncedValue } from '@/app/_hooks/useDebouncedValue';
 import { useTomSession } from '@/app/_providers/tom-session-provider';
 import type { EventStatus, SchoolEvent, TomCurrentUser } from '@/lib/tom-types';
 
@@ -76,6 +77,7 @@ export default function EventsPage() {
   const [form, setForm] = useState<EventForm>(emptyForm);
   const [statusFilter, setStatusFilter] = useState<'all' | EventStatus>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebouncedValue(searchTerm);
   const [teacherScopeName, setTeacherScopeName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -91,8 +93,8 @@ export default function EventsPage() {
       query.set('status', statusFilter);
     }
 
-    if (searchTerm.trim()) {
-      query.set('q', searchTerm.trim());
+    if (debouncedSearchTerm.trim()) {
+      query.set('q', debouncedSearchTerm.trim());
     }
 
     const suffix = query.toString() ? `?${query.toString()}` : '';
@@ -134,7 +136,7 @@ export default function EventsPage() {
     return () => {
       cancelled = true;
     };
-  }, [statusFilter, searchTerm]);
+  }, [statusFilter, debouncedSearchTerm]);
 
   const runAction = async (action: () => Promise<void>, fallback: string) => {
     setIsSaving(true);
