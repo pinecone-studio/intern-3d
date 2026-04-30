@@ -165,7 +165,7 @@ export function AdminDashboardContent({
             (user.accountStatus === 'active' ? 160 : 0),
     }));
 
-  const spotlightClubs = requests.slice(0, 3);
+  const spotlightClubs = pendingRequests.slice(0, 3);
   const spotlightUsers = leaderboard.slice(0, 3);
   const activeClubStatusCount = activeClubs.filter(
     (club) => club.clubStatus === 'active'
@@ -528,12 +528,12 @@ export function AdminDashboardContent({
                       </div>
 
                       <div className="divide-y divide-[#e7eef9]">
-                        {requests.length === 0 ? (
+                        {pendingRequests.length === 0 ? (
                           <div className="px-4 py-8 text-center text-sm text-[#6f86a7]">
                             Шалгах клубийн хүсэлт одоогоор байхгүй байна.
                           </div>
                         ) : (
-                          requests.map((club) => {
+                          pendingRequests.map((club) => {
                             const thresholdReached =
                               club.interestCount >= thresholdGoal;
 
@@ -1009,7 +1009,7 @@ export function AdminDashboardContent({
 
             {activeSection === 'events' ? (
               <section className="mt-6 space-y-5">
-                <div className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft">
+                <div>
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-2">
