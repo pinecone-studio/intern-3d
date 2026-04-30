@@ -26,6 +26,11 @@ import type {
   XpSource,
 } from '@/lib/tom-types'
 
+const seedClubRequestIds = new Set(
+  seedClubRequests.map((request) => request.id)
+)
+const seedActiveClubIds = new Set(seedActiveClubs.map((club) => club.id))
+
 type ClubRow = {
   id: string
   name: string
@@ -280,6 +285,14 @@ export async function listClubs(params: {
   const bindings: Array<string | number> = []
 
   filters.push("status <> 'spam'")
+  if (seedActiveClubIds.size > 0) {
+    filters.push(
+      `id NOT IN (${Array.from(seedActiveClubIds)
+        .map(() => '?')
+        .join(', ')})`
+    )
+    bindings.push(...seedActiveClubIds)
+  }
 
   if (params.status) {
     filters.push('status = ?')
@@ -471,6 +484,14 @@ export async function listClubRequests(params: {
   const bindings: Array<string | number> = []
 
   filters.push("club_status <> 'spam'")
+  if (seedClubRequestIds.size > 0) {
+    filters.push(
+      `id NOT IN (${Array.from(seedClubRequestIds)
+        .map(() => '?')
+        .join(', ')})`
+    )
+    bindings.push(...seedClubRequestIds)
+  }
 
   if (params.requestStatus) {
     filters.push('status = ?')
@@ -1652,7 +1673,19 @@ export async function ensureTomUsersSeeded() {
   const count = countRow?.count ?? 0
 
   if (count === 0) {
-    await seedTomDatabase()
+    for (const user of seedManagedUsers) {
+      await upsertUser({
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        teacherProfileName: user.teacherProfileName,
+        accountStatus: user.accountStatus,
+        reason: user.reason,
+        lastActive: user.lastActive,
+        clubCount: user.clubCount,
+        notes: user.notes,
+      }, user.id)
+    }
     return { seeded: true }
   }
 
