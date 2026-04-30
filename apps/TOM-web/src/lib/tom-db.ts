@@ -756,6 +756,38 @@ export async function getDashboardSummary() {
   }
 }
 
+export async function getLeaderboard(limit = 5) {
+  const db = getTomDb()
+  const result = await db
+    .prepare(
+      `SELECT u.id, u.full_name, u.role, u.account_status, u.club_count,
+              COALESCE(SUM(x.amount), 0) AS xp_total
+       FROM users u
+       LEFT JOIN xp_logs x ON x.user_id = u.id
+       GROUP BY u.id
+       ORDER BY xp_total DESC, u.club_count DESC, u.full_name ASC
+       LIMIT ?`
+    )
+    .bind(limit)
+    .all<{
+      id: string
+      full_name: string
+      role: ManagedUser['role']
+      account_status: ManagedUser['accountStatus']
+      club_count: number
+      xp_total: number
+    }>()
+
+  return result.results.map((row) => ({
+    id: row.id,
+    name: row.full_name,
+    role: row.role,
+    accountStatus: row.account_status,
+    clubCount: row.club_count,
+    points: row.xp_total,
+  }))
+}
+
 type EventRow = {
   id: string
   title: string

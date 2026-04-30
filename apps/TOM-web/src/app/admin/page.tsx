@@ -66,6 +66,7 @@ export function AdminDashboardContent({
     handleDeleteEvent,
     handleToggleEventStatus,
     isSaving,
+    leaderboard: dashboardLeaderboard,
     pendingRequests,
     rejectRequest,
     requests,
@@ -120,23 +121,33 @@ export function AdminDashboardContent({
     },
   ];
 
-  const leaderboard = [...users]
+  const safeUsers = Array.isArray(users) ? users : [];
+  const leaderboardSource =
+    Array.isArray(dashboardLeaderboard) && dashboardLeaderboard.length > 0
+      ? dashboardLeaderboard
+      : safeUsers;
+  const leaderboard = [...leaderboardSource]
     .sort((left, right) => {
-      if (right.clubCount !== left.clubCount) {
-        return right.clubCount - left.clubCount;
+      const rightClubCount = Number(right.clubCount ?? 0);
+      const leftClubCount = Number(left.clubCount ?? 0);
+
+      if (rightClubCount !== leftClubCount) {
+        return rightClubCount - leftClubCount;
       }
 
-      return left.name.localeCompare(right.name);
+      return (left.name ?? '').localeCompare(right.name ?? '');
     })
     .slice(0, 5)
     .map((user, index) => ({
       ...user,
       rank: index + 1,
       points:
-        3200 +
-        user.clubCount * 410 +
-        (user.role === 'teacher' ? 220 : 0) +
-        (user.accountStatus === 'active' ? 160 : 0),
+        'points' in user && typeof user.points === 'number'
+          ? user.points
+          : 3200 +
+            Number(user.clubCount ?? 0) * 410 +
+            (user.role === 'teacher' ? 220 : 0) +
+            (user.accountStatus === 'active' ? 160 : 0),
     }));
 
   const activitySeries = [
@@ -169,11 +180,11 @@ export function AdminDashboardContent({
     (club) => club.clubStatus === 'active'
   ).length;
   const pausedClubStatusCount = activeClubs.length - activeClubStatusCount;
-  const teacherCount = users.filter((user) => user.role === 'teacher').length;
-  const restrictedUsers = users.filter(
+  const teacherCount = safeUsers.filter((user) => user.role === 'teacher').length;
+  const restrictedUsers = safeUsers.filter(
     (user) => user.accountStatus === 'restricted'
   ).length;
-  const bannedUsers = users.filter((user) => user.accountStatus === 'banned').length;
+  const bannedUsers = safeUsers.filter((user) => user.accountStatus === 'banned').length;
   const upcomingEvents = events.filter((event) => event.status === 'upcoming').length;
   const totalEventParticipants = events.reduce(
     (total, event) => total + event.participantCount,
@@ -317,50 +328,56 @@ export function AdminDashboardContent({
             </div>
 
             <div className="mt-3 space-y-2.5">
-              {spotlightUsers.map((user, index) => (
-                <div
-                  key={user.id}
-                  className="flex items-center justify-between gap-3 rounded-xl bg-[color:var(--surface)] px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
-                >
-                  <div className="flex min-w-0 items-center gap-2.5">
-                    <div
-                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-                        index === 0
-                          ? 'bg-[#f5bf50] text-[#6b4a00]'
-                          : index === 1
-                          ? 'bg-[#e8f0fb] text-[#486382]'
-                          : index === 2
-                          ? 'bg-[#c9e6ff] text-[#28638c]'
-                          : 'bg-[#eef5ff] text-[#4f6b8d]'
-                      }`}
-                    >
-                      {user.rank}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-[#183153]">
-                        {user.name}
-                      </p>
-                      <p className="truncate text-xs text-[#6983a4]">
-                        {user.role === 'teacher' ? 'Багш' : 'Сурагч'} ·{' '}
-                        {user.accountStatus === 'active'
-                          ? 'Идэвхтэй'
-                          : user.accountStatus === 'restricted'
-                          ? 'Хязгаарласан'
-                          : 'Хориглосон'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-[color:var(--primary)]">
-                      {user.points.toLocaleString()}
-                    </p>
-                    <p className="text-xs text-[#8195af]">
-                      {user.clubCount} клуб
-                    </p>
-                  </div>
+              {spotlightUsers.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-[color:var(--border)] bg-[color:var(--surface)] px-3 py-6 text-center text-xs text-[#6983a4]">
+                  Тэргүүлэгч хэрэглэгч одоогоор алга.
                 </div>
-              ))}
+              ) : (
+                spotlightUsers.map((user, index) => (
+                  <div
+                    key={user.id}
+                    className="flex items-center justify-between gap-3 rounded-xl bg-[color:var(--surface)] px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
+                  >
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <div
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
+                          index === 0
+                            ? 'bg-[#f5bf50] text-[#6b4a00]'
+                            : index === 1
+                            ? 'bg-[#e8f0fb] text-[#486382]'
+                            : index === 2
+                            ? 'bg-[#c9e6ff] text-[#28638c]'
+                            : 'bg-[#eef5ff] text-[#4f6b8d]'
+                        }`}
+                      >
+                        {user.rank}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-[#183153]">
+                          {user.name}
+                        </p>
+                        <p className="truncate text-xs text-[#6983a4]">
+                          {user.role === 'teacher' ? 'Багш' : 'Сурагч'} ·{' '}
+                          {user.accountStatus === 'active'
+                            ? 'Идэвхтэй'
+                            : user.accountStatus === 'restricted'
+                            ? 'Хязгаарласан'
+                            : 'Хориглосон'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="text-right">
+                      <p className="text-sm font-semibold text-[color:var(--primary)]">
+                        {user.points.toLocaleString()}
+                      </p>
+                      <p className="text-xs text-[#8195af]">
+                        {user.clubCount} клуб
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </article>
             </section>
