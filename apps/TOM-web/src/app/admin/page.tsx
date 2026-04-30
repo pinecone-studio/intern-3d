@@ -386,25 +386,6 @@ export function AdminDashboardContent({
                             : 'Хориглосон'}
                         </p>
                       </div>
-              ) : null}
-              {spotlightUsers.map((user, index) => (
-                <div
-                  key={user.id}
-                  className="flex items-center justify-between gap-3 rounded-xl bg-[color:var(--surface)] px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
-                >
-                  <div className="flex min-w-0 items-center gap-2.5">
-                    <div
-                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-                        index === 0
-                          ? 'bg-[#f5bf50] text-[#6b4a00]'
-                          : index === 1
-                          ? 'bg-[#e8f0fb] text-[#486382]'
-                          : index === 2
-                          ? 'bg-[#c9e6ff] text-[#28638c]'
-                          : 'bg-[#eef5ff] text-[#4f6b8d]'
-                      }`}
-                    >
-                      {user.rank}
                     </div>
 
                     <div className="text-right">
