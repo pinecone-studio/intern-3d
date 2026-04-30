@@ -1,10 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+
 import { useRouter } from 'next/navigation';
+
 import { GraduationCap, Search, UserCheck, Users } from 'lucide-react';
 
 import { useTomSession } from '@/app/_providers/tom-session-provider';
+
 import type { ManagedUser } from '@/lib/tom-types';
 
 type UsersResponse = {
@@ -15,8 +18,10 @@ function routeForRole(role: ManagedUser['role']) {
   switch (role) {
     case 'admin':
       return '/admin';
+
     case 'teacher':
       return '/teacher';
+
     default:
       return '/students';
   }
@@ -24,22 +29,36 @@ function routeForRole(role: ManagedUser['role']) {
 
 async function loadUsers(query = '') {
   const params = new URLSearchParams();
+
   if (query.trim()) {
     params.set('q', query.trim());
   }
 
-  const response = await fetch(`/api/users${params.toString() ? `?${params.toString()}` : ''}`, {
-    method: 'GET',
-    credentials: 'same-origin',
-    cache: 'no-store',
-  });
-  const data = (await response.json().catch(() => null)) as UsersResponse | { error?: string } | null;
+  const response = await fetch(
+    `/api/users${params.toString() ? `?${params.toString()}` : ''}`,
+    {
+      method: 'GET',
+
+      credentials: 'same-origin',
+
+      cache: 'no-store',
+    }
+  );
+
+  const data = (await response.json().catch(() => null)) as
+    | UsersResponse
+    | { error?: string }
+    | null;
 
   if (!response.ok) {
     const message =
-      data && typeof data === 'object' && 'error' in data && typeof data.error === 'string'
+      data &&
+      typeof data === 'object' &&
+      'error' in data &&
+      typeof data.error === 'string'
         ? data.error
         : 'Failed to load users.';
+
     throw new Error(message);
   }
 
@@ -48,15 +67,23 @@ async function loadUsers(query = '') {
 
 export default function HomePage() {
   const router = useRouter();
-  const { user, isLoading, isAuthenticating, errorMessage, clearError, login } = useTomSession();
+
+  const { user, isLoading, isAuthenticating, errorMessage, clearError, login } =
+    useTomSession();
+
   const [users, setUsers] = useState<ManagedUser[]>([]);
+
   const [isUsersLoading, setIsUsersLoading] = useState(true);
+
   const [usersError, setUsersError] = useState('');
+
   const [searchQuery, setSearchQuery] = useState('');
+
   const [selectedUserId, setSelectedUserId] = useState('');
 
   useEffect(() => {
     if (isLoading) return;
+
     if (user) {
       router.replace(routeForRole(user.role));
     }
@@ -70,20 +97,31 @@ export default function HomePage() {
     void loadUsers(searchQuery)
       .then((nextUsers) => {
         if (!isMounted) return;
+
         setUsers(nextUsers);
+
         setSelectedUserId((previousUserId) =>
           nextUsers.some((candidate) => candidate.id === previousUserId)
             ? previousUserId
-            : (nextUsers.find((candidate) => candidate.accountStatus !== 'banned')?.id ?? '')
+            : nextUsers.find(
+                (candidate) => candidate.accountStatus !== 'banned'
+              )?.id ?? ''
         );
+
         setUsersError('');
       })
+
       .catch((error) => {
         if (!isMounted) return;
-        setUsersError(error instanceof Error ? error.message : 'Failed to load users.');
+
+        setUsersError(
+          error instanceof Error ? error.message : 'Failed to load users.'
+        );
       })
+
       .finally(() => {
         if (!isMounted) return;
+
         setIsUsersLoading(false);
       });
 
@@ -93,13 +131,20 @@ export default function HomePage() {
   }, [searchQuery]);
 
   const visibleUsers = users;
-  const activeUsers = visibleUsers.filter((candidate) => candidate.accountStatus === 'active').length;
-  const selectedUser = visibleUsers.find((candidate) => candidate.id === selectedUserId) ?? null;
+
+  const activeUsers = visibleUsers.filter(
+    (candidate) => candidate.accountStatus === 'active'
+  ).length;
+
+  const selectedUser =
+    visibleUsers.find((candidate) => candidate.id === selectedUserId) ?? null;
 
   async function handleLogin(userId: string) {
     clearError();
+
     try {
       const currentUser = await login(userId);
+
       if (currentUser) {
         router.push(routeForRole(currentUser.role));
       }
@@ -110,6 +155,7 @@ export default function HomePage() {
 
   async function handleSelectedLogin() {
     if (!selectedUserId) return;
+
     await handleLogin(selectedUserId);
   }
 
@@ -117,15 +163,17 @@ export default function HomePage() {
 
   return (
     <main
-      className="min-h-screen px-4 py-6"
+      className="min-h-screen px-4 py-6 flex items-center"
       style={{
         backgroundImage:
           'radial-gradient(circle at top left, rgba(222,232,248,0.95), transparent 38%), linear-gradient(#d6e4fb 1px, transparent 1px), linear-gradient(90deg, #d6e4fb 1px, transparent 1px)',
+
         backgroundSize: 'auto, 40px 40px, 40px 40px',
+
         backgroundColor: '#eef4fb',
       }}
     >
-      <div className="mx-auto grid min-h-[calc(100vh-3rem)] max-w-6xl gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="mx-auto grid h-fit max-w-6xl gap-8 lg:grid-cols-[1.05fr_0.95fr]">
         <section className="flex flex-col justify-center rounded-[32px] border border-[#dbe7f6] bg-white/85 p-8 shadow-[0_24px_70px_rgba(20,47,82,0.10)] backdrop-blur">
           <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[#16345f] text-white shadow-[0_16px_30px_rgba(22,52,95,0.24)]">
             <GraduationCap className="h-7 w-7" />
@@ -133,27 +181,29 @@ export default function HomePage() {
           <h1 className="mt-6 text-4xl font-semibold tracking-tight text-[#142f52]">
             School Club Platform
           </h1>
-          <p className="mt-3 max-w-xl text-base leading-7 text-[#5f7697]">
-            Database дээр байгаа хэрэглэгчдээс нэгийг нь сонгоод шууд session үүсгэн нэвтэрнэ.
-            Role card эсвэл hardcoded flow ашиглахгүй. Ингэснээр бодит demo
-            хэрэглэгчээр урсгал бүрийг хурдан шалгаж болно.
-          </p>
-
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
             {[
               {
                 title: 'DB users',
+
                 description: 'Users table дээрх бодит бүртгэлүүдийг ашиглана.',
+
                 icon: Users,
               },
+
               {
                 title: 'Search',
+
                 description: 'Нэр эсвэл email-ээр нь шүүнэ.',
+
                 icon: Search,
               },
+
               {
                 title: 'One-click login',
+
                 description: 'Нэг дарж session үүсгээд role page руу орно.',
+
                 icon: UserCheck,
               },
             ].map(({ title, description, icon: Icon }) => (
@@ -164,8 +214,14 @@ export default function HomePage() {
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#1a3560] shadow-[0_10px_22px_rgba(26,53,96,0.10)]">
                   <Icon className="h-5 w-5" />
                 </div>
-                <h2 className="mt-4 text-lg font-semibold text-[#17365f]">{title}</h2>
-                <p className="mt-2 text-sm leading-6 text-[#6983a7]">{description}</p>
+
+                <h2 className="mt-4 text-lg font-semibold text-[#17365f]">
+                  {title}
+                </h2>
+
+                <p className="mt-2 text-sm leading-6 text-[#6983a7]">
+                  {description}
+                </p>
               </article>
             ))}
           </div>
@@ -174,7 +230,10 @@ export default function HomePage() {
         <section className="flex flex-col justify-center rounded-[32px] border border-[#dbe7f6] bg-white p-8 shadow-[0_24px_70px_rgba(20,47,82,0.10)]">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="text-2xl font-semibold text-[#142f52]">Хэрэглэгчээр нэвтрэх</h2>
+              <h2 className="text-2xl font-semibold text-[#142f52]">
+                Хэрэглэгчээр нэвтрэх
+              </h2>
+
               <p className="mt-2 text-sm leading-6 text-[#6e86a7]">
                 {isUsersLoading
                   ? 'DB user-үүдийг ачаалж байна...'
@@ -185,8 +244,10 @@ export default function HomePage() {
 
           <label className="mt-6 block">
             <span className="text-sm font-semibold text-[#1c3d6a]">Хайх</span>
+
             <div className="mt-2 flex items-center gap-3 rounded-[18px] border border-[#d7e4f4] bg-[#f8fbff] px-4 py-3 focus-within:border-[#2e5aac] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#dce8ff]">
               <Search className="h-4 w-4 shrink-0 text-[#6e86a7]" />
+
               <input
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
@@ -207,15 +268,25 @@ export default function HomePage() {
             <select
               value={selectedUserId}
               onChange={(event) => setSelectedUserId(event.target.value)}
-              disabled={isUsersLoading || isAuthenticating || visibleUsers.length === 0}
+              disabled={
+                isUsersLoading || isAuthenticating || visibleUsers.length === 0
+              }
               className="mt-2 w-full rounded-[18px] border border-[#d7e4f4] bg-[#f8fbff] px-4 py-3 text-sm text-[#17365f] outline-none transition focus:border-[#2e5aac] focus:bg-white focus:ring-4 focus:ring-[#dce8ff]"
             >
               <option value="">
-                {isUsersLoading ? 'Хэрэглэгч дуудаж байна...' : 'Хэрэглэгч сонгоно уу'}
+                {isUsersLoading
+                  ? 'Хэрэглэгч дуудаж байна...'
+                  : 'Хэрэглэгч сонгоно уу'}
               </option>
+
               {visibleUsers.map((candidate) => (
-                <option key={candidate.id} value={candidate.id} disabled={candidate.accountStatus === 'banned'}>
-                  {candidate.name} · {candidate.role} · {candidate.accountStatus}
+                <option
+                  key={candidate.id}
+                  value={candidate.id}
+                  disabled={candidate.accountStatus === 'banned'}
+                >
+                  {candidate.name} · {candidate.role} ·{' '}
+                  {candidate.accountStatus}
                 </option>
               ))}
             </select>
@@ -224,15 +295,26 @@ export default function HomePage() {
           <button
             type="button"
             onClick={() => void handleSelectedLogin()}
-            disabled={!selectedUserId || isUsersLoading || isAuthenticating || isLoading || selectedUser?.accountStatus === 'banned'}
+            disabled={
+              !selectedUserId ||
+              isUsersLoading ||
+              isAuthenticating ||
+              isLoading ||
+              selectedUser?.accountStatus === 'banned'
+            }
             className="mt-4 inline-flex items-center justify-center rounded-[18px] bg-[#172a4e] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1e3a6b] disabled:cursor-not-allowed disabled:bg-[#9eb1cd]"
           >
-            {isAuthenticating ? 'Нэвтэрч байна...' : 'Сонгосон хэрэглэгчээр нэвтрэх'}
+            {isAuthenticating
+              ? 'Нэвтэрч байна...'
+              : 'Сонгосон хэрэглэгчээр нэвтрэх'}
           </button>
 
           {selectedUser ? (
             <div className="mt-4 rounded-2xl border border-[#dde8f8] bg-[#f8fbff] px-4 py-3 text-sm text-[#5e7597]">
-              <span className="font-semibold text-[#17365f]">{selectedUser.name}</span>
+              <span className="font-semibold text-[#17365f]">
+                {selectedUser.name}
+              </span>
+
               {` · ${selectedUser.email} · ${selectedUser.role} · ${selectedUser.accountStatus}`}
             </div>
           ) : null}
