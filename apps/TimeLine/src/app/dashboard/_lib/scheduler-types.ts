@@ -14,9 +14,10 @@ export type Selection = {
 }
 
 export type SchedulerViewMode = 'week' | 'day' | 'month' | 'year'
-export type MonthViewFilter = 'all' | 'class' | 'club' | 'closed'
+export type MonthViewFilter = 'all' | 'class' | 'club' | 'event'
+export type MatrixAxisMode = 'time-columns' | 'time-rows'
 export type TimelineOccurrence = { event: ScheduleEvent; room: Room | null }
-export type TimelineCounts = Record<'class' | 'club' | 'closed', number>
+export type TimelineCounts = Record<'class' | 'club' | 'event', number>
 
 export type DraftForm = {
   title: string
@@ -61,19 +62,37 @@ export type YearMonthSummary = {
   shortLabel: string
   totalCount: number
   counts: TimelineCounts
+  uniqueTotal: number
+  uniqueCounts: TimelineCounts
+  uniqueEventKeys: Record<'class' | 'club' | 'event', string[]>
   activeDays: number
   utilization: number
   hasConflict: boolean
   conflictCount: number
   previewEvents: TimelineOccurrence[]
-  timeBuckets: {
-    morning: number
-    afternoon: number
-    evening: number
-  }
+  roomTimelines: Array<{
+    roomId: string
+    roomNumber: string
+    totalCount: number
+    hasConflict: boolean
+    events: TimelineOccurrence[]
+    previewEvents: TimelineOccurrence[]
+  }>
   roomLoads: Array<{
     roomId: string
     roomNumber: string
     totalCount: number
+    scheduledMinutes: number
+    utilization: number
   }>
+}
+
+export type YearCalendarSummary = {
+  uniqueTotal: number
+  activeMonths: number
+  classes: number
+  clubs: number
+  events: number
+  busiestMonth: YearMonthSummary | null
+  quietestMonth: YearMonthSummary | null
 }

@@ -22,7 +22,7 @@ const VIEW_LABELS: Record<SchedulerViewMode, string> = {
 
 export function SchedulerToolbar({ className, rooms, setViewMode, viewMode }: SchedulerToolbarProps) {
   return (
-    <div className={cn('grid gap-[5px] border-b border-[#e1dfdd] px-2 py-2 xl:grid-cols-[clamp(176px,18vw,212px)_minmax(0,1fr)] dark:border-border', className)}>
+    <div className={cn('sticky top-[132px] z-[80] grid gap-[5px] border-b border-[#e1dfdd] bg-white px-2 py-2 shadow-sm lg:top-[65px] xl:grid-cols-[clamp(176px,18vw,212px)_minmax(0,1fr)] dark:border-border dark:bg-card', className)}>
       <div className="flex h-12 items-center overflow-x-auto rounded-xl border border-[#d7d8f4] bg-[#f8f9ff] p-1 dark:border-[#3b3d62] dark:bg-[#1e2031]">
         {VIEW_OPTIONS.map((option) => (
           <button key={option} type="button" className={cn('rounded-lg px-3 py-2 text-xs font-semibold transition', viewMode === option ? 'bg-white text-foreground shadow-sm dark:bg-[#2b3150] dark:text-white' : 'text-muted-foreground hover:text-foreground dark:hover:text-white')} onClick={() => setViewMode(option)}>

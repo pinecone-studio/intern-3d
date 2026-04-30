@@ -14,7 +14,7 @@ interface RoomCardProps {
 }
 
 export function RoomCard({ room, compact }: RoomCardProps) {
-  const isAvailable = room.status === 'available'
+  const isAvailable = room.status === 'open_lab'
   const availableDeviceCount = room.devices.filter(d => d.status === 'available').length
 
   const cardContent = compact ? (
@@ -69,7 +69,7 @@ export function RoomCard({ room, compact }: RoomCardProps) {
         ) : (
           <div className="rounded-md border border-border bg-muted p-3">
             <p className="text-sm font-medium text-foreground">
-              Одоо сул байна
+              Одоо Open Lab
             </p>
           </div>
         )}
@@ -114,7 +114,7 @@ export function RoomCard({ room, compact }: RoomCardProps) {
         className={cn(
           'timeline-room-card flex h-full cursor-pointer flex-col overflow-hidden rounded-md border border-border transition-colors hover:bg-muted/30',
           isAvailable && 'bg-muted/30',
-          room.status === 'closed' && 'bg-muted/20',
+          room.status === 'event' && 'bg-muted/20',
           compact && 'p-3'
         )}
       >

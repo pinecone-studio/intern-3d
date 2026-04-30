@@ -1,11 +1,9 @@
-import type { RoomStatus, EventType } from './types'
+import { OPEN_LAB_STATUS, type EventType, type RoomStatus } from './types'
 
-// Room status config - using unified Mongolian labels
-// "Нээлттэй" represents open/available including open lab periods
 export const STATUS_CONFIG: Record<RoomStatus, { label: string; color: string; bgColor: string; dotColor: string }> = {
-  available: {
-    label: 'Нээлттэй',
-    color: 'text-emerald-600 dark:text-emerald-400',
+  [OPEN_LAB_STATUS]: {
+    label: 'Open Lab',
+    color: 'text-emerald-700 dark:text-emerald-300',
     bgColor: 'bg-emerald-100 dark:bg-emerald-500/20 border-emerald-200 dark:border-emerald-500/30',
     dotColor: 'bg-emerald-500',
   },
@@ -21,11 +19,11 @@ export const STATUS_CONFIG: Record<RoomStatus, { label: string; color: string; b
     bgColor: 'bg-violet-100 dark:bg-violet-500/20 border-violet-200 dark:border-violet-500/30',
     dotColor: 'bg-violet-500',
   },
-  closed: {
-    label: 'Хаалттай',
-    color: 'text-rose-600 dark:text-rose-400',
-    bgColor: 'bg-rose-100 dark:bg-rose-500/20 border-rose-200 dark:border-rose-500/30',
-    dotColor: 'bg-rose-500',
+  event: {
+    label: 'Eventтэй',
+    color: 'text-amber-700 dark:text-amber-300',
+    bgColor: 'bg-amber-100 dark:bg-amber-500/20 border-amber-200 dark:border-amber-500/30',
+    dotColor: 'bg-amber-500',
   },
 }
 
@@ -41,15 +39,10 @@ export const EVENT_TYPE_CONFIG: Record<EventType, { label: string; bgColor: stri
     bgColor: 'bg-violet-500/80 dark:bg-violet-600/80',
     borderColor: 'border-l-violet-600 dark:border-l-violet-400',
   },
-  openlab: { 
-    label: 'Нээлттэй (Open Lab)', 
-    bgColor: 'bg-emerald-500/80 dark:bg-emerald-600/80',
-    borderColor: 'border-l-emerald-600 dark:border-l-emerald-400',
-  },
-  closed: { 
-    label: 'Хаалттай', 
-    bgColor: 'bg-rose-500/80 dark:bg-rose-600/80',
-    borderColor: 'border-l-rose-600 dark:border-l-rose-400',
+  event: {
+    label: 'Event',
+    bgColor: 'bg-red-500/85 dark:bg-red-600/85',
+    borderColor: 'border-l-red-600 dark:border-l-red-400',
   },
 }
 
@@ -70,4 +63,4 @@ export const TIME_SLOTS = [
   '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00',
 ]
 
-export const PRIORITY_ORDER = ['class', 'club', 'openlab', 'closed'] as const
+export const PRIORITY_ORDER = ['event', 'class', 'club'] as const

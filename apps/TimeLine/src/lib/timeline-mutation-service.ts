@@ -11,8 +11,17 @@ import {
   toScheduleInsert,
 } from '@/lib/timeline-mutation-transforms'
 import type { ScheduleEventInput } from '@/lib/timeline-mutation-types'
+import { isEventType } from '@/lib/types'
+
+function assertAllowedScheduleType(input: ScheduleEventInput) {
+  if (!isEventType(input.type)) {
+    throw new Error('Хуваарийн төрөл зөвхөн class, club, event байх ёстой.')
+  }
+}
 
 export async function createScheduleEvent(input: ScheduleEventInput, actorUserId: string | null) {
+  assertAllowedScheduleType(input)
+
   const db = getDrizzleDb()
   const id = createEventId()
   const now = new Date().toISOString()
@@ -35,6 +44,8 @@ export async function createScheduleEvent(input: ScheduleEventInput, actorUserId
 }
 
 export async function updateScheduleEvent(id: string, input: ScheduleEventInput, actorUserId: string | null) {
+  assertAllowedScheduleType(input)
+
   const db = getDrizzleDb()
   const now = new Date().toISOString()
   const createdBy = await requireScheduleEditorId(actorUserId)

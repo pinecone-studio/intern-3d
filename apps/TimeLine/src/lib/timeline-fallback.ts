@@ -1,15 +1,22 @@
 import { fallbackDevices, fallbackOverrides, fallbackRooms, fallbackSchedules } from '@/lib/timeline-fallback-data'
 import { mapDeviceAssignmentRow, mapRoomRow, mapScheduleOverrideRow, mapScheduleRow } from '@/lib/timeline-mappers'
+import { isRoomStatus, type RoomStatus } from '@/lib/types'
 
 function matchesInstructor(instructor: string | undefined, search: string): boolean {
   return instructor?.toLowerCase().includes(search.toLowerCase()) ?? false
+}
+
+function normalizeRoomStatusFilter(status?: string | null): RoomStatus | null {
+  if (!status) return null
+  if (status === 'openlab') return 'open_lab'
+  return isRoomStatus(status) ? status : null
 }
 
 function buildFallback(now = new Date()) {
   const events = [
     ...fallbackSchedules.map((schedule) => mapScheduleRow(schedule)),
     ...fallbackOverrides.map((override) => mapScheduleOverrideRow(override)),
-  ].sort((left, right) => {
+  ].filter((event): event is NonNullable<typeof event> => event !== null).sort((left, right) => {
     if (left.roomId !== right.roomId) return left.roomId.localeCompare(right.roomId)
     return left.startTime.localeCompare(right.startTime)
   })
@@ -37,10 +44,13 @@ function buildFallback(now = new Date()) {
 
 export function listFallbackRooms(params: { floor?: string | null; status?: string | null; search?: string | null } = {}) {
   const { rooms } = buildFallback()
+  const statusFilter = normalizeRoomStatusFilter(params.status)
+
+  if (params.status && !statusFilter) return []
 
   return rooms.filter((room) => {
     if (params.floor && room.floor !== Number(params.floor)) return false
-    if (params.status && room.status !== params.status) return false
+    if (statusFilter && room.status !== statusFilter) return false
     if (params.search && !room.number.toLowerCase().includes(params.search.toLowerCase())) return false
     return true
   })

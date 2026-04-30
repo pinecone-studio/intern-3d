@@ -1,6 +1,6 @@
 import type { DeviceAssignmentRow, RoomRow, ScheduleBlockRow, ScheduleOverrideRow, ScheduleRow } from '@/db/schema'
-import { getCurrentEvent, getNextEvent, getRoomStatusFromEvent } from '@/lib/timeline-status'
-import type { Device, EventType, Room, ScheduleEvent } from '@/lib/types'
+import { getRealtimeRoomState } from '@/lib/timeline-status'
+import { isEventType, type Device, type EventType, type Room, type ScheduleEvent } from '@/lib/types'
 
 function parseDaysOfWeek(daysOfWeek: string): number[] {
   try {
@@ -16,14 +16,16 @@ function isoDayFromDate(date: string): number {
   return day === 0 ? 7 : day
 }
 
-export function mapScheduleRow(schedule: ScheduleRow, instructor?: string): ScheduleEvent {
+export function mapScheduleRow(schedule: ScheduleRow, instructor?: string): ScheduleEvent | null {
   const daysOfWeek = parseDaysOfWeek(schedule.daysOfWeek)
+  const type = toScheduleEventType(schedule.type)
+  if (!type) return null
 
   return {
     id: schedule.id,
     roomId: schedule.roomId,
     title: schedule.title,
-    type: (schedule.type === 'open' ? 'openlab' : schedule.type) as EventType,
+    type,
     startTime: schedule.startTime,
     endTime: schedule.endTime,
     dayOfWeek: daysOfWeek[0] ?? 0,
@@ -36,14 +38,16 @@ export function mapScheduleRow(schedule: ScheduleRow, instructor?: string): Sche
   }
 }
 
-export function mapScheduleOverrideRow(override: ScheduleOverrideRow, instructor?: string): ScheduleEvent {
+export function mapScheduleOverrideRow(override: ScheduleOverrideRow, instructor?: string): ScheduleEvent | null {
   const dayOfWeek = isoDayFromDate(override.date)
+  const type = toScheduleEventType(override.type)
+  if (!type) return null
 
   return {
     id: override.id,
     roomId: override.roomId,
     title: override.title,
-    type: (override.type === 'open' ? 'openlab' : override.type) as EventType,
+    type,
     startTime: override.startTime,
     endTime: override.endTime,
     dayOfWeek,
@@ -55,10 +59,10 @@ export function mapScheduleOverrideRow(override: ScheduleOverrideRow, instructor
   }
 }
 
-function toBlockEventType(type: string): EventType {
-  if (type === 'open_lab') return 'openlab'
-  if (type === 'event') return 'closed'
-  return type as EventType
+function toScheduleEventType(type: string): EventType | null {
+  if (type === 'open' || type === 'open_lab') return null
+  if (type === 'event' || type === 'closed') return 'event'
+  return isEventType(type) ? type : null
 }
 
 function daysForBlock(block: ScheduleBlockRow): number[] {
@@ -67,17 +71,19 @@ function daysForBlock(block: ScheduleBlockRow): number[] {
   return parseDaysOfWeek(block.daysOfWeek ?? '[]')
 }
 
-export function mapScheduleBlockRow(block: ScheduleBlockRow, instructor?: string): ScheduleEvent {
+export function mapScheduleBlockRow(block: ScheduleBlockRow, instructor?: string): ScheduleEvent | null {
   const daysOfWeek = daysForBlock(block)
   const isOverride = block.recurrence === 'one_time'
   const startMinute = block.startMinute ?? block.startHour * 60
   const endMinute = block.endMinute ?? block.endHour * 60
+  const type = toScheduleEventType(block.type)
+  if (!type) return null
 
   return {
     id: block.id,
     roomId: block.roomId,
     title: block.title,
-    type: toBlockEventType(block.type),
+    type,
     startTime: minutesToTime(startMinute),
     endTime: minutesToTime(endMinute),
     dayOfWeek: daysOfWeek[0] ?? 0,
@@ -109,7 +115,6 @@ export function mapDeviceAssignmentRow(device: DeviceAssignmentRow, roomName: st
 }
 
 export function mapRoomRow(room: RoomRow, events: ScheduleEvent[], devices: Device[], now = new Date()): Room {
-  const currentEvent = getCurrentEvent(events, now)
   const displayName = room.name === 'Event hall' && room.floor === 4 ? 'Event hall 4' : room.name
 
   return {
@@ -117,9 +122,7 @@ export function mapRoomRow(room: RoomRow, events: ScheduleEvent[], devices: Devi
     number: displayName,
     floor: room.floor as Room['floor'],
     type: (room.type === 'event_hall' ? 'event-hall' : room.type) as Room['type'],
-    status: getRoomStatusFromEvent(currentEvent),
-    currentEvent,
-    nextEvent: getNextEvent(events, now),
+    ...getRealtimeRoomState(events, now),
     devices,
   }
 }
