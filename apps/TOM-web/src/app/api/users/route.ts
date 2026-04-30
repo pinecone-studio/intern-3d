@@ -8,9 +8,6 @@ import { parseUserInput } from '@/lib/tom-validators'
 
 export async function GET(request: NextRequest) {
   try {
-    const auth = await requireAdmin(request)
-    if (auth.response) return auth.response
-
     await ensureTomUsersSeeded()
 
     const { searchParams } = new URL(request.url)

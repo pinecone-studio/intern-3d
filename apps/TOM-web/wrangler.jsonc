@@ -8,6 +8,9 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+  "vars": {
+    "ALLOW_SEED": "true"
+  },
   "d1_databases": [
     {
       "binding": "TOM_DB",
