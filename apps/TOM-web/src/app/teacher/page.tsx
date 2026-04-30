@@ -287,8 +287,8 @@ export default function TeacherDashboard() {
           })}
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-3">
-          <div className="shadow-soft lg:col-span-2 rounded-3xl border border-[color:var(--border)] bg-[color:var(--card)] text-[color:var(--card-foreground)]">
+        <section>
+          <div className="shadow-soft rounded-3xl border border-[color:var(--border)] bg-[color:var(--card)] text-[color:var(--card-foreground)]">
             <div className="flex flex-row items-center justify-between p-6">
               <div>
                 <div className="text-base font-semibold leading-none tracking-tight">
@@ -345,33 +345,6 @@ export default function TeacherDashboard() {
             </div>
           </div>
 
-          <div className="shadow-soft rounded-3xl border border-[color:var(--border)] bg-[color:var(--card)] text-[color:var(--card-foreground)]">
-            <div className="p-6">
-              <div className="text-base font-semibold leading-none tracking-tight">
-                Түргэн үйлдлүүд
-              </div>
-            </div>
-            <div className="space-y-3 p-6 pt-0">
-              <Link
-                href="/teacher/events"
-                className="inline-flex w-full items-center justify-start gap-2 rounded-full bg-[color:var(--primary)] px-4 py-2 text-sm font-medium text-[color:var(--primary-foreground)] shadow transition-colors hover:opacity-90"
-              >
-                <Plus className="h-4 w-4" /> Арга хэмжээ рүү очих
-              </Link>
-              <button
-                disabled
-                className="inline-flex w-full items-center justify-start gap-2 rounded-full border border-[color:var(--input)] bg-[color:var(--background)] px-4 py-2 text-sm font-medium shadow-sm opacity-60"
-              >
-                <Calendar className="h-4 w-4" /> Арга хэмжээ нийтлэх
-              </button>
-              <button
-                disabled
-                className="inline-flex w-full items-center justify-start gap-2 rounded-full border border-[color:var(--input)] bg-[color:var(--background)] px-4 py-2 text-sm font-medium shadow-sm opacity-60"
-              >
-                <ShieldCheck className="h-4 w-4" /> Клуб баталгаажуулах
-              </button>
-            </div>
-          </div>
         </section>
 
         <div className="shadow-soft rounded-3xl border border-[color:var(--border)] bg-[color:var(--card)] text-[color:var(--card-foreground)]">
