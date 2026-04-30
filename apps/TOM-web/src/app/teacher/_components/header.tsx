@@ -6,7 +6,6 @@ import {
   CalendarDays,
   GraduationCap,
   LayoutDashboard,
-  ListCheck,
   LogOut,
   Users,
 } from 'lucide-react';
@@ -17,7 +16,6 @@ const navItems = [
   { href: '/teacher', label: 'Хянах самбар', icon: LayoutDashboard },
   { href: '/teacher/clubs', label: 'Клубүүд', icon: Users },
   { href: '/teacher/events', label: 'Үйл ажиллагаа', icon: CalendarDays },
-  { href: '/teacher/club-detail', label: 'Дэлгэрэнгүй', icon: ListCheck },
 ] as const;
 
 function normalizePathname(pathname: string) {
