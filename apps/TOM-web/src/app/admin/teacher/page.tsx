@@ -96,6 +96,7 @@ export default function AdminTeacherPage() {
                 type="text"
                 value={userForm.name}
                 onChange={(event) => updateUserField('name', event.target.value)}
+                placeholder="Жишээ: Бат-Эрдэнэ багш"
                 className={fieldClass}
               />
             </label>
@@ -106,6 +107,7 @@ export default function AdminTeacherPage() {
                 type="email"
                 value={userForm.email}
                 onChange={(event) => updateUserField('email', event.target.value)}
+                placeholder="teacher@example.edu"
                 className={fieldClass}
               />
             </label>
@@ -130,6 +132,7 @@ export default function AdminTeacherPage() {
                 onChange={(event) =>
                   updateUserField('reason', event.target.value)
                 }
+                placeholder="Жишээ: Сургалтын хөтөлбөрт багшийн бүртгэл нэмэх шаардлагатай."
                 className={fieldClass}
               />
             </label>
