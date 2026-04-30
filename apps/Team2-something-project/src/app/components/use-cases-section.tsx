@@ -1,9 +1,11 @@
+import Link from 'next/link';
+
 import { useCases } from '../landing-data';
 import { Reveal } from './reveal';
 
 export function UseCasesSection() {
   return (
-    <section id="resources" className="groups-section">
+    <section id="roles" className="groups-section">
       <div className="groups-overlay" />
       <Reveal className="groups-content" variant="up">
         <p className="landing-micro landing-micro-dark">Roles</p>
@@ -21,6 +23,9 @@ export function UseCasesSection() {
             >
               <h3>{item.title}</h3>
               <p>{item.description}</p>
+              <Link href={item.href} className="use-case-link">
+                {item.action}
+              </Link>
             </article>
           ))}
         </div>
