@@ -34,6 +34,16 @@ export async function POST(request: NextRequest) {
     const input = parseClubRequestInput(body)
     if (!input) return badRequest('Club request name is required.')
 
+    const clubName = input.clubName.trim()
+    if (clubName.length < 3) return badRequest('Club name must be at least 3 characters.')
+    if (clubName.length > 100) return badRequest('Club name must be at most 100 characters.')
+
+    const existingRequests = await listClubRequests({ q: clubName })
+    const duplicate = existingRequests.find(
+      (r) => r.clubName.trim().toLowerCase() === clubName.toLowerCase()
+    )
+    if (duplicate) return badRequest('A club request with this name already exists.')
+
     const teacherId = typeof body.teacherId === 'string' ? body.teacherId.trim() : ''
     if (!teacherId) return badRequest('teacherId is required.')
 
@@ -46,7 +56,7 @@ export async function POST(request: NextRequest) {
     }
 
     const clubRequest = await upsertClubRequest({
-      clubName: input.clubName,
+      clubName,
       teacherName: teacher.teacherProfileName || teacher.name,
       createdBy: auth.user.id,
       interestCount: 0,
