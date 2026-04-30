@@ -5,20 +5,13 @@ on:
     branches:
       - main
   pull_request:
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - labeled
-      - unlabeled
-      - ready_for_review
+    types: [opened, reopened, synchronize, labeled, unlabeled, ready_for_review]
 
 permissions:
   contents: read
 
 jobs:
   validate:
-    name: Validate
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -29,8 +22,11 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 20 # 🔥 24 биш → stable
           cache: npm
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
 
       - name: Validate team scope
         run: node scripts/validate-team-scope.mjs
@@ -39,19 +35,17 @@ jobs:
         id: ci_scope
         run: node scripts/resolve-ci-scope.mjs
 
-      - run: npm install
-
       - name: Check Nx sync
         run: npm exec nx -- sync:check
 
-      - name: Lint and build team projects (labeled PR)
+      - name: Lint & Build (scoped)
         if: ${{ github.event_name == 'pull_request' && steps.ci_scope.outputs.projects != '' }}
         run: npm exec nx -- run-many -t lint build --projects="${{ steps.ci_scope.outputs.projects }}" --parallel=3
 
-      - name: Lint and build all projects (main or unlabeled PR)
+      - name: Lint & Build (all)
         if: ${{ github.event_name != 'pull_request' || steps.ci_scope.outputs.projects == '' }}
         run: npm exec nx -- run-many -t lint build --all --parallel=3
 
-      - name: Typecheck API (TOM PR, unlabeled PR, or main)
+      - name: Typecheck API
         if: ${{ github.event_name != 'pull_request' || steps.ci_scope.outputs.team == 'TOM' || steps.ci_scope.outputs.team == '' }}
         run: npm exec nx -- run @org/api:typecheck
