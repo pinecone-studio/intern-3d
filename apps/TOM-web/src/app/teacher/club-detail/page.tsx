@@ -18,10 +18,7 @@ const clubStatusLabel: Record<ClubStatus, string> = {
 type EditableClub = {
   name: string;
   description: string;
-  teacherName: string;
   studentLimit: string;
-  memberCount: string;
-  interestCount: string;
   gradeRange: string;
   allowedDays: string;
   startDate: string;
@@ -29,17 +26,13 @@ type EditableClub = {
   note: string;
   status: ClubStatus;
   category: string;
-  verified: boolean;
 };
 
 function toEditableClub(club: Club): EditableClub {
   return {
     name: club.name,
     description: club.description,
-    teacherName: club.teacherName,
     studentLimit: String(club.studentLimit),
-    memberCount: String(club.memberCount),
-    interestCount: String(club.interestCount),
     gradeRange: club.gradeRange,
     allowedDays: club.allowedDays,
     startDate: club.startDate,
@@ -47,7 +40,6 @@ function toEditableClub(club: Club): EditableClub {
     note: club.note,
     status: club.status,
     category: club.category,
-    verified: club.verified,
   };
 }
 
@@ -172,10 +164,7 @@ export default function DetailPage() {
         body: JSON.stringify({
           name: draft.name,
           description: draft.description,
-          teacherName: draft.teacherName,
           studentLimit: Number(draft.studentLimit) || 0,
-          memberCount: Number(draft.memberCount) || 0,
-          interestCount: Number(draft.interestCount) || 0,
           gradeRange: draft.gradeRange,
           allowedDays: draft.allowedDays,
           startDate: draft.startDate,
@@ -183,7 +172,6 @@ export default function DetailPage() {
           note: draft.note,
           status: draft.status,
           category: draft.category,
-          verified: draft.verified,
         }),
       });
 
@@ -311,7 +299,7 @@ export default function DetailPage() {
                       type={draft.status}
                       text={clubStatusLabel[draft.status]}
                     />
-                    {draft.verified ? (
+                    {selectedClub.verified ? (
                       <StatusBadge type="approved" text="Баталгаажсан" />
                     ) : null}
                   </div>
@@ -337,7 +325,7 @@ export default function DetailPage() {
                     Багтаамжийн тойм
                   </p>
                   <CapacityBar
-                    current={Number(draft.memberCount) || 0}
+                    current={selectedClub.memberCount}
                     total={Number(draft.studentLimit) || 0}
                   />
                 </div>
@@ -347,7 +335,7 @@ export default function DetailPage() {
                       Сонирхсон
                     </p>
                     <p className="mt-2 text-lg font-semibold text-[#17304f]">
-                      {draft.interestCount}
+                      {selectedClub.interestCount}
                     </p>
                   </div>
                   <div className="rounded-2xl bg-[#f4f8fd] px-4 py-4 text-sm text-[#5f7697]">
@@ -358,6 +346,33 @@ export default function DetailPage() {
                       {draft.category || 'ерөнхий'}
                     </p>
                   </div>
+                </div>
+              </div>
+
+              <div className="mt-4 grid gap-3 md:grid-cols-3">
+                <div className="rounded-2xl border border-[#d8e4f4] bg-[#f8fbff] px-4 py-3 text-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#7d91ae]">
+                    Хариуцсан багш
+                  </p>
+                  <p className="mt-1 font-semibold text-[#17304f]">
+                    {selectedClub.teacherName || 'Тодорхойгүй'}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-[#d8e4f4] bg-[#f8fbff] px-4 py-3 text-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#7d91ae]">
+                    Гишүүд
+                  </p>
+                  <p className="mt-1 font-semibold text-[#17304f]">
+                    {selectedClub.memberCount}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-[#d8e4f4] bg-[#f8fbff] px-4 py-3 text-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#7d91ae]">
+                    Баталгаажуулалт
+                  </p>
+                  <p className="mt-1 font-semibold text-[#17304f]">
+                    {selectedClub.verified ? 'Баталгаажсан' : 'Баталгаажаагүй'}
+                  </p>
                 </div>
               </div>
 
@@ -374,23 +389,6 @@ export default function DetailPage() {
                   placeholder="Клубийн нэр"
                   className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
                 />
-                <select
-                  value={draft.teacherName}
-                  onChange={(event) =>
-                    setDraft((current) =>
-                      current
-                        ? { ...current, teacherName: event.target.value }
-                        : current
-                    )
-                  }
-                  className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
-                >
-                  {options.teachers.map((teacher) => (
-                    <option key={teacher} value={teacher}>
-                      {teacher}
-                    </option>
-                  ))}
-                </select>
                 <select
                   value={draft.gradeRange}
                   onChange={(event) =>
@@ -464,34 +462,6 @@ export default function DetailPage() {
                   className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
                 />
                 <input
-                  type="number"
-                  min="0"
-                  value={draft.memberCount}
-                  onChange={(event) =>
-                    setDraft((current) =>
-                      current
-                        ? { ...current, memberCount: event.target.value }
-                        : current
-                    )
-                  }
-                  placeholder="Гишүүдийн тоо"
-                  className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  value={draft.interestCount}
-                  onChange={(event) =>
-                    setDraft((current) =>
-                      current
-                        ? { ...current, interestCount: event.target.value }
-                        : current
-                    )
-                  }
-                  placeholder="Сонирхлын тоо"
-                  className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
-                />
-                <input
                   value={draft.category}
                   onChange={(event) =>
                     setDraft((current) =>
@@ -525,21 +495,6 @@ export default function DetailPage() {
                     )
                   )}
                 </select>
-                <label className="flex items-center gap-3 rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm font-semibold text-[#17304f]">
-                  <input
-                    type="checkbox"
-                    checked={draft.verified}
-                    onChange={(event) =>
-                      setDraft((current) =>
-                        current
-                          ? { ...current, verified: event.target.checked }
-                          : current
-                      )
-                    }
-                    className="h-4 w-4 rounded border-[#c0d1e8]"
-                  />
-                  Баталгаажсан гэж тэмдэглэх
-                </label>
               </div>
 
               <textarea
