@@ -259,7 +259,7 @@ export default function AdminTeacherPage() {
             </div>
           ) : (
             <section className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)] p-4 shadow-sm">
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div className="sticky top-0 z-20 -mx-4 -mt-4 mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-[color:var(--border)] bg-[color:var(--card)] px-4 py-4 backdrop-blur">
                 <div>
                   <h2 className="text-lg font-semibold text-[#183153]">
                     {activeListTitle} ({activeList.length})
