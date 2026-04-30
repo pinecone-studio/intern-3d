@@ -1,6 +1,7 @@
 'use client';
 
 import { UserPlus, Users } from 'lucide-react';
+import { useState } from 'react';
 
 import { StatusBadge } from '@/app/_components';
 import { useTomOptions } from '@/app/_hooks/useTomOptions';
@@ -14,6 +15,9 @@ const fieldClass =
 const inputLabelClass = 'mb-1.5 block text-xs font-semibold text-[#5f7697]';
 
 export default function AdminTeacherPage() {
+  const [activeRoster, setActiveRoster] = useState<'teachers' | 'students'>(
+    'teachers'
+  );
   const { options } = useTomOptions();
   const {
     errorMessage,
@@ -34,6 +38,18 @@ export default function AdminTeacherPage() {
   const activeTeachers = teachers.filter(
     (teacher) => teacher.accountStatus === 'active'
   ).length;
+
+  const activeList = activeRoster === 'teachers' ? teachers : students;
+  const activeListTitle = activeRoster === 'teachers' ? 'Багш нар' : 'Сурагчид';
+  const activeListDescription =
+    activeRoster === 'teachers'
+      ? 'Багшийн бүртгэл, түгжээс, эрхийг эндээс удирдана.'
+      : 'Сурагчийн мэдээлэл, хязгаарлалт, хоригийг эндээс харна.';
+  const activeListEmpty =
+    activeRoster === 'teachers'
+      ? 'Бүртгэлтэй багш одоогоор байхгүй байна.'
+      : 'Бүртгэлтэй сурагч одоогоор байхгүй байна.';
+  const activeListTargetRole = activeRoster === 'teachers' ? 'student' : 'teacher';
 
   const renderUserCard = (
     user: ManagedUser,
@@ -147,6 +163,31 @@ export default function AdminTeacherPage() {
           </div>
         </div>
 
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setActiveRoster('teachers')}
+            className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+              activeRoster === 'teachers'
+                ? 'bg-[color:var(--primary)] text-white'
+                : 'border border-[color:var(--border)] bg-white text-[#56708f] hover:bg-[color:var(--surface)]'
+            }`}
+          >
+            Багш
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveRoster('students')}
+            className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+              activeRoster === 'students'
+                ? 'bg-[color:var(--primary)] text-white'
+                : 'border border-[color:var(--border)] bg-white text-[#56708f] hover:bg-[color:var(--surface)]'
+            }`}
+          >
+            Сурагч
+          </button>
+        </div>
+
         {errorMessage ? (
           <p className="mt-3 rounded-xl border border-[#ffd2d5] bg-[#fff7f8] px-3 py-2 text-sm text-[#b23a49]">
             {errorMessage}
@@ -242,53 +283,28 @@ export default function AdminTeacherPage() {
               Багш, сурагчийн мэдээллийг ачаалж байна...
             </div>
           ) : (
-            <div className="space-y-4">
-              <section className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)] p-4 shadow-sm">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <div>
-                    <h2 className="text-lg font-semibold text-[#183153]">
-                      Багш нар ({teachers.length})
-                    </h2>
-                    <p className="text-sm text-[#6f86a7]">
-                      Багшийн бүртгэл, түгжээс, эрхийг эндээс удирдана.
-                    </p>
-                  </div>
+            <section className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)] p-4 shadow-sm">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold text-[#183153]">
+                    {activeListTitle} ({activeList.length})
+                  </h2>
+                  <p className="text-sm text-[#6f86a7]">
+                    {activeListDescription}
+                  </p>
                 </div>
+              </div>
 
-                {teachers.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-[color:var(--border)] bg-[color:var(--surface)] p-6 text-center text-sm text-[#6f86a7]">
-                    Бүртгэлтэй багш одоогоор байхгүй байна.
-                  </div>
-                ) : (
-                  <div className="space-y-2.5">
-                    {teachers.map((teacher) => renderUserCard(teacher, 'student'))}
-                  </div>
-                )}
-              </section>
-
-              <section className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)] p-4 shadow-sm">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <div>
-                    <h2 className="text-lg font-semibold text-[#183153]">
-                      Сурагчид ({students.length})
-                    </h2>
-                    <p className="text-sm text-[#6f86a7]">
-                      Сурагчийн мэдээлэл, хязгаарлалт, хоригийг эндээс харна.
-                    </p>
-                  </div>
+              {activeList.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-[color:var(--border)] bg-[color:var(--surface)] p-6 text-center text-sm text-[#6f86a7]">
+                  {activeListEmpty}
                 </div>
-
-                {students.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-[color:var(--border)] bg-[color:var(--surface)] p-6 text-center text-sm text-[#6f86a7]">
-                    Бүртгэлтэй сурагч одоогоор байхгүй байна.
-                  </div>
-                ) : (
-                  <div className="space-y-2.5">
-                    {students.map((student) => renderUserCard(student, 'teacher'))}
-                  </div>
-                )}
-              </section>
-            </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {activeList.map((user) => renderUserCard(user, activeListTargetRole))}
+                </div>
+              )}
+            </section>
           )}
         </div>
       </section>
