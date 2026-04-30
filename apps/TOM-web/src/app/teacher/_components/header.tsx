@@ -60,7 +60,7 @@ export default function TeacherHeader() {
             <p className="truncate text-sm font-semibold text-[#49a0e3]">
               Сургуулийн клуб
             </p>
-            <p className="truncate text-xs text-[#7a90af]">
+            <p className="truncate text-xs text-black">
               {user ? `${user.name} · Багш` : 'Багшийн хэсэг'}
             </p>
           </div>

@@ -210,7 +210,7 @@ export default function StudentHeader() {
             <p className="text-sm font-semibold text-[#49a0e3]">
               Сургуулийн клуб
             </p>
-            <p className="text-xs text-[#7a90af]">
+            <p className="text-xs text-black">
               {user ? `${user.name} · Сурагч` : 'Сурагч'}
             </p>
           </div>

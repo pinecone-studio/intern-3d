@@ -275,13 +275,13 @@ export default function StudentDashboard() {
             {weeklySchedule.map((day) => (
               <div
                 key={day.isoDate}
-                className={`flex min-h-[220px] flex-col rounded-[24px] border p-4 ${
+                className={`flex min-h-[220px] flex-col rounded-[24px] border py-4 px-2 ${
                   day.isToday
                     ? 'border-[color:var(--primary)] bg-[#eef5ff]'
                     : 'border-[#dce7f8] bg-[color:var(--surface)]'
                 }`}
               >
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start justify-between gap-3 px-2">
                   <div>
                     <p className="text-sm font-semibold text-[#183153]">
                       {day.label}

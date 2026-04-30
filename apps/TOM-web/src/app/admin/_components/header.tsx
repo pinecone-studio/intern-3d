@@ -60,7 +60,7 @@ export default function AdminHeader() {
             <p className="truncate text-sm font-semibold text-[#1a3560]">
               Сургуулийн клуб
             </p>
-            <p className="truncate text-xs text-[#7a90af]">
+            <p className="truncate text-xs text-black">
               {user ? `${user.name} · Админ` : 'Админы харагдац'}
             </p>
           </div>
