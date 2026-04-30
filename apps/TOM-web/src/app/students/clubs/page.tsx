@@ -290,7 +290,8 @@ export default function ClubsPage() {
           onClick={openDialog}
           className="inline-flex items-center gap-2 rounded-2xl bg-[#1a3560] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(26,53,96,0.25)] transition hover:opacity-90"
         >
-          <Plus className="h-4 w-4" />+ Клуб үүсгэх
+          <Plus className="h-4 w-4" />
+          Клуб үүсгэх
         </button>
       </div>
 

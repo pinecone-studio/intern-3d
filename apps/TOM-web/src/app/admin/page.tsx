@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   BadgeAlert,
@@ -43,6 +43,67 @@ const panelClass =
   'rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)] p-4 shadow-sm backdrop-blur';
 
 const inputLabelClass = 'mb-1.5 block text-xs font-semibold text-[#5f7697]';
+
+const weekDays = [
+  { key: 1, label: 'Даваа' },
+  { key: 2, label: 'Мягмар' },
+  { key: 3, label: 'Лхагва' },
+  { key: 4, label: 'Пүрэв' },
+  { key: 5, label: 'Баасан' },
+  { key: 6, label: 'Бямба' },
+  { key: 0, label: 'Ням' },
+] as const;
+
+const dayNameToIndex: Record<string, number> = {
+  даваа: 1,
+  мягмар: 2,
+  лхагва: 3,
+  пүрэв: 4,
+  баасан: 5,
+  бямба: 6,
+  ням: 0,
+  monday: 1,
+  tuesday: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+  saturday: 6,
+  sunday: 0,
+  mon: 1,
+  tue: 2,
+  wed: 3,
+  thu: 4,
+  fri: 5,
+  sat: 6,
+  sun: 0,
+};
+
+function startOfWeek(date: Date) {
+  const next = new Date(date);
+  const offset = (next.getDay() + 6) % 7;
+  next.setHours(0, 0, 0, 0);
+  next.setDate(next.getDate() - offset);
+  return next;
+}
+
+function formatIsoDate(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function formatShortDate(date: Date) {
+  return new Intl.DateTimeFormat('mn-MN', {
+    month: 'short',
+    day: 'numeric',
+  }).format(date);
+}
+
+function parseAllowedDays(value: string) {
+  return value
+    .split(/[,\u3001/]+/)
+    .map((item) => item.trim().toLowerCase())
+    .map((item) => dayNameToIndex[item])
+    .filter((item): item is number => item !== undefined);
+}
 
 export function AdminDashboardContent({
   activeSection,
@@ -191,7 +252,9 @@ export function AdminDashboardContent({
     (club) => club.clubStatus === 'active'
   ).length;
   const pausedClubStatusCount = activeClubs.length - activeClubStatusCount;
-  const teacherCount = safeUsers.filter((user) => user.role === 'teacher').length;
+  const teacherCount = safeUsers.filter(
+    (user) => user.role === 'teacher'
+  ).length;
   const restrictedUsers = safeUsers.filter(
     (user) => user.accountStatus === 'restricted'
   ).length;
@@ -228,6 +291,61 @@ export function AdminDashboardContent({
   const cancelledEventCount = events.filter(
     (event) => event.status === 'cancelled'
   ).length;
+  const weeklySchedule = useMemo(() => {
+    const weekStart = startOfWeek(new Date());
+    const todayIso = formatIsoDate(new Date());
+
+    return weekDays.map((day, index) => {
+      const currentDate = new Date(weekStart);
+      currentDate.setDate(weekStart.getDate() + index);
+      const isoDate = formatIsoDate(currentDate);
+
+      const clubItems = activeClubs
+        .filter((club) => parseAllowedDays(club.allowedDays).includes(day.key))
+        .map((club) => ({
+          id: `club-${club.id}-${day.key}`,
+          kind: 'club' as const,
+          title: club.clubName,
+          meta: `${club.teacher} · ${
+            club.clubStatus === 'active' ? 'Идэвхтэй' : 'Түр зогссон'
+          }`,
+        }));
+
+      const requestItems = requests
+        .filter((request) =>
+          parseAllowedDays(request.allowedDays).includes(day.key)
+        )
+        .map((request) => ({
+          id: `request-${request.id}-${day.key}`,
+          kind: 'request' as const,
+          title: request.clubName,
+          meta: `${request.teacher} · Хүсэлт`,
+        }));
+
+      const eventItems = events
+        .filter((event) => event.eventDate === isoDate)
+        .map((event) => ({
+          id: `event-${event.id}`,
+          kind: 'event' as const,
+          title: event.title,
+          meta:
+            [event.startTime, event.location].filter(Boolean).join(' · ') ||
+            'Арга хэмжээ',
+        }));
+
+      return {
+        ...day,
+        isoDate,
+        dateLabel: formatShortDate(currentDate),
+        isToday: isoDate === todayIso,
+        items: [...clubItems, ...requestItems, ...eventItems],
+      };
+    });
+  }, [activeClubs, events, requests]);
+  const weeklyItemCount = useMemo(
+    () => weeklySchedule.reduce((total, day) => total + day.items.length, 0),
+    [weeklySchedule]
+  );
 
   return (
     <main className="relative min-h-screen overflow-hidden text-[color:var(--foreground)]">
@@ -268,6 +386,91 @@ export function AdminDashboardContent({
                   </article>
                 );
               })}
+            </section>
+
+            <section className="dashboard-entrance dashboard-entrance-delay-3 mt-4">
+              <article className={`${panelClass} p-5`}>
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="flex items-center gap-4 text-[#183153]">
+                    <CalendarDays className="h-5 w-5 text-[#49a0e3]" />
+                    <div>
+                      <h2 className="text-base font-semibold">
+                        Нэгдсэн календарь
+                      </h2>
+                      <p className="text-sm text-[#6f86a7]">
+                        Бүх клуб, хүсэлт, арга хэмжээг 7 хоногоор харуулна.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="rounded-2xl bg-[color:var(--surface)] px-4 py-3 text-sm text-[#183153]">
+                    <p className="font-semibold">{weeklyItemCount} хуваарь</p>
+                    <p className="text-[#6f86a7]">Энэ долоо хоногт</p>
+                  </div>
+                </div>
+
+                <div className="mt-5 overflow-x-auto pb-2">
+                  <div className="grid min-w-[980px] grid-cols-7 gap-3 xl:w-[140%]">
+                    {weeklySchedule.map((day) => (
+                      <div
+                        key={day.isoDate}
+                        className={`flex min-h-[220px] flex-col rounded-[24px] border px-2 py-4 ${
+                          day.isToday
+                            ? 'border-[#49a0e3] bg-[#eef5ff]'
+                            : 'border-[#dce7f8] bg-[color:var(--surface)]'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3 px-2">
+                          <div>
+                            <p className="text-sm font-semibold text-[#183153]">
+                              {day.label}
+                            </p>
+                            <p className="text-xs text-[#6f86a7]">
+                              {day.dateLabel}
+                            </p>
+                          </div>
+                          {day.isToday ? (
+                            <span className="rounded-full bg-[#49a0e3] px-2 py-1 text-[11px] font-semibold text-white">
+                              Өнөөдөр
+                            </span>
+                          ) : null}
+                        </div>
+
+                        <div className="mt-4 flex flex-1 flex-col gap-2">
+                          {day.items.length === 0 ? (
+                            <p className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-[#c8d8ee] px-3 py-4 text-center text-xs text-[#6f86a7]">
+                              Төлөвлөгөө байхгүй
+                            </p>
+                          ) : (
+                            day.items.map((item) => (
+                              <div
+                                key={item.id}
+                                className={`rounded-2xl p-2 text-xs ${
+                                  item.kind === 'event'
+                                    ? 'bg-[#183153] text-white'
+                                    : item.kind === 'request'
+                                    ? 'bg-[#fff7e6] text-[#7a5200]'
+                                    : 'bg-[#49a0e3] text-white'
+                                }`}
+                              >
+                                <p className="font-medium">{item.title}</p>
+                                <p
+                                  className={`mt-1 ${
+                                    item.kind === 'request'
+                                      ? 'text-[#8a6417]'
+                                      : 'text-white/80'
+                                  }`}
+                                >
+                                  {item.meta}
+                                </p>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </article>
             </section>
 
             <section className="dashboard-entrance dashboard-entrance-delay-3 mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.8fr)_minmax(280px,0.75fr)]">
@@ -420,14 +623,7 @@ export function AdminDashboardContent({
                         Аналитикийн тойм
                       </p>
                     </div>
-                    <p className="mt-1 text-xs text-[#6c829f]">
-                      Хэрэглэгч, клуб, хүсэлт, арга хэмжээний мэдээлэл одоо
-                      админ самбар дээр нэг дор харагдана.
-                    </p>
                   </div>
-                  <span className="rounded-full bg-[color:var(--primary-soft)] px-3 py-1.5 text-xs font-semibold text-[#365f91]">
-                    Шууд өгөгдөл
-                  </span>
                 </div>
 
                 <div className="mt-4 space-y-3">
