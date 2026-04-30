@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import { footerColumns } from '../landing-data';
 
 export function LandingFooter() {
@@ -8,9 +10,9 @@ export function LandingFooter() {
           <div key={column.title} className="footer-column">
             <h3>{column.title}</h3>
             {column.links.map((link) => (
-              <span key={link} className="footer-link">
-                {link}
-              </span>
+              <Link key={link.label} href={link.href} className="footer-link">
+                {link.label}
+              </Link>
             ))}
           </div>
         ))}

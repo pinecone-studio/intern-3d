@@ -686,6 +686,8 @@ select {
 }
 
 .use-case-card {
+  display: flex;
+  flex-direction: column;
   min-height: 220px;
   padding: 24px 24px;
   border: 1px solid rgba(255, 255, 255, 0.48);
@@ -711,6 +713,16 @@ select {
 
 .use-case-ivory {
   background: rgba(249, 244, 235, 0.92);
+}
+
+.use-case-link {
+  display: inline-flex;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 18px;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
 }
 
 .cta-section {

@@ -8,11 +8,11 @@ export function LandingNav() {
       <nav className="landing-nav-links" aria-label="Primary">
         {navItems.map((item) => (
           <a
-            key={item}
-            href={`#${item.toLowerCase().replaceAll(' ', '-')}`}
-            className={item === 'Roles' ? 'landing-chip' : undefined}
+            key={item.label}
+            href={item.href}
+            className={item.label === 'Roles' ? 'landing-chip' : undefined}
           >
-            {item}
+            {item.label}
           </a>
         ))}
       </nav>

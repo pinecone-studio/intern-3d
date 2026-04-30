@@ -1,8 +1,8 @@
 export const navItems = [
-  'How it works',
-  'Features',
-  'Resources',
-  'Roles',
+  { label: 'How it works', href: '#how-it-works' },
+  { label: 'Features', href: '#features' },
+  { label: 'Resources', href: '#resources' },
+  { label: 'Roles', href: '#roles' },
 ] as const;
 
 export const decisionSteps = [
@@ -53,16 +53,22 @@ export const useCases = [
     title: 'Students',
     description: 'See club choices, check schedules, and apply to the best fit.',
     tone: 'peach',
+    href: '/students',
+    action: 'Open student page',
   },
   {
     title: 'Teachers',
     description: 'Review requests, watch capacity, and manage club membership.',
     tone: 'blue',
+    href: '/teacher',
+    action: 'Open teacher page',
   },
   {
     title: 'Admins',
     description: 'Open new clubs, assign staff, and keep the full program moving.',
     tone: 'ivory',
+    href: '/admin',
+    action: 'Open admin page',
   },
 ] as const;
 
@@ -70,32 +76,36 @@ export const footerColumns = [
   {
     title: 'Features',
     links: [
-      'Student dashboard',
-      'Teacher dashboard',
-      'Admin dashboard',
+      { label: 'Student dashboard', href: '/students' },
+      { label: 'Teacher dashboard', href: '/teacher' },
+      { label: 'Admin dashboard', href: '/admin' },
     ],
   },
   {
     title: 'Resources',
-    links: ['Club schedule', 'Seat tracking', 'Request flow'],
+    links: [
+      { label: 'Club schedule', href: '#resources' },
+      { label: 'Seat tracking', href: '#resources' },
+      { label: 'Request flow', href: '#how-it-works' },
+    ],
   },
   {
     title: 'School system',
     links: [
-      'Club management',
-      'Teacher assignment',
-      'Student requests',
-      'Approval process',
-      'Capacity control',
+      { label: 'Club management', href: '/admin' },
+      { label: 'Teacher assignment', href: '/admin' },
+      { label: 'Student requests', href: '/students' },
+      { label: 'Approval process', href: '/teacher' },
+      { label: 'Capacity control', href: '/teacher' },
     ],
   },
   {
     title: 'Team 2 project',
     links: [
-      'Open landing page',
-      'Browse clubs',
-      'Review requests',
-      'Create a club',
+      { label: 'Open landing page', href: '/' },
+      { label: 'Browse clubs', href: '/students' },
+      { label: 'Review requests', href: '/teacher' },
+      { label: 'Create a club', href: '/admin' },
     ],
   },
 ] as const;
