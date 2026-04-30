@@ -1,3 +1,6 @@
+import type { NextRequest } from 'next/server'
+
+import { requireRole } from '@/lib/tom-api-auth'
 import { listBadges, upsertBadge } from '@/lib/tom-db'
 import { badRequest, ok, serverError } from '@/lib/tom-http'
 import type { BadgeInput } from '@/lib/tom-types'
@@ -12,8 +15,11 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const auth = await requireRole(request, 'admin', { activeOnly: true })
+    if (auth.response) return auth.response
+
     const body = (await request.json()) as Record<string, unknown>
     const name = typeof body.name === 'string' ? body.name.trim() : ''
     if (!name) return badRequest('name заавал оруулна уу.')

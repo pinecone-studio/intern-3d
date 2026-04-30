@@ -185,6 +185,10 @@ export type UserInput = Partial<Omit<ManagedUser, 'id' | 'createdAt' | 'updatedA
 
 export type TomFormOptions = {
   teachers: string[]
+  teacherOptions: Array<{
+    id: string
+    name: string
+  }>
   allowedDays: string[]
   gradeRanges: string[]
 }

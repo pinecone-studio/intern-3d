@@ -191,6 +191,7 @@ export async function getFormOptions(): Promise<TomFormOptions> {
 
   const options: TomFormOptions = {
     teachers: [],
+    teacherOptions: [],
     allowedDays: [],
     gradeRanges: [],
   }
@@ -203,6 +204,24 @@ export async function getFormOptions(): Promise<TomFormOptions> {
     } else if (row.category === 'grade_range') {
       options.gradeRanges.push(row.value)
     }
+  }
+
+  const teacherResult = await db
+    .prepare(
+      `SELECT id, full_name, teacher_profile_name
+       FROM users
+       WHERE role = 'teacher' AND account_status = 'active'
+       ORDER BY full_name ASC`
+    )
+    .all<Pick<UserRow, 'id' | 'full_name' | 'teacher_profile_name'>>()
+
+  options.teacherOptions = teacherResult.results.map((teacher) => ({
+    id: teacher.id,
+    name: teacher.teacher_profile_name || teacher.full_name,
+  }))
+
+  if (options.teacherOptions.length > 0) {
+    options.teachers = options.teacherOptions.map((teacher) => teacher.name)
   }
 
   return options

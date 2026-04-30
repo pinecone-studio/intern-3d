@@ -5,12 +5,11 @@ import { Plus, X } from 'lucide-react';
 
 import { CapacityBar } from '@/app/_components';
 import { useTomOptions } from '@/app/_hooks/useTomOptions';
-import { useTomSession } from '@/app/_providers/tom-session-provider';
 import type { Club, TomFormOptions } from '@/lib/tom-types';
 
 type ClubRequestForm = {
   clubName: string;
-  teacherName: string;
+  teacherId: string;
   startDate: string;
   endDate: string;
   allowedDays: string;
@@ -27,7 +26,7 @@ const inputLabelClass = 'mb-2 block text-sm font-semibold text-[#5f7697]';
 function createInitialForm(options: TomFormOptions): ClubRequestForm {
   return {
     clubName: '',
-    teacherName: options.teachers[0] ?? '',
+    teacherId: options.teacherOptions[0]?.id ?? '',
     startDate: '2025-09-01',
     endDate: '2025-12-20',
     allowedDays: options.allowedDays[0] ?? '',
@@ -75,7 +74,6 @@ type MembershipResponse = {
 
 export default function ClubsPage() {
   const { options } = useTomOptions();
-  const { user } = useTomSession();
 
   const [clubs, setClubs] = useState<Club[]>([]);
   const [activeTab, setActiveTab] = useState<'mine' | 'other'>('mine');
@@ -95,14 +93,14 @@ export default function ClubsPage() {
   useEffect(() => {
     setForm((current) => ({
       ...current,
-      teacherName:
-        current.teacherName || options.teachers[0] || current.teacherName,
+      teacherId:
+        current.teacherId || options.teacherOptions[0]?.id || current.teacherId,
       allowedDays:
         current.allowedDays || options.allowedDays[0] || current.allowedDays,
       gradeRange:
         current.gradeRange || options.gradeRanges[0] || current.gradeRange,
     }));
-  }, [options.allowedDays, options.gradeRanges, options.teachers]);
+  }, [options.allowedDays, options.gradeRanges, options.teacherOptions]);
 
   useEffect(() => {
     let cancelled = false;
@@ -258,14 +256,12 @@ export default function ClubsPage() {
         method: 'POST',
         body: JSON.stringify({
           clubName,
-          teacher: form.teacherName,
-          createdBy: user?.name ?? 'Сурагч',
+          teacherId: form.teacherId,
           startDate: form.startDate,
           endDate: form.endDate,
           allowedDays: form.allowedDays,
           gradeRange: form.gradeRange,
           studentLimit: Number(form.studentLimit) || 12,
-          interestCount: 0,
           note: form.note,
         }),
       });
@@ -449,14 +445,14 @@ export default function ClubsPage() {
                 <label className="block">
                   <span className={inputLabelClass}>Багш</span>
                   <select
-                    value={form.teacherName}
-                    onChange={(e) => updateForm('teacherName', e.target.value)}
+                    value={form.teacherId}
+                    onChange={(e) => updateForm('teacherId', e.target.value)}
                     className={fieldClass}
                   >
-                    {options.teachers.length > 0 ? (
-                      options.teachers.map((teacher) => (
-                        <option key={teacher} value={teacher}>
-                          {teacher}
+                    {options.teacherOptions.length > 0 ? (
+                      options.teacherOptions.map((teacher) => (
+                        <option key={teacher.id} value={teacher.id}>
+                          {teacher.name}
                         </option>
                       ))
                     ) : (
