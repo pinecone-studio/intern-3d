@@ -163,6 +163,12 @@ export function AdminDashboardContent({
     )
     .join(' ');
 
+  const hasActivityData =
+    summary.totalUsers > 0 ||
+    activeClubs.length > 0 ||
+    requests.length > 0 ||
+    events.length > 0;
+
   const spotlightClubs = requests.slice(0, 3);
   const spotlightUsers = leaderboard.slice(0, 3);
   const activeClubStatusCount = activeClubs.filter(
@@ -262,6 +268,12 @@ export function AdminDashboardContent({
             </div>
 
             <div className="mt-4 h-[190px] rounded-xl border border-[color:var(--border)] bg-white px-3 py-2.5">
+              {!hasActivityData ? (
+                <div className="flex h-full items-center justify-center text-xs text-[#6983a4]">
+                  Идэвхжлийн өгөгдөл одоогоор алга.
+                </div>
+              ) : (
+              <>
               <div className="relative h-[145px]">
                 <div className="absolute inset-0 rounded-xl bg-[linear-gradient(180deg,_rgba(245,249,255,0.72),_rgba(255,255,255,0.92))]" />
                 <div className="absolute inset-0">
@@ -305,6 +317,8 @@ export function AdminDashboardContent({
                   <span key={month} className="truncate text-center">{month}</span>
                 ))}
               </div>
+              </>
+              )}
             </div>
           </article>
 
