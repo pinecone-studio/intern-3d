@@ -24,6 +24,9 @@ import type {
   UserInput,
   XpLog,
   XpSource,
+  Announcement,
+  AnnouncementInput,
+  AnnouncementType,
 } from '@/lib/tom-types'
 
 const seedClubRequestIds = new Set(
@@ -1709,4 +1712,66 @@ export async function ensureTomUsersSeeded() {
   }
 
   return { seeded: false }
+}
+
+type AnnouncementRow = {
+  id: string
+  type: string
+  title: string
+  content: string
+  created_by: string
+  club_id: string | null
+  event_id: string | null
+  created_at: string
+}
+
+function mapAnnouncementRow(row: AnnouncementRow): Announcement {
+  return {
+    id: row.id,
+    type: row.type as AnnouncementType,
+    title: row.title,
+    content: row.content,
+    createdBy: row.created_by,
+    clubId: row.club_id,
+    eventId: row.event_id,
+    createdAt: row.created_at,
+  }
+}
+
+export async function listAnnouncements(type?: string): Promise<Announcement[]> {
+  const db = getTomDb()
+  const rows = type
+    ? await db
+        .prepare('SELECT * FROM announcements WHERE type = ? ORDER BY created_at DESC')
+        .bind(type)
+        .all<AnnouncementRow>()
+    : await db
+        .prepare('SELECT * FROM announcements ORDER BY created_at DESC')
+        .all<AnnouncementRow>()
+  return rows.results.map(mapAnnouncementRow)
+}
+
+export async function createAnnouncement(
+  input: AnnouncementInput,
+  createdBy: string
+): Promise<Announcement> {
+  const db = getTomDb()
+  const id = crypto.randomUUID()
+  const now = new Date().toISOString()
+  await db
+    .prepare(
+      'INSERT INTO announcements (id, type, title, content, created_by, club_id, event_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    )
+    .bind(id, input.type, input.title, input.content, createdBy, input.clubId ?? null, input.eventId ?? null, now)
+    .run()
+  return {
+    id,
+    type: input.type,
+    title: input.title,
+    content: input.content,
+    createdBy,
+    clubId: input.clubId ?? null,
+    eventId: input.eventId ?? null,
+    createdAt: now,
+  }
 }

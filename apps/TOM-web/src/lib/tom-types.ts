@@ -192,3 +192,24 @@ export type TomFormOptions = {
   allowedDays: string[]
   gradeRanges: string[]
 }
+
+export type AnnouncementType = 'global' | 'club' | 'event'
+
+export type Announcement = {
+  id: string
+  type: AnnouncementType
+  title: string
+  content: string
+  createdBy: string
+  clubId: string | null
+  eventId: string | null
+  createdAt: string
+}
+
+export type AnnouncementInput = {
+  type: AnnouncementType
+  title: string
+  content: string
+  clubId?: string | null
+  eventId?: string | null
+}
