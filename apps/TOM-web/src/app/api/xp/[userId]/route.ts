@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server'
 import { requireAuth } from '@/lib/tom-api-auth'
 import { getUser, getUserXpTotal, listXpLogs } from '@/lib/tom-db'
 import { forbidden, notFound, ok, serverError } from '@/lib/tom-http'
+import { getLevelProgress } from '@/lib/level-service'
 
 
 type Params = { params: Promise<{ userId: string }> }
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       listXpLogs(userId),
     ])
 
-    return ok({ userId, total, logs })
+    return ok({ userId, total, logs, level: getLevelProgress(total) })
   } catch (error) {
     return serverError('XP мэдээлэл ачаалж чадсангүй.', error instanceof Error ? error.message : error)
   }
