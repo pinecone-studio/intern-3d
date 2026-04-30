@@ -117,6 +117,9 @@ export function DashboardTopbar() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {loadingUsers ? (
+            <span className="text-xs text-muted-foreground">Loading...</span>
+          ) : null}
           <select
             className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
             value={user?.id ?? ''}
