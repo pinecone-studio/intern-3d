@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { RoomStatusBadge } from './room-status-badge'
 import type { Room } from '@/lib/types'
@@ -11,12 +10,10 @@ import { EVENT_TYPE_CONFIG } from '@/lib/constants'
 
 interface RoomCardProps {
   room: Room
-  showDeviceInfo?: boolean
-  assignedDeviceName?: string
   compact?: boolean
 }
 
-export function RoomCard({ room, showDeviceInfo = false, assignedDeviceName, compact }: RoomCardProps) {
+export function RoomCard({ room, compact }: RoomCardProps) {
   const isAvailable = room.status === 'available'
   const availableDeviceCount = room.devices.filter(d => d.status === 'available').length
 
@@ -45,12 +42,6 @@ export function RoomCard({ room, showDeviceInfo = false, assignedDeviceName, com
         <div className="flex items-start justify-between">
           <div className="flex flex-wrap items-center gap-2">
             <RoomStatusBadge status={room.status} size="md" />
-            {showDeviceInfo && assignedDeviceName ? (
-              <Badge variant="outline" className="rounded-full px-2.5 py-1 text-[11px] font-medium">
-                <Monitor className="h-3 w-3" />
-                Таны iMac: {assignedDeviceName}
-              </Badge>
-            ) : null}
           </div>
           <div className="text-right">
             <h3 className="text-xl font-semibold text-foreground">{room.number}</h3>
