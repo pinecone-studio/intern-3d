@@ -192,3 +192,10 @@ export type TomFormOptions = {
   allowedDays: string[]
   gradeRanges: string[]
 }
+
+export type ClubInterest = {
+  id: string
+  userId: string
+  clubId: string
+  createdAt: string
+}
