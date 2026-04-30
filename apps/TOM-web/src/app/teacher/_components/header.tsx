@@ -58,7 +58,7 @@ export default function TeacherHeader() {
           </div>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-[#49a0e3]">
-              Сургуулийн клубүүд
+              Сургуулийн клуб
             </p>
             <p className="truncate text-xs text-[#7a90af]">
               {user ? `${user.name} · Багш` : 'Багшийн хэсэг'}

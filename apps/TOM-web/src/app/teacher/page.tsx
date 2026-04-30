@@ -1,15 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import {
-  AlertCircle,
-  Calendar,
-  CalendarDays,
-  CheckCircle2,
-  ClipboardList,
-  ShieldCheck,
-  XCircle,
-} from 'lucide-react';
+import { CalendarDays, CheckCircle2, ShieldCheck, XCircle } from 'lucide-react';
 
 import { useTomSession } from '@/app/_providers/tom-session-provider';
 import type { Club, ClubRequest, TomCurrentUser } from '@/lib/tom-types';
@@ -117,10 +109,6 @@ export default function TeacherDashboard() {
   const { user } = useTomSession();
   const [requests, setRequests] = useState<ClubRequest[]>([]);
   const [clubs, setClubs] = useState<Club[]>([]);
-  const [summary, setSummary] = useState<Summary>({
-    pendingRequests: 0,
-    thresholdReachedRequests: 0,
-  });
   const [teacherScopeName, setTeacherScopeName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -132,7 +120,6 @@ export default function TeacherDashboard() {
       '/api/teacher/dashboard'
     );
 
-    setSummary(data.summary);
     setRequests(data.requests);
     setClubs(data.clubs);
     setTeacherScopeName(data.teacherScopeName);
@@ -238,7 +225,6 @@ export default function TeacherDashboard() {
     }, 'Клубийн төлөв шинэчилж чадсангүй.');
   };
 
-  const inactiveCount = clubs.filter((club) => club.status !== 'active').length;
   const activeClubs = useMemo(
     () => clubs.filter((club) => club.status === 'active'),
     [clubs]
@@ -281,71 +267,9 @@ export default function TeacherDashboard() {
       archived: 'Архивласан',
     }[status] ?? status);
 
-  const stats = useMemo(
-    () => [
-      {
-        label: 'Хүлээгдэж буй хүсэлт',
-        value: summary.pendingRequests,
-        icon: ClipboardList,
-        accent: 'bg-[#49a0e3]',
-      },
-      {
-        label: 'Миний клубүүд',
-        value: clubs.length,
-        icon: ShieldCheck,
-        accent: 'bg-[#49a0e3]',
-      },
-      {
-        label: 'Идэвхгүй клубүүд',
-        value: inactiveCount,
-        icon: AlertCircle,
-        accent: 'bg-[#49a0e3]',
-      },
-      {
-        label: 'Босго хангасан',
-        value: summary.thresholdReachedRequests,
-        icon: Calendar,
-        accent: 'bg-[#49a0e3]',
-      },
-    ],
-    [
-      clubs.length,
-      inactiveCount,
-      summary.pendingRequests,
-      summary.thresholdReachedRequests,
-    ]
-  );
-
   return (
     <div className="min-h-screen font-sans text-[color:var(--foreground)]">
       <main className="container mx-auto space-y-8 ">
-        <section className="grid gap-4 md:grid-cols-4">
-          {stats.map((stat) => {
-            const Icon = stat.icon;
-
-            return (
-              <div
-                key={stat.label}
-                className="shadow-soft rounded-3xl border border-[color:var(--border)] bg-[color:var(--card)] text-[color:var(--card-foreground)]"
-              >
-                <div className="flex items-center gap-4 p-5">
-                  <div
-                    className={`shadow-soft flex h-12 w-12 items-center justify-center rounded-2xl ${stat.accent}`}
-                  >
-                    <Icon className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-semibold">{stat.value}</p>
-                    <p className="text-xs text-[color:var(--muted-foreground)]">
-                      {stat.label}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </section>
-
         <section>
           <article className="shadow-soft rounded-3xl border border-[color:var(--border)] bg-[color:var(--card)] p-5 text-[color:var(--card-foreground)]">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -370,13 +294,13 @@ export default function TeacherDashboard() {
               {weeklySchedule.map((day) => (
                 <div
                   key={day.isoDate}
-                  className={`flex min-h-[220px] flex-col rounded-[24px] border p-4 ${
+                  className={`flex min-h-[220px] flex-col rounded-[24px] border py-4 px-2 ${
                     day.isToday
                       ? 'border-[#49a0e3] bg-[#eef5ff]'
                       : 'border-[#dce7f8] bg-[color:var(--surface)]'
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start justify-between gap-3 px-2">
                     <div>
                       <p className="text-sm font-semibold text-[#183153]">
                         {day.label}
@@ -403,10 +327,10 @@ export default function TeacherDashboard() {
                       day.items.map((item) => (
                         <div
                           key={item.id}
-                          className="rounded-2xl bg-[#49a0e3] px-3 py-3 text-xs text-white"
+                          className="rounded-2xl bg-[#49a0e3] p-2 text-xs text-white"
                         >
-                          <p className="font-semibold">{item.title}</p>
-                          <p className="mt-1 text-white/80">{item.meta}</p>
+                          <p className="font-medium">{item.title}</p>
+                          <p className="mt-1 text-white">{item.meta}</p>
                         </div>
                       ))
                     )}
