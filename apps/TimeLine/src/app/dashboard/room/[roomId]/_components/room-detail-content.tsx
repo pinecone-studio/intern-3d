@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useMutation, useQuery } from '@apollo/client/react'
 import { useRole } from '@/lib/role-context'
 import { useTimelineClock } from '@/lib/use-timeline-clock'
@@ -14,6 +14,7 @@ import { RoomWeeklyScheduleGrid } from '@/app/dashboard/room/[roomId]/_component
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { PineconeLoader } from '@/components/ui/pinecone-loader'
+import { applyRealtimeRoomStatus } from '@/lib/timeline-status'
 import type { ScheduleEvent } from '@/lib/types'
 
 export function RoomDetailContent({ roomId }: { roomId: string }) {
@@ -28,12 +29,17 @@ export function RoomDetailContent({ roomId }: { roomId: string }) {
 
   useTimelineLiveUpdates({ enabled: !loading, roomId, onEventsChanged: () => refetch() })
 
+  const liveRoom = useMemo(() => {
+    if (!data?.room?.room) return null
+    return applyRealtimeRoomStatus([data.room.room], data.room.events ?? [], clock?.now ?? new Date())[0] ?? data.room.room
+  }, [clock?.now, data?.room?.events, data?.room?.room])
+
   if (loading || !clock) return <PineconeLoader className="min-h-[420px]" />
   if (error) return <div className="flex flex-col items-center justify-center gap-3 p-8 text-center"><h1 className="text-xl font-bold">Өрөөний мэдээлэл ачаалж чадсангүй</h1><p className="max-w-md text-sm text-muted-foreground">{error.message}</p><Button onClick={() => refetch()}>Дахин оролдох</Button></div>
-  if (!data?.room?.room) return <div className="flex flex-col items-center justify-center p-8"><h1 className="text-xl font-bold">Өрөө олдсонгүй</h1><Button variant="link" asChild><a href="/dashboard">Буцах</a></Button></div>
+  if (!data?.room?.room || !liveRoom) return <div className="flex flex-col items-center justify-center p-8"><h1 className="text-xl font-bold">Өрөө олдсонгүй</h1><Button variant="link" asChild><a href="/dashboard">Буцах</a></Button></div>
 
   const isAdmin = role === 'admin'
-  const room = data.room.room
+  const room = liveRoom
   const regularEvents = (data.room.events ?? []).filter((event) => !event.isOverride)
 
   const handleSaveEvent = async (formData: EventFormData) => {

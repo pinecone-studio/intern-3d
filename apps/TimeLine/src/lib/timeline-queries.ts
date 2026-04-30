@@ -2,11 +2,12 @@ import { and, asc, eq, inArray, like } from 'drizzle-orm'
 import { getDrizzleDb } from '@/db/client'
 import { deviceAssignmentsTable, roomsTable, scheduleBlocksTable, scheduleOverridesTable, schedulesTable } from '@/db/schema'
 import { mapDeviceAssignmentRow, mapRoomRow, mapScheduleBlockRow, mapScheduleOverrideRow, mapScheduleRow } from '@/lib/timeline-mappers'
-import type { ScheduleEvent } from '@/lib/types'
-
+import { isRoomStatus, type RoomStatus, type ScheduleEvent } from '@/lib/types'
 function matchesInstructor(event: ScheduleEvent, instructor: string): boolean {
   return event.instructor?.toLowerCase().includes(instructor.toLowerCase()) ?? false
 }
+
+function normalizeRoomStatusFilter(status?: string | null): RoomStatus | null { return !status ? null : status === 'openlab' ? 'open_lab' : isRoomStatus(status) ? status : null }
 
 async function listMappedEventsForRooms(roomIds: string[]) {
   const db = getDrizzleDb()
@@ -21,6 +22,7 @@ async function listMappedEventsForRooms(roomIds: string[]) {
     return blocks
       .filter(block => block.isActive === 1)
       .map(block => mapScheduleBlockRow(block))
+      .filter((event): event is ScheduleEvent => event !== null)
   } catch {
     const [schedules, overrides] = await Promise.all([
       db.select().from(schedulesTable).where(inArray(schedulesTable.roomId, roomIds)).orderBy(asc(schedulesTable.startTime)),
@@ -30,13 +32,16 @@ async function listMappedEventsForRooms(roomIds: string[]) {
     return [
       ...schedules.map((schedule) => mapScheduleRow(schedule)),
       ...overrides.map((override) => mapScheduleOverrideRow(override)),
-    ]
+    ].filter((event): event is ScheduleEvent => event !== null)
   }
 }
 
 export async function listRooms(params: { floor?: string | null; status?: string | null; search?: string | null } = {}) {
   const db = getDrizzleDb()
   const filters = []
+  const statusFilter = normalizeRoomStatusFilter(params.status)
+
+  if (params.status && !statusFilter) return []
 
   if (params.floor) filters.push(eq(roomsTable.floor, Number(params.floor)))
   if (params.search) filters.push(like(roomsTable.name, `%${params.search}%`))
@@ -67,7 +72,7 @@ export async function listRooms(params: { floor?: string | null; status?: string
     )
   })
 
-  return params.status ? mappedRooms.filter((room) => room.status === params.status) : mappedRooms
+  return statusFilter ? mappedRooms.filter((room) => room.status === statusFilter) : mappedRooms
 }
 
 export async function getRoomDetail(roomId: string) {
@@ -104,6 +109,7 @@ export async function listScheduleEvents(params: { roomId?: string | null; dayOf
     const blockEvents = blocks
       .filter(block => block.isActive === 1)
       .map(block => mapScheduleBlockRow(block))
+      .filter((event): event is ScheduleEvent => event !== null)
       .sort((left, right) => {
         if (left.roomId !== right.roomId) return left.roomId.localeCompare(right.roomId)
         return left.startTime.localeCompare(right.startTime)
@@ -141,7 +147,7 @@ export async function listScheduleEvents(params: { roomId?: string | null; dayOf
   const events = [
     ...schedules.map((schedule) => mapScheduleRow(schedule)),
     ...overrides.map((override) => mapScheduleOverrideRow(override)),
-  ].sort((left, right) => {
+  ].filter((event): event is ScheduleEvent => event !== null).sort((left, right) => {
     if (left.roomId !== right.roomId) return left.roomId.localeCompare(right.roomId)
     return left.startTime.localeCompare(right.startTime)
   })
