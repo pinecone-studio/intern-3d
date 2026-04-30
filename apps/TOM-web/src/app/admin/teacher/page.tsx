@@ -340,8 +340,8 @@ export default function AdminTeacherPage() {
             </div>
           ) : (
             <section className="flex min-h-0 flex-col overflow-hidden rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] shadow-sm">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[color:var(--border)] bg-[color:var(--card)] px-4 py-4">
-                <div>
+              <div className="grid gap-3 border-b border-[color:var(--border)] bg-[color:var(--card)] px-4 py-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
+                <div className="min-w-0">
                   <h2 className="text-lg font-semibold text-[#183153]">
                     {activeListTitle} ({activeList.length})
                   </h2>
@@ -349,11 +349,11 @@ export default function AdminTeacherPage() {
                     {activeListDescription}
                   </p>
                 </div>
-              <div className="flex flex-wrap gap-2">
+                <div className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-0.5 xl:justify-end">
                 <button
                   type="button"
                   onClick={() => setActiveRoster('teachers')}
-                  className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+                  className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-xs font-semibold transition ${
                       activeRoster === 'teachers'
                         ? 'bg-[color:var(--primary)] text-white'
                         : 'border border-[color:var(--border)] bg-white text-[#56708f] hover:bg-[color:var(--surface)]'
@@ -364,7 +364,7 @@ export default function AdminTeacherPage() {
                   <button
                     type="button"
                     onClick={() => setActiveRoster('students')}
-                    className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+                    className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-xs font-semibold transition ${
                       activeRoster === 'students'
                         ? 'bg-[color:var(--primary)] text-white'
                         : 'border border-[color:var(--border)] bg-white text-[#56708f] hover:bg-[color:var(--surface)]'
@@ -375,7 +375,7 @@ export default function AdminTeacherPage() {
                   <button
                     type="button"
                     onClick={() => setIsBannedUsersOpen(true)}
-                    className="rounded-full border border-[#f4b5ba] bg-white px-4 py-2 text-xs font-semibold text-[#de4a58] shadow-sm transition hover:bg-[#fff6f7]"
+                    className="shrink-0 whitespace-nowrap rounded-full border border-[#f4b5ba] bg-white px-4 py-2 text-xs font-semibold text-[#de4a58] shadow-sm transition hover:bg-[#fff6f7]"
                   >
                     Хориглосон дансууд ({bannedCount})
                   </button>
