@@ -938,6 +938,9 @@ export function AdminDashboardContent({
                         <p>
                           {club.startDate} - {club.endDate}
                         </p>
+                        <p className="font-semibold text-[#183153]">
+                          Сурагчид: {club.memberCount} / {club.studentLimit}
+                        </p>
                         <CapacityBar
                           current={club.interestCount}
                           total={club.studentLimit}
