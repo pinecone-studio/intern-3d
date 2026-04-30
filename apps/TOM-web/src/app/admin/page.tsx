@@ -497,8 +497,8 @@ export function AdminDashboardContent({
           >
             {activeSection === 'requests' ? (
               <>
-                <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.85fr)]">
-                  <article className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft">
+                <div className="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.85fr)]">
+                  <article>
                     <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
                       <div>
                         <div className="flex items-center gap-2">
@@ -610,42 +610,14 @@ export function AdminDashboardContent({
                       </div>
                     </div>
                   </article>
-
                   <aside className="space-y-5">
-                    <section className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7f93b1]">
-                        Хяналтын тэмдэглэл
-                      </p>
-                      <h3 className="mt-2 text-[1.15rem] font-semibold text-[#183153]">
-                        Энэ жагсаалтын үүрэг
-                      </h3>
-                      <div className="mt-4 space-y-3 text-sm text-[#60789a]">
-                        <div className="rounded-[22px] bg-[color:var(--surface)] px-4 py-3.5 leading-6">
-                          Хүлээгдэж буй клубийн хүсэлт бүрийг нэг жагсаалтаас
-                          Зөвшөөрөх эсвэл татгалзах.
-                        </div>
-                        <div className="rounded-[22px] bg-[color:var(--surface)] px-4 py-3.5 leading-6">
-                          Батлагдсан клубийг хүлээгдэж буйгаас идэвхтэй төлөв
-                          рүү шилжүүлэх.
-                        </div>
-                        <div className="rounded-[22px] bg-[color:var(--surface)] px-4 py-3.5 leading-6">
-                          Сонирхол {thresholdGoal} сурагчийн босгод хүрсэн
-                          эсэхийг шалгах.
-                        </div>
-                      </div>
-                    </section>
-
                     <section className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft">
                       <div className="flex items-center justify-between gap-3">
                         <div>
                           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7f93b1]">
                             Босго
                           </p>
-                          <h3 className="mt-2 text-[1.15rem] font-semibold text-[#183153]">
-                            Сонирхлын явц
-                          </h3>
                         </div>
-                        <StatusBadge type="approved" text="Шалгах боломжтой" />
                       </div>
 
                       <div className="mt-4 space-y-4">
@@ -656,10 +628,10 @@ export function AdminDashboardContent({
                           >
                             <div className="flex items-center justify-between gap-3">
                               <div>
-                                <p className="font-semibold text-[#183153]">
+                                <p className="font-medium text-[#183153]">
                                   {club.clubName}
                                 </p>
-                                <p className="text-xs text-[#7a8faa]">
+                                <p className="text-xs text-black">
                                   {club.teacher}
                                 </p>
                               </div>
