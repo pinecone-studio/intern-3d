@@ -1,0 +1,26 @@
+import { cn } from '@/lib/utils'
+
+type PineconeLoaderProps = {
+  className?: string
+  label?: string
+}
+
+export function PineconeLoader({ className, label = 'Ачаалж байна' }: PineconeLoaderProps) {
+  return (
+    <div className={cn('flex flex-col items-center justify-center gap-4 text-muted-foreground', className)} role="status" aria-label={label}>
+      <div className="pinecone-loader-scene">
+        <div className="pinecone-loader-glow" />
+        <div className="pinecone-loader-orbit pinecone-loader-orbit-a" />
+        <div className="pinecone-loader-orbit pinecone-loader-orbit-b" />
+        <div className="pinecone-loader-orbit pinecone-loader-orbit-c" />
+        <div className="pinecone-loader-core">
+          <svg className="h-8 w-8 text-white" viewBox="0 0 32 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M5.11038 2.76848L0.806264 10.8246C0.269142 11.8328 0 12.9394 0 14.0474C0 15.1556 0.269142 16.2619 0.806264 17.2702L5.11038 25.3265C5.9037 26.8145 7.45516 27.7439 9.14352 27.7439H13.7153V25.4617H13.7138C12.8704 25.4617 12.0946 24.9977 11.6979 24.2538L7.39543 16.196C7.03585 15.5243 6.85665 14.7867 6.85665 14.0474C6.85665 13.3081 7.03585 12.5705 7.39543 11.899L11.6979 3.84121C12.0946 3.09711 12.8704 2.63325 13.7138 2.63325H13.7153V0.350922H9.14352C7.45516 0.350922 5.9037 1.28046 5.11038 2.76848Z" fill="currentColor" />
+            <path d="M31.1937 10.8247L26.8898 2.76854C26.0963 1.28036 24.545 0.350981 22.8567 0.350981H18.2847V2.63315H18.2864C19.1298 2.63315 19.9055 3.09717 20.3021 3.8411L24.6046 11.8989C24.9643 12.5705 25.1432 13.3082 25.1432 14.0475C25.1432 14.7867 24.9643 15.5244 24.6046 16.1961L20.3021 24.2537C19.9055 24.9977 19.1298 25.4616 18.2864 25.4616H18.2847V27.7439H22.8567C24.545 27.7439 26.0963 26.8146 26.8898 25.3264L31.1937 17.2703C31.7307 16.262 32 15.1555 32 14.0475C32 12.9394 31.7307 11.8329 31.1937 10.8247Z" fill="currentColor" />
+          </svg>
+        </div>
+      </div>
+      <span className="text-sm font-medium tracking-wide">{label}</span>
+    </div>
+  )
+}
