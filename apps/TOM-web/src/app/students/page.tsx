@@ -2,9 +2,8 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowRight, Bell, CalendarDays, Sparkles, Trophy, Users } from 'lucide-react';
+import { ArrowRight, CalendarDays, Sparkles, Trophy, Users } from 'lucide-react';
 
-import { useTomSession } from '@/app/_providers/tom-session-provider';
 import type { Badge, Club, ClubRequest, SchoolEvent, TomCurrentUser, UserBadge, XpLog } from '@/lib/tom-types';
 
 type StudentDashboardResponse = {
@@ -31,6 +30,40 @@ type StudentDashboardResponse = {
   }>;
 };
 
+const WEEK_DAYS = [
+  { key: 1, label: 'Даваа' },
+  { key: 2, label: 'Мягмар' },
+  { key: 3, label: 'Лхагва' },
+  { key: 4, label: 'Пүрэв' },
+  { key: 5, label: 'Баасан' },
+  { key: 6, label: 'Бямба' },
+  { key: 0, label: 'Ням' },
+] as const;
+
+const DAY_NAME_TO_INDEX: Record<string, number> = {
+  даваа: 1,
+  мягмар: 2,
+  лхагва: 3,
+  пүрэв: 4,
+  баасан: 5,
+  бямба: 6,
+  ням: 0,
+  monday: 1,
+  tuesday: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+  saturday: 6,
+  sunday: 0,
+  mon: 1,
+  tue: 2,
+  wed: 3,
+  thu: 4,
+  fri: 5,
+  sat: 6,
+  sun: 0,
+};
+
 async function readJson<T>(response: Response) {
   const data = (await response.json().catch(() => null)) as ({ error?: string } & T) | null;
   if (!response.ok) {
@@ -52,20 +85,44 @@ function sortByDateAscending(left: string, right: string) {
   return left.localeCompare(right);
 }
 
+function startOfWeek(date: Date) {
+  const next = new Date(date);
+  const offset = (next.getDay() + 6) % 7;
+  next.setHours(0, 0, 0, 0);
+  next.setDate(next.getDate() - offset);
+  return next;
+}
+
+function formatIsoDate(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function formatShortDate(date: Date) {
+  return new Intl.DateTimeFormat('mn-MN', {
+    month: 'short',
+    day: 'numeric',
+  }).format(date);
+}
+
+function parseAllowedDays(value: string) {
+  return value
+    .split(/[,\u3001/]+/)
+    .map((item) => item.trim().toLowerCase())
+    .map((item) => DAY_NAME_TO_INDEX[item])
+    .filter((item): item is number => item !== undefined);
+}
+
 export default function StudentDashboard() {
-  const { user } = useTomSession();
   const [clubs, setClubs] = useState<Club[]>([]);
-  const [requests, setRequests] = useState<ClubRequest[]>([]);
   const [events, setEvents] = useState<SchoolEvent[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<SchoolEvent[]>([]);
   const [joinedClubIds, setJoinedClubIds] = useState<string[]>([]);
   const [xpTotal, setXpTotal] = useState(0);
-  const [xpLogs, setXpLogs] = useState<XpLog[]>([]);
   const [earnedBadges, setEarnedBadges] = useState<Array<UserBadge & { badge: Badge }>>([]);
   const [totalBadgeCount, setTotalBadgeCount] = useState(0);
   const [activity, setActivity] = useState<StudentDashboardResponse['activity']>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [, setErrorMessage] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -77,12 +134,10 @@ export default function StudentDashboard() {
         const data = await apiRequest<StudentDashboardResponse>('/api/students/dashboard');
         if (!cancelled) {
           setClubs(data.clubs);
-          setRequests(data.requests);
           setEvents(data.events);
           setUpcomingEvents(data.upcomingEvents);
           setJoinedClubIds(data.joinedClubIds);
           setXpTotal(data.xp.total);
-          setXpLogs(data.xp.logs);
           setEarnedBadges(data.badges.earned);
           setTotalBadgeCount(data.badges.total);
           setActivity(data.activity);
@@ -114,41 +169,116 @@ export default function StudentDashboard() {
     return upcoming[0] ?? null;
   }, [events]);
 
-  const notifications = useMemo(() => {
-    if (isLoading) {
-      return [{ title: 'Ачаалж байна', detail: 'Түр хүлээнэ үү.' }];
-    }
+  const weeklySchedule = useMemo(() => {
+    const weekStart = startOfWeek(new Date());
+    const todayIso = formatIsoDate(new Date());
+    const joinedClubIdSet = new Set(joinedClubIds);
+    const joinedClubs = clubs.filter((club) => joinedClubIdSet.has(club.id));
 
-    const items: Array<{ title: string; detail: string }> = [];
+    return WEEK_DAYS.map((day, index) => {
+      const currentDate = new Date(weekStart);
+      currentDate.setDate(weekStart.getDate() + index);
+      const isoDate = formatIsoDate(currentDate);
 
-    if (joinedClubIds.length > 0) {
-      items.push({ title: 'Таны клубийн тоо', detail: `Та одоогоор ${joinedClubIds.length} клубт нэгдсэн байна.` });
-    }
-    if (requests.length > 0) {
-      items.push({ title: 'Таны клубийн хүсэлтүүд', detail: `${requests.length} хүсэлт тань системд байна.` });
-    }
-    if (nextMeeting) {
-      items.push({ title: 'Удахгүй болох арга хэмжээ', detail: `${nextMeeting.title} · ${nextMeeting.eventDate}` });
-    }
-    if (user?.accountStatus === 'restricted') {
-      items.push({ title: 'Хандалтын анхааруулга', detail: 'Таны бүртгэл түр хязгаарлагдсан төлөвтэй байна.' });
-    }
-    if (xpTotal > 0) {
-      items.push({ title: 'XP өсөлт', detail: `Нийт XP: ${xpTotal}. Сүүлийн өөрчлөлт: ${xpLogs[0]?.amount ?? 0} XP` });
-    }
-    if (earnedBadges.length > 0) {
-      items.push({ title: 'Badge ахиц', detail: `${earnedBadges.length}/${totalBadgeCount} badge нээгдсэн байна.` });
-    }
-    if (items.length === 0) {
-      items.push({ title: 'Шинэ мэдэгдэл алга', detail: 'Одоогоор шинэ мэдээлэлгүй байна.' });
-    }
+      const clubItems = joinedClubs
+        .filter((club) => parseAllowedDays(club.allowedDays).includes(day.key))
+        .map((club) => ({
+          id: `club-${club.id}-${day.key}`,
+          kind: 'club' as const,
+          title: club.name,
+          meta: club.teacherName || 'Клуб',
+        }));
 
-    return items.slice(0, 4);
-  }, [isLoading, joinedClubIds.length, requests.length, nextMeeting, user?.accountStatus, xpTotal, xpLogs, earnedBadges.length, totalBadgeCount]);
+      const eventItems = upcomingEvents
+        .filter((event) => event.eventDate === isoDate)
+        .map((event) => ({
+          id: `event-${event.id}`,
+          kind: 'event' as const,
+          title: event.title,
+          meta: [event.startTime, event.location].filter(Boolean).join(' · ') || 'Арга хэмжээ',
+        }));
+
+      return {
+        ...day,
+        isoDate,
+        dateLabel: formatShortDate(currentDate),
+        isToday: isoDate === todayIso,
+        items: [...clubItems, ...eventItems],
+      };
+    });
+  }, [clubs, joinedClubIds, upcomingEvents]);
+
+  const weeklyItemCount = useMemo(
+    () => weeklySchedule.reduce((sum, day) => sum + day.items.length, 0),
+    [weeklySchedule]
+  );
 
   return (
     <div className="space-y-6">
-      <section className="grid gap-5 lg:grid-cols-4">
+      <section className="grid gap-5">
+        <article className="rounded-[28px] border border-[#dce7f8] bg-white p-5 shadow-soft">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center gap-2 text-[#183153]">
+              <CalendarDays className="h-5 w-5 text-[color:var(--primary)]" />
+              <div>
+                <h2 className="text-md font-semibold">Энэ долоо хоногийн календарь</h2>
+                <p className="text-sm text-[#6f86a7]">Клубийн өдрүүд болон event-үүдийг 7 хоногоор харуулна.</p>
+              </div>
+            </div>
+            <div className="rounded-2xl bg-[color:var(--surface)] px-4 py-3 text-sm text-[#183153]">
+              <p className="font-semibold">{weeklyItemCount} хуваарь</p>
+              <p className="text-[#6f86a7]">Энэ долоо хоногт</p>
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-7">
+            {weeklySchedule.map((day) => (
+              <div
+                key={day.isoDate}
+                className={`flex min-h-[220px] flex-col rounded-[24px] border p-4 ${
+                  day.isToday
+                    ? 'border-[color:var(--primary)] bg-[#eef5ff]'
+                    : 'border-[#dce7f8] bg-[color:var(--surface)]'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-[#183153]">{day.label}</p>
+                    <p className="text-xs text-[#6f86a7]">{day.dateLabel}</p>
+                  </div>
+                  {day.isToday ? (
+                    <span className="rounded-full bg-[color:var(--primary)] px-2 py-1 text-[11px] font-semibold text-white">Өнөөдөр</span>
+                  ) : null}
+                </div>
+
+                <div className="mt-4 flex flex-1 flex-col gap-2">
+                  {day.items.length === 0 ? (
+                    <p className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-[#c8d8ee] px-3 py-4 text-center text-xs text-[#6f86a7]">
+                      Төлөвлөгөө алга
+                    </p>
+                  ) : (
+                    day.items.map((item) => (
+                      <div
+                        key={item.id}
+                        className={`rounded-2xl px-3 py-3 text-xs ${
+                          item.kind === 'club' ? 'bg-white text-[#183153]' : 'bg-[#183153] text-white'
+                        }`}
+                      >
+                        <p className="font-semibold">{item.title}</p>
+                        <p className={item.kind === 'club' ? 'mt-1 text-[#6f86a7]' : 'mt-1 text-white/75'}>
+                          {item.meta}
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         <article className="flex h-full flex-col rounded-[28px] border border-[#dce7f8] bg-white p-5 shadow-soft">
           <div className="flex items-center gap-2 text-[#183153]">
             <Users className="h-5 w-5 text-[color:var(--primary)]" />
@@ -192,22 +322,6 @@ export default function StudentDashboard() {
             <p className="mt-2 text-xs text-[#6f86a7]">Badge: {earnedBadges.length}/{totalBadgeCount}</p>
           </div>
           <Link href="/students/gamification" className="mt-auto inline-flex self-end pt-4 text-sm font-semibold text-[color:var(--primary)] hover:underline">XP болон badge дэлгэрэнгүй<ArrowRight className="h-4 w-4" /></Link>
-        </article>
-
-        <article className="rounded-[28px] border border-[#dce7f8] bg-white p-5 shadow-soft">
-          <div className="flex items-center gap-2 text-[#183153]">
-            <Bell className="h-5 w-5 text-[color:var(--primary)]" />
-            <h2 className="text-md font-semibold">Мэдэгдэл</h2>
-          </div>
-          {errorMessage ? <p className="mt-4 rounded-2xl border border-[#ffd2d5] bg-[#fff7f8] px-4 py-3 text-sm text-[#b23a49]">{errorMessage}</p> : null}
-          <div className="mt-4 space-y-3">
-            {notifications.map((item) => (
-              <div key={`${item.title}-${item.detail}`} className="rounded-2xl bg-[color:var(--surface)] px-4 py-3">
-                <p className="text-sm font-semibold text-[#183153]">{item.title}</p>
-                <p className="mt-1 text-xs leading-5 text-[#6f86a7]">{item.detail}</p>
-              </div>
-            ))}
-          </div>
         </article>
       </section>
 
