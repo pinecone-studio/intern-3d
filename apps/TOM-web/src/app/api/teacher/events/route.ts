@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 
 import { getCurrentUserFromRequest } from '@/lib/tom-auth'
-import { autoJoinAllUsers, listEvents, upsertEvent } from '@/lib/tom-db'
+import { listEvents, upsertEvent } from '@/lib/tom-db'
 import { badRequest, forbidden, ok, serverError, unauthorized } from '@/lib/tom-http'
 
 export async function GET(request: NextRequest) {
@@ -58,8 +58,6 @@ export async function POST(request: NextRequest) {
       status: 'upcoming',
       createdBy: teacherScopeName,
     })
-
-    await autoJoinAllUsers(event.id)
 
     return ok({ event }, { status: 201 })
   } catch (error) {
