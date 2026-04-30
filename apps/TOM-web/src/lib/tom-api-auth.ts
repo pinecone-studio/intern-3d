@@ -38,8 +38,23 @@ export async function requireApiUser(
   return { user: currentUser }
 }
 
+export function requireAuth(
+  request: NextRequest,
+  options: { activeOnly?: boolean } = {}
+) {
+  return requireApiUser(request, ['student', 'teacher', 'admin'], options)
+}
+
+export function requireRole(
+  request: NextRequest,
+  roles: UserRole | UserRole[],
+  options: { activeOnly?: boolean } = {}
+) {
+  return requireApiUser(request, Array.isArray(roles) ? roles : [roles], options)
+}
+
 export function requireAdmin(request: NextRequest) {
-  return requireApiUser(request, ['admin'], { activeOnly: true })
+  return requireRole(request, 'admin', { activeOnly: true })
 }
 
 function normalizeOwnerName(value: string) {

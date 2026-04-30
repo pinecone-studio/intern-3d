@@ -1,3 +1,6 @@
+import type { NextRequest } from 'next/server'
+
+import { requireRole } from '@/lib/tom-api-auth'
 import { getUser, grantXp } from '@/lib/tom-db'
 import { badRequest, notFound, ok, serverError } from '@/lib/tom-http'
 import type { XpSource } from '@/lib/tom-types'
@@ -5,8 +8,11 @@ import type { XpSource } from '@/lib/tom-types'
 
 const validSources: XpSource[] = ['manual', 'event', 'club', 'badge']
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const auth = await requireRole(request, 'admin', { activeOnly: true })
+    if (auth.response) return auth.response
+
     const body = (await request.json()) as Record<string, unknown>
 
     const userId = typeof body.userId === 'string' ? body.userId.trim() : ''

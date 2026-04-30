@@ -1,3 +1,6 @@
+import type { NextRequest } from 'next/server'
+
+import { requireRole } from '@/lib/tom-api-auth'
 import { deleteBadge, getBadge, upsertBadge } from '@/lib/tom-db'
 import { notFound, ok, serverError } from '@/lib/tom-http'
 import type { BadgeInput } from '@/lib/tom-types'
@@ -16,8 +19,11 @@ export async function GET(_req: Request, { params }: Params) {
   }
 }
 
-export async function PATCH(request: Request, { params }: Params) {
+export async function PATCH(request: NextRequest, { params }: Params) {
   try {
+    const auth = await requireRole(request, 'admin', { activeOnly: true })
+    if (auth.response) return auth.response
+
     const { badgeId } = await params
     const existing = await getBadge(badgeId)
     if (!existing) return notFound('Badge олдсонгүй.')
@@ -39,8 +45,11 @@ export async function PATCH(request: Request, { params }: Params) {
   }
 }
 
-export async function DELETE(_req: Request, { params }: Params) {
+export async function DELETE(request: NextRequest, { params }: Params) {
   try {
+    const auth = await requireRole(request, 'admin', { activeOnly: true })
+    if (auth.response) return auth.response
+
     const { badgeId } = await params
     const deleted = await deleteBadge(badgeId)
     if (!deleted) return notFound('Badge олдсонгүй.')

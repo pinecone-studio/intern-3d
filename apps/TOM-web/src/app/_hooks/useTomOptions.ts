@@ -6,6 +6,7 @@ import type { TomFormOptions } from '@/lib/tom-types';
 
 const emptyOptions: TomFormOptions = {
   teachers: [],
+  teacherOptions: [],
   allowedDays: [],
   gradeRanges: [],
 };
