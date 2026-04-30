@@ -5,7 +5,7 @@ import { DAY_VIEW_SLOT_COUNT, DAY_VIEW_SLOT_INDEXES, DAY_VIEW_SLOT_MINUTES } fro
 import { eventOccursInWeekOnDay, getEventLabel, getEventTone } from '@/app/dashboard/_lib/scheduler-event-utils'
 import { clampEventToPlanningDay, slotToTime, timeToMinutes } from '@/app/dashboard/_lib/scheduler-time-utils'
 import type { Selection } from '@/app/dashboard/_lib/scheduler-types'
-import { PineconeLoader } from '@/components/ui/pinecone-loader'
+import { PineconeSpinner } from '@/components/ui/pinecone-spinner'
 import type { Room, ScheduleEvent } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
@@ -79,7 +79,7 @@ export function SchedulerDayView({
       </div>
 
       {loading && rooms.length === 0 ? (
-        <PineconeLoader className="h-64" />
+        <PineconeSpinner className="h-64" />
       ) : errorMessage ? (
         <div className="m-4 rounded-md border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">{errorMessage}</div>
       ) : rooms.length === 0 ? (
