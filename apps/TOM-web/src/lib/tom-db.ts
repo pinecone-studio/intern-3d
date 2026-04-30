@@ -24,6 +24,7 @@ import type {
   UserInput,
   XpLog,
   XpSource,
+  ClubInterest,
 } from '@/lib/tom-types'
 
 const seedClubRequestIds = new Set(
@@ -1709,4 +1710,42 @@ export async function ensureTomUsersSeeded() {
   }
 
   return { seeded: false }
+}
+
+export async function getClubInterest(userId: string, clubId: string): Promise<ClubInterest | null> {
+  const db = getTomDb()
+  const row = await db
+    .prepare('SELECT id, user_id, club_id, created_at FROM club_interests WHERE user_id = ? AND club_id = ? LIMIT 1')
+    .bind(userId, clubId)
+    .first<{ id: string; user_id: string; club_id: string; created_at: string }>()
+  if (!row) return null
+  return { id: row.id, userId: row.user_id, clubId: row.club_id, createdAt: row.created_at }
+}
+
+export async function addClubInterest(userId: string, clubId: string): Promise<ClubInterest> {
+  const db = getTomDb()
+  const id = crypto.randomUUID()
+  const now = new Date().toISOString()
+  await db
+    .prepare('INSERT INTO club_interests (id, user_id, club_id, created_at) VALUES (?, ?, ?, ?)')
+    .bind(id, userId, clubId, now)
+    .run()
+  return { id, userId, clubId, createdAt: now }
+}
+
+export async function removeClubInterest(userId: string, clubId: string): Promise<void> {
+  const db = getTomDb()
+  await db
+    .prepare('DELETE FROM club_interests WHERE user_id = ? AND club_id = ?')
+    .bind(userId, clubId)
+    .run()
+}
+
+export async function countClubInterests(clubId: string): Promise<number> {
+  const db = getTomDb()
+  const row = await db
+    .prepare('SELECT COUNT(*) as count FROM club_interests WHERE club_id = ?')
+    .bind(clubId)
+    .first<{ count: number }>()
+  return row?.count ?? 0
 }
