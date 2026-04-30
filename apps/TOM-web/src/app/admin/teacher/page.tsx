@@ -5,6 +5,7 @@ import { UserPlus, Users } from 'lucide-react';
 import { StatusBadge } from '@/app/_components';
 import { useTomOptions } from '@/app/_hooks/useTomOptions';
 
+import type { ManagedUser } from '../admin-data';
 import { useAdminDashboard } from '../useAdminDashboard';
 
 const fieldClass =
@@ -33,6 +34,85 @@ export default function AdminTeacherPage() {
   const activeTeachers = teachers.filter(
     (teacher) => teacher.accountStatus === 'active'
   ).length;
+
+  const renderUserCard = (
+    user: ManagedUser,
+    targetRole: ManagedUser['role']
+  ) => {
+    const statusLabel =
+      user.accountStatus === 'active'
+        ? 'Идэвхтэй'
+        : user.accountStatus === 'restricted'
+        ? 'Хязгаарласан'
+        : 'Хориглосон';
+
+    const primaryActionLabel =
+      targetRole === 'teacher' ? 'Багш болгох' : 'Сурагч болгох';
+
+    return (
+      <article
+        key={user.id}
+        className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)] px-4 py-3 shadow-sm"
+      >
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="truncate text-base font-semibold text-[#183153]">
+                {user.name}
+              </h3>
+              <StatusBadge
+                type={user.role}
+                text={user.role === 'teacher' ? 'Багш' : 'Сурагч'}
+              />
+              <StatusBadge type={user.accountStatus} text={statusLabel} />
+            </div>
+            <p className="mt-0.5 truncate text-sm text-[#6f86a7]">
+              {user.email}
+            </p>
+            <p className="mt-1 truncate text-sm text-[#60789a]">
+              {user.reason}
+            </p>
+          </div>
+
+          <div className="shrink-0 text-right text-xs text-[#6f86a7]">
+            <p>Клубүүд</p>
+            <p className="mt-0.5 text-base font-semibold text-[#183153]">
+              {user.clubCount}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-2.5 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => void updateUserRole(user.id, targetRole)}
+            disabled={isSaving}
+            className="rounded-full bg-[color:var(--primary)] px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+          >
+            {primaryActionLabel}
+          </button>
+          <button
+            type="button"
+            onClick={() => void toggleUserRestriction(user.id)}
+            disabled={isSaving}
+            className="rounded-full border border-[#e3c98a] bg-white px-3 py-1.5 text-xs font-semibold text-[#ae7922] transition hover:bg-[#fff8e8] disabled:opacity-50"
+          >
+            {user.accountStatus === 'restricted'
+              ? 'Хязгаарлалтыг авах'
+              : 'Хязгаарлах'}
+          </button>
+          <button
+            type="button"
+            onClick={() => void toggleUserBan(user.id)}
+            disabled={isSaving}
+            className="rounded-full border border-[#f4b5ba] bg-white px-3 py-1.5 text-xs font-semibold text-[#de4a58] transition hover:bg-[#fff6f7] disabled:opacity-50"
+          >
+            {user.accountStatus === 'banned' ? 'Хориг цуцлах' : 'Хориглох'}
+          </button>
+        </div>
+      </article>
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -85,7 +165,7 @@ export default function AdminTeacherPage() {
           <div className="flex items-center gap-2">
             <UserPlus className="h-4 w-4 text-[color:var(--primary)]" />
             <h2 className="text-xl font-semibold text-[#183153]">
-              Багшийн бүртгэл нэмэх
+              Багш / сурагчийн бүртгэл нэмэх
             </h2>
           </div>
 
@@ -156,94 +236,59 @@ export default function AdminTeacherPage() {
           </div>
         </form>
 
-        <div className="min-h-0 space-y-2.5 overflow-y-auto pr-1">
+        <div className="min-h-0 space-y-4 overflow-y-auto pr-1">
           {isLoading ? (
             <div className="rounded-2xl border border-[color:var(--border)] bg-white p-6 text-center text-sm text-[#6f86a7]">
-              Багшийн мэдээллийг ачаалж байна...
-            </div>
-          ) : teachers.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-[color:var(--border)] bg-[color:var(--surface)] p-6 text-center text-sm text-[#6f86a7]">
-              Бүртгэлтэй багш одоогоор байхгүй байна.
+              Багш, сурагчийн мэдээллийг ачаалж байна...
             </div>
           ) : (
-            teachers.map((teacher) => (
-              <article
-                key={teacher.id}
-                className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)] px-4 py-3 shadow-sm"
-              >
-                {(() => {
-                  const statusLabel =
-                    teacher.accountStatus === 'active'
-                      ? 'Идэвхтэй'
-                      : teacher.accountStatus === 'restricted'
-                      ? 'Хязгаарласан'
-                      : 'Хориглосон';
-
-                  return (
-                    <>
-                <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="truncate text-base font-semibold text-[#183153]">
-                        {teacher.name}
-                      </h3>
-                      <StatusBadge type="teacher" text="Багш" />
-                      <StatusBadge
-                        type={teacher.accountStatus}
-                        text={statusLabel}
-                      />
-                    </div>
-                    <p className="mt-0.5 truncate text-sm text-[#6f86a7]">
-                      {teacher.email}
-                    </p>
-                    <p className="mt-1 truncate text-sm text-[#60789a]">
-                      {teacher.notes}
-                    </p>
-                  </div>
-
-                  <div className="shrink-0 text-right text-xs text-[#6f86a7]">
-                    <p>Клубүүд</p>
-                    <p className="mt-0.5 text-base font-semibold text-[#183153]">
-                      {teacher.clubCount}
+            <div className="space-y-4">
+              <section className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)] p-4 shadow-sm">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-lg font-semibold text-[#183153]">
+                      Багш нар ({teachers.length})
+                    </h2>
+                    <p className="text-sm text-[#6f86a7]">
+                      Багшийн бүртгэл, түгжээс, эрхийг эндээс удирдана.
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => void updateUserRole(teacher.id, 'student')}
-                    disabled={isSaving}
-                    className="rounded-full bg-[color:var(--primary)] px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-                  >
-                    Сурагч болгох
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void toggleUserRestriction(teacher.id)}
-                    disabled={isSaving}
-                    className="rounded-full border border-[#e3c98a] bg-white px-3 py-1.5 text-xs font-semibold text-[#ae7922] transition hover:bg-[#fff8e8] disabled:opacity-50"
-                  >
-                    {teacher.accountStatus === 'restricted'
-                      ? 'Хязгаарлалтыг авах'
-                      : 'Хязгаарлах'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void toggleUserBan(teacher.id)}
-                    disabled={isSaving}
-                    className="rounded-full border border-[#f4b5ba] bg-white px-3 py-1.5 text-xs font-semibold text-[#de4a58] transition hover:bg-[#fff6f7] disabled:opacity-50"
-                  >
-                    {teacher.accountStatus === 'banned'
-                      ? 'Хориг цуцлах'
-                      : 'Хориглох'}
-                  </button>
+                {teachers.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-[color:var(--border)] bg-[color:var(--surface)] p-6 text-center text-sm text-[#6f86a7]">
+                    Бүртгэлтэй багш одоогоор байхгүй байна.
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    {teachers.map((teacher) => renderUserCard(teacher, 'student'))}
+                  </div>
+                )}
+              </section>
+
+              <section className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)] p-4 shadow-sm">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-lg font-semibold text-[#183153]">
+                      Сурагчид ({students.length})
+                    </h2>
+                    <p className="text-sm text-[#6f86a7]">
+                      Сурагчийн мэдээлэл, хязгаарлалт, хоригийг эндээс харна.
+                    </p>
+                  </div>
                 </div>
-                    </>
-                  );
-                })()}
-              </article>
-            ))
+
+                {students.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-[color:var(--border)] bg-[color:var(--surface)] p-6 text-center text-sm text-[#6f86a7]">
+                    Бүртгэлтэй сурагч одоогоор байхгүй байна.
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    {students.map((student) => renderUserCard(student, 'teacher'))}
+                  </div>
+                )}
+              </section>
+            </div>
           )}
         </div>
       </section>
