@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { CalendarDays, MapPin, Plus, Search, Trash2 } from 'lucide-react';
 
 import { StatusBadge } from '@/app/_components';
+import { useDebouncedValue } from '@/app/_hooks/useDebouncedValue';
 import { useTomSession } from '@/app/_providers/tom-session-provider';
 import type { EventStatus, SchoolEvent, TomCurrentUser } from '@/lib/tom-types';
 
@@ -81,6 +82,7 @@ export default function EventsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [message, setMessage] = useState('Арга хэмжээний мэдээллийг ачааллаа.');
+  const debouncedSearchTerm = useDebouncedValue(searchTerm);
 
   const loadData = async (nextMessage?: string) => {
     const query = new URLSearchParams();
@@ -89,8 +91,8 @@ export default function EventsPage() {
       query.set('status', statusFilter);
     }
 
-    if (searchTerm.trim()) {
-      query.set('q', searchTerm.trim());
+    if (debouncedSearchTerm.trim()) {
+      query.set('q', debouncedSearchTerm.trim());
     }
 
     const suffix = query.toString() ? `?${query.toString()}` : '';
@@ -135,7 +137,7 @@ export default function EventsPage() {
     return () => {
       cancelled = true;
     };
-  }, [statusFilter, searchTerm]);
+  }, [statusFilter, debouncedSearchTerm]);
 
   const runAction = async (action: () => Promise<void>, fallback: string) => {
     setIsSaving(true);

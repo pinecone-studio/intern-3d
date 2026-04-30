@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { FileText, Save, Search } from 'lucide-react';
 
 import { CapacityBar, StatusBadge } from '@/app/_components';
+import { useDebouncedValue } from '@/app/_hooks/useDebouncedValue';
 import { useTomOptions } from '@/app/_hooks/useTomOptions';
 import type { Club, ClubStatus } from '@/lib/tom-types';
 
@@ -84,11 +85,12 @@ export default function DetailPage() {
   const [message, setMessage] = useState(
     'Клубийн дэлгэрэнгүй мэдээллийг ачааллаа.'
   );
+  const debouncedSearchTerm = useDebouncedValue(searchTerm);
 
   const loadData = async (nextMessage?: string) => {
     const query = new URLSearchParams();
-    if (searchTerm.trim()) {
-      query.set('q', searchTerm.trim());
+    if (debouncedSearchTerm.trim()) {
+      query.set('q', debouncedSearchTerm.trim());
     }
 
     const suffix = query.toString() ? `?${query.toString()}` : '';
@@ -137,7 +139,7 @@ export default function DetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [searchTerm]);
+  }, [debouncedSearchTerm]);
 
   const selectedClub = useMemo(
     () => clubs.find((club) => club.id === selectedClubId) ?? null,
