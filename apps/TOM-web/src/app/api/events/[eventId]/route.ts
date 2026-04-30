@@ -1,8 +1,8 @@
 import type { NextRequest } from 'next/server'
 
-import { requireApiUser } from '@/lib/tom-api-auth'
+import { canManageTeacherOwnedResource, requireApiUser } from '@/lib/tom-api-auth'
 import { deleteEvent, getEvent, upsertEvent } from '@/lib/tom-db'
-import { notFound, ok, serverError } from '@/lib/tom-http'
+import { forbidden, notFound, ok, serverError } from '@/lib/tom-http'
 import type { EventStatus } from '@/lib/tom-types'
 
 
@@ -27,6 +27,9 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     const { eventId } = await params
     const current = await getEvent(eventId)
     if (!current) return notFound('Event олдсонгүй.')
+    if (!canManageTeacherOwnedResource(auth.user, current.createdBy)) {
+      return forbidden('Only admins or the event owner can update this event.')
+    }
 
     const body = (await request.json()) as Record<string, unknown>
 
@@ -62,6 +65,12 @@ export async function DELETE(request: NextRequest, { params }: Params) {
     if (auth.response) return auth.response
 
     const { eventId } = await params
+    const current = await getEvent(eventId)
+    if (!current) return notFound('Event олдсонгүй.')
+    if (!canManageTeacherOwnedResource(auth.user, current.createdBy)) {
+      return forbidden('Only admins or the event owner can delete this event.')
+    }
+
     const deleted = await deleteEvent(eventId)
     if (!deleted) return notFound('Event олдсонгүй.')
     return ok({ ok: true })

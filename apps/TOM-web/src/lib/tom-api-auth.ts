@@ -41,3 +41,18 @@ export async function requireApiUser(
 export function requireAdmin(request: NextRequest) {
   return requireApiUser(request, ['admin'], { activeOnly: true })
 }
+
+function normalizeOwnerName(value: string) {
+  return value.trim().toLocaleLowerCase()
+}
+
+export function getTeacherScopeName(user: Pick<TomCurrentUser, 'name' | 'teacherProfileName'>) {
+  return (user.teacherProfileName || user.name).trim()
+}
+
+export function canManageTeacherOwnedResource(user: TomCurrentUser, ownerName: string) {
+  if (user.role === 'admin') return true
+  if (user.role !== 'teacher') return false
+
+  return normalizeOwnerName(getTeacherScopeName(user)) === normalizeOwnerName(ownerName)
+}
