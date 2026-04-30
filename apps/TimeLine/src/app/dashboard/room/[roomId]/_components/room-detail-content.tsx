@@ -13,7 +13,7 @@ import { RoomEventFormDialog } from '@/app/dashboard/room/[roomId]/_components/r
 import { RoomWeeklyScheduleGrid } from '@/app/dashboard/room/[roomId]/_components/room-weekly-schedule-grid'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { PineconeSpinner } from '@/components/ui/pinecone-spinner'
+import { PineconeLoader } from '@/components/ui/pinecone-loader'
 import type { ScheduleEvent } from '@/lib/types'
 
 export function RoomDetailContent({ roomId }: { roomId: string }) {
@@ -28,7 +28,7 @@ export function RoomDetailContent({ roomId }: { roomId: string }) {
 
   useTimelineLiveUpdates({ enabled: !loading, roomId, onEventsChanged: () => refetch() })
 
-  if (loading || !clock) return <PineconeSpinner className="min-h-[420px]" />
+  if (loading || !clock) return <PineconeLoader className="min-h-[420px]" />
   if (error) return <div className="flex flex-col items-center justify-center gap-3 p-8 text-center"><h1 className="text-xl font-bold">Өрөөний мэдээлэл ачаалж чадсангүй</h1><p className="max-w-md text-sm text-muted-foreground">{error.message}</p><Button onClick={() => refetch()}>Дахин оролдох</Button></div>
   if (!data?.room?.room) return <div className="flex flex-col items-center justify-center p-8"><h1 className="text-xl font-bold">Өрөө олдсонгүй</h1><Button variant="link" asChild><a href="/dashboard">Буцах</a></Button></div>
 
