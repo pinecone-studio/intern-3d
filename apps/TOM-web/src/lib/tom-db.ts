@@ -27,6 +27,7 @@ import type {
   Announcement,
   AnnouncementInput,
   AnnouncementType,
+  ClubInterest,
 } from '@/lib/tom-types'
 
 const seedClubRequestIds = new Set(

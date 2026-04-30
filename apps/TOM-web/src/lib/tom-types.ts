@@ -213,3 +213,10 @@ export type AnnouncementInput = {
   clubId?: string | null
   eventId?: string | null
 }
+
+export type ClubInterest = {
+  id: string
+  userId: string
+  clubId: string
+  createdAt: string
+}
