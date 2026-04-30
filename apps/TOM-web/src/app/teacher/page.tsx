@@ -112,8 +112,10 @@ export default function TeacherDashboard() {
   const [teacherScopeName, setTeacherScopeName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [, setMessage] = useState('Багшийн самбарын шууд өгөгдөлд холбогдлоо.');
-  const [, setErrorMessage] = useState('');
+  const [message, setMessage] = useState(
+    'Багшийн самбарын шууд өгөгдөлд холбогдлоо.'
+  );
+  const [errorMessage, setErrorMessage] = useState('');
 
   const loadData = async (nextMessage?: string) => {
     const data = await apiRequest<TeacherDashboardResponse>(
@@ -270,6 +272,42 @@ export default function TeacherDashboard() {
   return (
     <div className="min-h-screen font-sans text-[color:var(--foreground)]">
       <main className="container mx-auto space-y-8 ">
+        <section
+          className={`rounded-[28px] border px-5 py-4 shadow-soft ${
+            errorMessage
+              ? 'border-[#ffd2d5] bg-[#fff7f8] text-[#b23a49]'
+              : 'border-[color:var(--border)] bg-white/90 text-[#56708f]'
+          }`}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em]">
+                {errorMessage
+                  ? 'Синк алдаа'
+                  : isLoading
+                  ? 'Самбар ачаалж байна'
+                  : isSaving
+                  ? 'Өөрчлөлт хадгалж байна'
+                  : 'Багшийн самбар'}
+              </p>
+              <p className="mt-1 text-sm">
+                {errorMessage ||
+                  (isLoading
+                    ? 'Таны клуб, хүсэлт, 7 хоногийн хуваарийг ачаалж байна.'
+                    : isSaving
+                    ? 'Сүүлд хийсэн өөрчлөлтийг хадгалж байна.'
+                    : message)}
+              </p>
+            </div>
+            <div className="rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm font-semibold text-[#4a6080]">
+              {teacherScopeName ||
+                user?.teacherProfileName ||
+                user?.name ||
+                'Багш'}
+            </div>
+          </div>
+        </section>
+
         <section>
           <article className="shadow-soft rounded-3xl border border-[color:var(--border)] bg-[color:var(--card)] p-5 text-[color:var(--card-foreground)]">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">

@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 
+import { canManageTeacherOwnedResource } from '@/lib/tom-api-auth'
 import { getCurrentUserFromRequest } from '@/lib/tom-auth'
 import {
   createEventPost,
@@ -55,8 +56,8 @@ export async function POST(request: NextRequest, { params }: Params) {
   try {
     const currentUser = await getCurrentUserFromRequest(request, true)
     if (!currentUser) return unauthorized('Session not found.')
-    if (currentUser.role !== 'admin') {
-      return forbidden('Only admins can create event posts.')
+    if (!['admin', 'teacher'].includes(currentUser.role)) {
+      return forbidden('Only admins and assigned teachers can create event posts.')
     }
     if (currentUser.accountStatus !== 'active') {
       return forbidden('Only active accounts can create event posts.')
@@ -65,6 +66,9 @@ export async function POST(request: NextRequest, { params }: Params) {
     const { eventId } = await params
     const event = await getEvent(eventId)
     if (!event) return notFound('Event олдсонгүй.')
+    if (!canManageTeacherOwnedResource(currentUser, event.createdBy)) {
+      return forbidden('Only admins or the event owner can create event posts.')
+    }
 
     const body = (await request.json().catch(() => ({}))) as Record<string, unknown>
     const title = typeof body.title === 'string' ? body.title.trim() : ''
@@ -85,4 +89,3 @@ export async function POST(request: NextRequest, { params }: Params) {
     return serverError('Failed to create event post.', String(error))
   }
 }
-

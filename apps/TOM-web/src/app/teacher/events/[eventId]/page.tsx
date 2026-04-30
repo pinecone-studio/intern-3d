@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, ChevronLeft, MapPin, Users } from 'lucide-react';
+import { CalendarDays, ChevronLeft, MapPin, Plus, Users } from 'lucide-react';
 
 import { EventPostsFeed } from '@/app/_components/EventPostsFeed';
 import { useTomSession } from '@/app/_providers/tom-session-provider';
@@ -40,7 +40,10 @@ export default function TeacherEventDetailPage() {
 
   const [event, setEvent] = useState<SchoolEvent | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isPosting, setIsPosting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
   const pageTitle = useMemo(
@@ -76,6 +79,34 @@ export default function TeacherEventDetailPage() {
       cancelled = true;
     };
   }, [eventId]);
+
+  const submitPost = async () => {
+    const trimmed = body.trim();
+    if (!trimmed) return;
+
+    setIsPosting(true);
+    setErrorMessage('');
+
+    try {
+      const data = await apiRequest<{ post: EventPost }>(
+        `/api/events/${eventId}/posts`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ title: title.trim(), body: trimmed }),
+        }
+      );
+
+      setPosts((current) => [{ ...data.post, comments: [] }, ...current]);
+      setTitle('');
+      setBody('');
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Post нэмэж чадсангүй.'
+      );
+    } finally {
+      setIsPosting(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -126,6 +157,45 @@ export default function TeacherEventDetailPage() {
             {errorMessage}
           </div>
         ) : null}
+
+        <div className="mt-5 rounded-3xl border border-[#e2eaf5] bg-[#f8fbff] p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="inline-flex items-center gap-2 text-sm font-semibold text-[#183153]">
+              <Plus className="h-4 w-4" />
+              Post нэмэх
+            </p>
+            <span className="text-xs font-semibold text-[#6f86a7]">
+              Таны event дээрх post сурагчдад харагдана.
+            </span>
+          </div>
+
+          <div className="mt-4 grid gap-3">
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Гарчиг (заавал биш)"
+              className="w-full rounded-[18px] border border-[#d7e4f4] bg-white px-4 py-3 text-sm text-[#17365f] outline-none placeholder:text-[#93a6c0] focus:border-[#1a3560]"
+            />
+            <textarea
+              rows={4}
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder="Event-тэй холбоотой мэдээлэл, сануулга, шинэчлэлт..."
+              className="w-full resize-none rounded-[18px] border border-[#d7e4f4] bg-white px-4 py-3 text-sm text-[#17365f] outline-none placeholder:text-[#93a6c0] focus:border-[#1a3560]"
+            />
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => void submitPost()}
+                disabled={isPosting || !body.trim()}
+                className="rounded-full bg-[#49a0e3] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(26,53,96,0.25)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isPosting ? 'Нэмэж байна...' : 'Нэмэх'}
+              </button>
+            </div>
+          </div>
+        </div>
       </section>
 
       {isLoading ? (
