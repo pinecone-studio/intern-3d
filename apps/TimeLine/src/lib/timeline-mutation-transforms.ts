@@ -82,6 +82,7 @@ export function toScheduleBlockInsert(input: ScheduleEventInput, id: string, now
     roomId: input.roomId,
     type: toBlockEventType(input.type),
     title: input.title,
+    groupId: input.groupId ?? null,
     description: normalizeOptionalText(input.notes),
     color: null,
     organizer: normalizeOptionalText(input.instructor),

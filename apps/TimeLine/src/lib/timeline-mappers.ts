@@ -83,6 +83,7 @@ export function mapScheduleBlockRow(block: ScheduleBlockRow, instructor?: string
     id: block.id,
     roomId: block.roomId,
     title: block.title,
+    groupId: block.groupId ?? undefined,
     type,
     startTime: minutesToTime(startMinute),
     endTime: minutesToTime(endMinute),

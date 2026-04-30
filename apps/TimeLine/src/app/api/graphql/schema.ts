@@ -4,6 +4,7 @@ export const timelineGraphqlTypeDefs = `
   input ScheduleEventInput {
     roomId: ID!
     title: String!
+    groupId: String
     type: String!
     startTime: String!
     endTime: String!
@@ -29,6 +30,7 @@ export const timelineGraphqlTypeDefs = `
     id: ID!
     roomId: ID!
     title: String!
+    groupId: String
     type: String!
     startTime: String!
     endTime: String!

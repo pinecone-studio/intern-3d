@@ -74,6 +74,7 @@ export const scheduleBlocksTable = sqliteTable('schedule_blocks', {
     .references(() => roomsTable.id, { onDelete: 'cascade' }),
   type: text('type').notNull(),
   title: text('title').notNull(),
+  groupId: text('group_id'),
   description: text('description'),
   color: text('color'),
   organizer: text('organizer'),

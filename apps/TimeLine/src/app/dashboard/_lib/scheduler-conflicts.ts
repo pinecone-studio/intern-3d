@@ -7,6 +7,7 @@ import type { Room, ScheduleEvent } from '@/lib/types'
 
 type ConflictCandidate = ScheduleEventMutationInput & {
   excludeEventId?: string | null
+  excludeEventIds?: string[] | null
   sourceOccurrence?: { dateIso: string; event: ScheduleEvent } | null
 }
 
@@ -70,7 +71,8 @@ function isSourceOccurrence(candidate: ConflictCandidate, event: ScheduleEvent) 
 
 export function findScheduleConflict(candidate: ConflictCandidate, events: ScheduleEvent[], rooms: Room[]): ScheduleConflict | null {
   const roomNumber = rooms.find((room) => room.id === candidate.roomId)?.number ?? candidate.roomId
-  const conflict = events.find((event) => event.id !== candidate.excludeEventId && !isSourceOccurrence(candidate, event) && event.roomId === candidate.roomId && overlapsTime(candidate, event) && getConflictDate(candidate, event))
+  const excludedIds = new Set([candidate.excludeEventId, ...(candidate.excludeEventIds ?? [])].filter(Boolean))
+  const conflict = events.find((event) => !excludedIds.has(event.id) && !isSourceOccurrence(candidate, event) && event.roomId === candidate.roomId && overlapsTime(candidate, event) && getConflictDate(candidate, event))
   if (!conflict) return null
   return { dateIso: getConflictDate(candidate, conflict) ?? getCandidateDate(candidate), roomNumber, event: conflict }
 }
