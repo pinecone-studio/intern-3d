@@ -1,7 +1,17 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, ShieldCheck, XCircle } from 'lucide-react';
+import {
+  CheckCircle2,
+  ClipboardList,
+  Plus,
+  Search,
+  ShieldCheck,
+  SlidersHorizontal,
+  Users,
+  XCircle,
+} from 'lucide-react';
 
 import { CapacityBar, StatusBadge } from '@/app/_components';
 import { useTomOptions } from '@/app/_hooks/useTomOptions';
@@ -35,6 +45,9 @@ type ClubRequestForm = {
   endDate: string;
   note: string;
 };
+
+type ClubsTab = 'clubs' | 'requests' | 'new';
+type ClubStatusFilter = 'all' | Club['status'];
 
 function createInitialClubRequestForm(
   options: TomFormOptions
@@ -82,6 +95,9 @@ export default function ClubsPage() {
   const [clubs, setClubs] = useState<Club[]>([]);
   const [requests, setRequests] = useState<ClubRequest[]>([]);
   const [teacherScopeName, setTeacherScopeName] = useState('');
+  const [activeTab, setActiveTab] = useState<ClubsTab>('clubs');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<ClubStatusFilter>('all');
   const [clubRequestForm, setClubRequestForm] = useState<ClubRequestForm>(() =>
     createInitialClubRequestForm(options)
   );
@@ -91,9 +107,7 @@ export default function ClubsPage() {
   const [message, setMessage] = useState('Клубийн мэдээллийг D1-ээс ачааллаа.');
 
   const loadData = async (nextMessage?: string) => {
-    const data = await apiRequest<TeacherClubsResponse>(
-      '/api/teacher/clubs'
-    );
+    const data = await apiRequest<TeacherClubsResponse>('/api/teacher/clubs');
 
     setClubs(data.clubs);
     setRequests(data.requests);
@@ -275,6 +289,30 @@ export default function ClubsPage() {
     () => clubs.filter((club) => club.status === 'active'),
     [clubs]
   );
+  const visibleClubs = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+
+    return clubs.filter((club) => {
+      const matchesStatus =
+        statusFilter === 'all' || club.status === statusFilter;
+      const matchesSearch =
+        !normalizedSearch ||
+        [
+          club.name,
+          club.teacherName,
+          club.gradeRange,
+          club.allowedDays,
+          club.category,
+          club.note,
+          club.description,
+        ]
+          .join(' ')
+          .toLowerCase()
+          .includes(normalizedSearch);
+
+      return matchesStatus && matchesSearch;
+    });
+  }, [clubs, searchTerm, statusFilter]);
   const pausedClubs = useMemo(
     () => clubs.filter((club) => club.status === 'paused'),
     [clubs]
@@ -287,6 +325,22 @@ export default function ClubsPage() {
       draft: 'Ноорог',
       archived: 'Архивласан',
     }[status] ?? status);
+
+  const tabs: Array<{
+    key: ClubsTab;
+    label: string;
+    count?: number;
+    icon: typeof Users;
+  }> = [
+    { key: 'clubs', label: 'Миний клубүүд', count: clubs.length, icon: Users },
+    {
+      key: 'requests',
+      label: 'Хүлээгдэж буй',
+      count: requests.length,
+      icon: ClipboardList,
+    },
+    { key: 'new', label: 'Шинэ хүсэлт', icon: Plus },
+  ];
 
   const inputClass =
     'w-full rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm text-[#17304f] outline-none transition placeholder:text-[#8fa3bf] focus:border-[#4f72d5] focus:ring-2 focus:ring-[#dce8ff]';
@@ -333,7 +387,7 @@ export default function ClubsPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-3 md:grid-cols-3">
         {[
           {
             label: 'Нийт клуб',
@@ -364,77 +418,149 @@ export default function ClubsPage() {
         ))}
       </section>
 
-      <section className="grid items-start gap-6 xl:grid-cols-[1.4fr_1fr]">
-        <article className="self-start rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-6 shadow-soft">
-          <div className="flex items-center justify-between gap-3">
+      <section className="rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-4 shadow-soft">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex gap-2 overflow-x-auto">
+            {tabs.map(({ key, label, count, icon: Icon }) => {
+              const isActive = activeTab === key;
+
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setActiveTab(key)}
+                  className={`inline-flex flex-none items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition ${
+                    isActive
+                      ? 'bg-[#49a0e3] text-white shadow-[0_10px_20px_rgba(73,160,227,0.22)]'
+                      : 'border border-[#d8e4f4] bg-white text-[#4a6080] hover:bg-[#eef4ff]'
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {label}
+                  {count !== undefined ? (
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs ${
+                        isActive
+                          ? 'bg-white/20 text-white'
+                          : 'bg-[#eef4ff] text-[#496da8]'
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+
+          {activeTab === 'clubs' ? (
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <label className="flex items-center gap-2 rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm text-[#4a6080]">
+                <Search className="h-4 w-4" />
+                <input
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="Клуб хайх"
+                  className="w-40 bg-transparent outline-none placeholder:text-[#8aa0be]"
+                />
+              </label>
+              <label className="flex items-center gap-2 rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm text-[#4a6080]">
+                <SlidersHorizontal className="h-4 w-4" />
+                <select
+                  value={statusFilter}
+                  onChange={(event) =>
+                    setStatusFilter(event.target.value as ClubStatusFilter)
+                  }
+                  className="bg-transparent outline-none"
+                >
+                  <option value="all">Бүх төлөв</option>
+                  {(
+                    [
+                      'active',
+                      'paused',
+                      'pending',
+                      'draft',
+                      'archived',
+                    ] as const
+                  ).map((status) => (
+                    <option key={status} value={status}>
+                      {clubStatusLabel(status)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      {activeTab === 'clubs' ? (
+        <section className="rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-6 shadow-soft">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-xl font-semibold text-[#17304f]">
                 Удирдаж буй клубүүд
               </h2>
               <p className="mt-1 text-sm text-[#6e84a3]">
-                {teacherScopeName ||
-                  user?.teacherProfileName ||
-                  user?.name ||
-                  'Багш'}{' '}
-                нэр дээрх клубүүдийг эндээс удирдана.
+                {visibleClubs.length} клуб харагдаж байна.
               </p>
             </div>
-            <StatusBadge
-              type={pausedClubs.length > 0 ? 'paused' : 'active'}
-              text={
-                pausedClubs.length > 0
-                  ? `${pausedClubs.length} түр зогссон`
-                  : 'Бүгд идэвхтэй'
-              }
-            />
+            <div className="flex flex-wrap gap-2">
+              <StatusBadge
+                type={pausedClubs.length > 0 ? 'paused' : 'active'}
+                text={
+                  pausedClubs.length > 0
+                    ? `${pausedClubs.length} түр зогссон`
+                    : 'Бүгд идэвхтэй'
+                }
+              />
+              <Link
+                href="/teacher/club-detail"
+                className="rounded-full border border-[#d8e4f4] px-4 py-2 text-sm font-semibold text-[#17304f] transition hover:bg-[#eef4ff]"
+              >
+                Дэлгэрэнгүй засах
+              </Link>
+            </div>
           </div>
 
-          <div className="mt-5 space-y-4">
-            {clubs.length === 0 ? (
+          <div className="mt-5 divide-y divide-[#e3edf8]">
+            {visibleClubs.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-[#d6e1ef] px-4 py-10 text-center text-sm text-[#7d93b2]">
-                Одоогоор клуб олдсонгүй.
+                Энэ шүүлтээр клуб олдсонгүй.
               </div>
             ) : (
-              clubs.map((club) => (
-                <div
+              visibleClubs.map((club) => (
+                <article
                   key={club.id}
-                  className="rounded-[24px] border border-[#deebf7] bg-white/90 p-5"
+                  className="grid gap-4 py-4 first:pt-0 last:pb-0 lg:grid-cols-[1.1fr_0.9fr_auto] lg:items-center"
                 >
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-lg font-semibold text-[#17304f]">
-                          {club.name}
-                        </h3>
-                        <StatusBadge
-                          type={club.status}
-                          text={clubStatusLabel(club.status)}
-                        />
-                        {club.verified ? (
-                          <StatusBadge type="approved" text="Баталгаажсан" />
-                        ) : null}
-                      </div>
-                      <p className="mt-2 text-sm text-[#6e84a3]">
-                        {club.teacherName} ·{' '}
-                        {club.gradeRange || 'Анги заагаагүй'} ·{' '}
-                        {club.allowedDays || 'Өдөр тохируулаагүй'}
-                      </p>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="truncate text-base font-semibold text-[#17304f]">
+                        {club.name}
+                      </h3>
+                      <StatusBadge
+                        type={club.status}
+                        text={clubStatusLabel(club.status)}
+                      />
+                      {club.verified ? (
+                        <StatusBadge type="approved" text="Баталгаажсан" />
+                      ) : null}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => void toggleClubStatus(club)}
-                      disabled={isSaving}
-                      className="rounded-full border border-[#d8e4f4] px-4 py-2 text-sm font-semibold text-[#17304f] transition hover:bg-[#eef4ff] disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {club.status === 'active'
-                        ? 'Клуб түр зогсоох'
-                        : 'Клуб идэвхжүүлэх'}
-                    </button>
+                    <p className="mt-1 text-sm text-[#6e84a3]">
+                      {club.gradeRange || 'Анги заагаагүй'} ·{' '}
+                      {club.allowedDays || 'Өдөр тохируулаагүй'}
+                    </p>
+                    <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#526987]">
+                      {club.note ||
+                        club.description ||
+                        'Клубийн тайлбар хараахан байхгүй.'}
+                    </p>
                   </div>
 
-                  <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-3 sm:grid-cols-[1fr_120px_120px] lg:grid-cols-1">
                     <div>
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-black">
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d91ae]">
                         Багтаамж
                       </p>
                       <CapacityBar
@@ -442,205 +568,212 @@ export default function ClubsPage() {
                         total={club.studentLimit}
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-3 text-sm text-[#5f7697]">
-                      <div className="rounded-2xl bg-[#f4f8fd] px-4 py-3">
-                        <p className="text-xs uppercase tracking-[0.14em] text-[#7d91ae]">
-                          Сонирхол
-                        </p>
-                        <p className="mt-1 text-lg font-semibold text-[#17304f]">
-                          {club.interestCount}
-                        </p>
-                      </div>
-                      <div className="rounded-2xl bg-[#f4f8fd] px-4 py-3">
-                        <p className="text-xs uppercase tracking-[0.14em] text-[#7d91ae]">
-                          Хугацаа
-                        </p>
-                        <p className="mt-1 text-sm font-semibold text-[#17304f]">
-                          {club.startDate || 'Тодорхойгүй'} -{' '}
-                          {club.endDate || 'Тодорхойгүй'}
-                        </p>
-                      </div>
+                    <div className="rounded-2xl bg-[#f4f8fd] px-4 py-3 text-sm">
+                      <p className="text-xs uppercase tracking-[0.14em] text-[#7d91ae]">
+                        Сонирхол
+                      </p>
+                      <p className="mt-1 font-semibold text-[#17304f]">
+                        {club.interestCount}
+                      </p>
+                    </div>
+                    <div className="rounded-2xl bg-[#f4f8fd] px-4 py-3 text-sm">
+                      <p className="text-xs uppercase tracking-[0.14em] text-[#7d91ae]">
+                        Хугацаа
+                      </p>
+                      <p className="mt-1 font-semibold text-[#17304f]">
+                        {club.startDate || '—'}
+                      </p>
                     </div>
                   </div>
 
-                  <p className="mt-4 text-sm leading-6 text-[#526987]">
-                    {club.note ||
-                      club.description ||
-                      'Клубийн тайлбар хараахан байхгүй.'}
-                  </p>
-                </div>
+                  <div className="flex flex-wrap justify-start gap-2 lg:justify-end">
+                    <button
+                      type="button"
+                      onClick={() => void toggleClubStatus(club)}
+                      disabled={isSaving}
+                      className="rounded-full border border-[#d8e4f4] px-4 py-2 text-sm font-semibold text-[#17304f] transition hover:bg-[#eef4ff] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {club.status === 'active' ? 'Түр зогсоох' : 'Идэвхжүүлэх'}
+                    </button>
+                  </div>
+                </article>
               ))
             )}
           </div>
-        </article>
+        </section>
+      ) : null}
 
-        <div className="space-y-6 self-start">
-          <article className="rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-6 shadow-soft">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h2 className="text-xl font-semibold text-[#17304f]">
-                  Клубийн хүсэлт
-                </h2>
-                <p className="mt-1 text-sm text-[#6e84a3]">
-                  Клубийн хүсэлтээ эндээс үүсгээд admin руу илгээнэ.
-                </p>
-              </div>
-              <StatusBadge type="review" text="Club request" />
+      {activeTab === 'new' ? (
+        <section className="rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-6 shadow-soft">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-semibold text-[#17304f]">
+                Шинэ клубийн хүсэлт
+              </h2>
+              <p className="mt-1 text-sm text-[#6e84a3]">
+                {teacherScopeName ||
+                  user?.teacherProfileName ||
+                  user?.name ||
+                  'Багш'}{' '}
+                нэр дээр admin руу илгээгдэнэ.
+              </p>
             </div>
+            <StatusBadge type="review" text="Club request" />
+          </div>
 
-            <form
-              className="mt-5 space-y-4"
-              onSubmit={(event) => {
-                event.preventDefault();
-                void submitClubRequest();
-              }}
-            >
+          <form
+            className="mt-5 space-y-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void submitClubRequest();
+            }}
+          >
+            <label className="block">
+              <span className={labelClass}>Клубийн нэр</span>
+              <input
+                type="text"
+                value={clubRequestForm.clubName}
+                onChange={(event) =>
+                  updateClubRequestField('clubName', event.target.value)
+                }
+                className={inputClass}
+                placeholder="Жишээ: Роботик клуб"
+              />
+            </label>
+
+            <div className="grid gap-4 md:grid-cols-2">
               <label className="block">
-                <span className={labelClass}>Клубийн нэр</span>
-                <input
-                  type="text"
-                  value={clubRequestForm.clubName}
+                <span className={labelClass}>Анги</span>
+                <select
+                  value={clubRequestForm.gradeRange}
                   onChange={(event) =>
-                    updateClubRequestField('clubName', event.target.value)
+                    updateClubRequestField('gradeRange', event.target.value)
                   }
                   className={inputClass}
-                  placeholder="Жишээ: Роботик клуб"
-                />
+                >
+                  {options.gradeRanges.length > 0 ? null : (
+                    <option value="">Сонголт ачаалагдаагүй</option>
+                  )}
+                  {options.gradeRanges.map((gradeRange) => (
+                    <option key={gradeRange} value={gradeRange}>
+                      {gradeRange}
+                    </option>
+                  ))}
+                </select>
               </label>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="block">
-                  <span className={labelClass}>Анги</span>
-                  <select
-                    value={clubRequestForm.gradeRange}
-                    onChange={(event) =>
-                      updateClubRequestField('gradeRange', event.target.value)
-                    }
-                    className={inputClass}
-                  >
-                    {options.gradeRanges.length > 0 ? null : (
-                      <option value="">Сонголт ачаалагдаагүй</option>
-                    )}
-                    {options.gradeRanges.map((gradeRange) => (
-                      <option key={gradeRange} value={gradeRange}>
-                        {gradeRange}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="block">
-                  <span className={labelClass}>Өдөр</span>
-                  <select
-                    value={clubRequestForm.allowedDays}
-                    onChange={(event) =>
-                      updateClubRequestField('allowedDays', event.target.value)
-                    }
-                    className={inputClass}
-                  >
-                    {options.allowedDays.length > 0 ? null : (
-                      <option value="">Сонголт ачаалагдаагүй</option>
-                    )}
-                    {options.allowedDays.map((allowedDay) => (
-                      <option key={allowedDay} value={allowedDay}>
-                        {allowedDay}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="block">
-                  <span className={labelClass}>Эхлэх огноо</span>
-                  <input
-                    type="date"
-                    value={clubRequestForm.startDate}
-                    onChange={(event) =>
-                      updateClubRequestField('startDate', event.target.value)
-                    }
-                    className={inputClass}
-                  />
-                </label>
-
-                <label className="block">
-                  <span className={labelClass}>Дуусах огноо</span>
-                  <input
-                    type="date"
-                    value={clubRequestForm.endDate}
-                    onChange={(event) =>
-                      updateClubRequestField('endDate', event.target.value)
-                    }
-                    className={inputClass}
-                  />
-                </label>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="block">
-                  <span className={labelClass}>Сурагчийн лимит</span>
-                  <input
-                    type="number"
-                    min="1"
-                    value={clubRequestForm.studentLimit}
-                    onChange={(event) =>
-                      updateClubRequestField('studentLimit', event.target.value)
-                    }
-                    className={inputClass}
-                  />
-                </label>
-
-                <label className="block">
-                  <span className={labelClass}>Сонирхлын тоо</span>
-                  <input
-                    type="number"
-                    min="0"
-                    value={clubRequestForm.interestCount}
-                    onChange={(event) =>
-                      updateClubRequestField(
-                        'interestCount',
-                        event.target.value
-                      )
-                    }
-                    className={inputClass}
-                  />
-                </label>
-              </div>
 
               <label className="block">
-                <span className={labelClass}>Тайлбар</span>
-                <textarea
-                  value={clubRequestForm.note}
+                <span className={labelClass}>Өдөр</span>
+                <select
+                  value={clubRequestForm.allowedDays}
                   onChange={(event) =>
-                    updateClubRequestField('note', event.target.value)
+                    updateClubRequestField('allowedDays', event.target.value)
                   }
-                  className={`${inputClass} min-h-[108px] resize-y`}
-                  placeholder="Клубийн зорилго, онцлог, нэмэлт мэдээлэл"
+                  className={inputClass}
+                >
+                  {options.allowedDays.length > 0 ? null : (
+                    <option value="">Сонголт ачаалагдаагүй</option>
+                  )}
+                  {options.allowedDays.map((allowedDay) => (
+                    <option key={allowedDay} value={allowedDay}>
+                      {allowedDay}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="block">
+                <span className={labelClass}>Эхлэх огноо</span>
+                <input
+                  type="date"
+                  value={clubRequestForm.startDate}
+                  onChange={(event) =>
+                    updateClubRequestField('startDate', event.target.value)
+                  }
+                  className={inputClass}
                 />
               </label>
 
-              <div className="flex flex-wrap gap-3 pt-1">
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="inline-flex items-center gap-2 rounded-full bg-[#49a0e3] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <CheckCircle2 className="h-4 w-4" />
-                  Club request үүсгэх
-                </button>
-                <button
-                  type="button"
-                  onClick={resetClubRequestForm}
-                  disabled={isSaving}
-                  className="rounded-full border border-[#d8e4f4] px-4 py-2 text-sm font-semibold text-[#17304f] transition hover:bg-[#f3f7fd] disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Цэвэрлэх
-                </button>
-              </div>
-            </form>
-          </article>
+              <label className="block">
+                <span className={labelClass}>Дуусах огноо</span>
+                <input
+                  type="date"
+                  value={clubRequestForm.endDate}
+                  onChange={(event) =>
+                    updateClubRequestField('endDate', event.target.value)
+                  }
+                  className={inputClass}
+                />
+              </label>
+            </div>
 
-          <article className="rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-6 shadow-soft">
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="block">
+                <span className={labelClass}>Сурагчийн лимит</span>
+                <input
+                  type="number"
+                  min="1"
+                  value={clubRequestForm.studentLimit}
+                  onChange={(event) =>
+                    updateClubRequestField('studentLimit', event.target.value)
+                  }
+                  className={inputClass}
+                />
+              </label>
+
+              <label className="block">
+                <span className={labelClass}>Сонирхлын тоо</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={clubRequestForm.interestCount}
+                  onChange={(event) =>
+                    updateClubRequestField('interestCount', event.target.value)
+                  }
+                  className={inputClass}
+                />
+              </label>
+            </div>
+
+            <label className="block">
+              <span className={labelClass}>Тайлбар</span>
+              <textarea
+                value={clubRequestForm.note}
+                onChange={(event) =>
+                  updateClubRequestField('note', event.target.value)
+                }
+                className={`${inputClass} min-h-[108px] resize-y`}
+                placeholder="Клубийн зорилго, онцлог, нэмэлт мэдээлэл"
+              />
+            </label>
+
+            <div className="flex flex-wrap gap-3 pt-1">
+              <button
+                type="submit"
+                disabled={isSaving}
+                className="inline-flex items-center gap-2 rounded-full bg-[#49a0e3] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <CheckCircle2 className="h-4 w-4" />
+                Club request үүсгэх
+              </button>
+              <button
+                type="button"
+                onClick={resetClubRequestForm}
+                disabled={isSaving}
+                className="rounded-full border border-[#d8e4f4] px-4 py-2 text-sm font-semibold text-[#17304f] transition hover:bg-[#f3f7fd] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Цэвэрлэх
+              </button>
+            </div>
+          </form>
+        </section>
+      ) : null}
+
+      {activeTab === 'requests' ? (
+        <section className="rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-6 shadow-soft">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <ShieldCheck className="h-5 w-5 text-[#49a0e3]" />
               <div>
@@ -653,91 +786,93 @@ export default function ClubsPage() {
                 </p>
               </div>
             </div>
+            <StatusBadge
+              type="pending"
+              text={`${requests.length} хүлээгдэж буй`}
+            />
+          </div>
 
-            <div className="mt-5 space-y-4">
-              {requests.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-[#d6e1ef] px-4 py-10 text-center text-sm text-[#7d93b2]">
-                  Хүлээгдэж буй хүсэлт алга.
-                </div>
-              ) : (
-                requests.map((request) => (
-                  <div
-                    key={request.id}
-                    className="rounded-[24px] border border-[#deebf7] bg-white/90 p-5"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className="text-base font-semibold text-[#17304f]">
-                          {request.clubName}
-                        </h3>
-                        <p className="mt-1 text-sm text-[#6e84a3]">
-                          {request.teacherName} · {request.createdBy}
-                        </p>
-                      </div>
-                      <StatusBadge type="pending" text="Хүлээгдэж буй" />
+          <div className="mt-5 space-y-4">
+            {requests.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-[#d6e1ef] px-4 py-10 text-center text-sm text-[#7d93b2]">
+                Хүлээгдэж буй хүсэлт алга.
+              </div>
+            ) : (
+              requests.map((request) => (
+                <div
+                  key={request.id}
+                  className="rounded-[24px] border border-[#deebf7] bg-white/90 p-5"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-base font-semibold text-[#17304f]">
+                        {request.clubName}
+                      </h3>
+                      <p className="mt-1 text-sm text-[#6e84a3]">
+                        {request.teacherName} · {request.createdBy}
+                      </p>
                     </div>
+                    <StatusBadge type="pending" text="Хүлээгдэж буй" />
+                  </div>
 
-                    <div className="mt-4 grid gap-3 text-sm text-[#5f7697]">
-                      <div className="rounded-2xl bg-[#f4f8fd] px-4 py-3">
-                        <p className="text-xs uppercase tracking-[0.14em] text-[#7d91ae]">
-                          Хуваарь
-                        </p>
-                        <p className="mt-1 font-semibold text-[#17304f]">
-                          {request.allowedDays} · {request.gradeRange}
-                        </p>
-                      </div>
-                      <div className="rounded-2xl bg-[#f4f8fd] px-4 py-3">
-                        <p className="text-xs uppercase tracking-[0.14em] text-[#7d91ae]">
-                          Сонирхсон сурагчид
-                        </p>
-                        <p className="mt-1 font-semibold text-[#17304f]">
-                          {request.interestCount} / {request.studentLimit}
-                        </p>
-                      </div>
+                  <div className="mt-4 grid gap-3 text-sm text-[#5f7697] md:grid-cols-2">
+                    <div className="rounded-2xl bg-[#f4f8fd] px-4 py-3">
+                      <p className="text-xs uppercase tracking-[0.14em] text-[#7d91ae]">
+                        Хуваарь
+                      </p>
+                      <p className="mt-1 font-semibold text-[#17304f]">
+                        {request.allowedDays} · {request.gradeRange}
+                      </p>
                     </div>
-
-                    <p className="mt-4 text-sm leading-6 text-[#526987]">
-                      {request.note || 'Нэмэлт тайлбаргүй.'}
-                    </p>
-
-                    <div className="mt-4 flex flex-wrap gap-3">
-                      <button
-                        type="button"
-                        onClick={() => void approveRequest(request)}
-                        disabled={isSaving}
-                        className="inline-flex items-center gap-2 rounded-full bg-[#49a0e3] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <CheckCircle2 className="h-4 w-4" />
-                        Зөвшөөрөх
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          void approveAndCreateKickoffEvent(request)
-                        }
-                        disabled={isSaving}
-                        className="inline-flex items-center gap-2 rounded-full border border-[#49a0e3] bg-[#eef4ff] px-4 py-2 text-sm font-semibold text-[#49a0e3] transition hover:bg-[#dfeaff] disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <CheckCircle2 className="h-4 w-4" />
-                        Батлаад kickoff event
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => void rejectRequest(request)}
-                        disabled={isSaving}
-                        className="inline-flex items-center gap-2 rounded-full border border-[#d8e4f4] px-4 py-2 text-sm font-semibold text-[#17304f] transition hover:bg-[#fff3f4] disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <XCircle className="h-4 w-4" />
-                        Татгалзах
-                      </button>
+                    <div className="rounded-2xl bg-[#f4f8fd] px-4 py-3">
+                      <p className="text-xs uppercase tracking-[0.14em] text-[#7d91ae]">
+                        Сонирхсон сурагчид
+                      </p>
+                      <p className="mt-1 font-semibold text-[#17304f]">
+                        {request.interestCount} / {request.studentLimit}
+                      </p>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
-          </article>
-        </div>
-      </section>
+
+                  <p className="mt-4 text-sm leading-6 text-[#526987]">
+                    {request.note || 'Нэмэлт тайлбаргүй.'}
+                  </p>
+
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={() => void approveRequest(request)}
+                      disabled={isSaving}
+                      className="inline-flex items-center gap-2 rounded-full bg-[#49a0e3] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      Зөвшөөрөх
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void approveAndCreateKickoffEvent(request)}
+                      disabled={isSaving}
+                      className="inline-flex items-center gap-2 rounded-full border border-[#49a0e3] bg-[#eef4ff] px-4 py-2 text-sm font-semibold text-[#49a0e3] transition hover:bg-[#dfeaff] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      Батлаад kickoff event
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void rejectRequest(request)}
+                      disabled={isSaving}
+                      className="inline-flex items-center gap-2 rounded-full border border-[#ffd7da] px-4 py-2 text-sm font-semibold text-[#b84553] transition hover:bg-[#fff3f4] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <XCircle className="h-4 w-4" />
+                      Татгалзах
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }
