@@ -21,9 +21,13 @@ export default function AdminTeacherPage() {
   const [pendingBanUser, setPendingBanUser] = useState<ManagedUser | null>(
     null
   );
+  const [pendingDeleteUser, setPendingDeleteUser] = useState<ManagedUser | null>(
+    null
+  );
   const { options } = useTomOptions();
   const {
     errorMessage,
+    deleteUser,
     handleCreateUser,
     isLoading,
     isSaving,
@@ -42,7 +46,17 @@ export default function AdminTeacherPage() {
     (teacher) => teacher.accountStatus === 'active'
   ).length;
 
-  const activeList = activeRoster === 'teachers' ? teachers : students;
+  const bannedTeachers = teachers.filter(
+    (teacher) => teacher.accountStatus === 'banned'
+  );
+  const bannedStudents = students.filter(
+    (student) => student.accountStatus === 'banned'
+  );
+
+  const activeList =
+    activeRoster === 'teachers'
+      ? teachers.filter((teacher) => teacher.accountStatus !== 'banned')
+      : students.filter((student) => student.accountStatus !== 'banned');
   const activeListTitle = activeRoster === 'teachers' ? 'Багш нар' : 'Сурагчид';
   const activeListDescription =
     activeRoster === 'teachers'
@@ -54,6 +68,7 @@ export default function AdminTeacherPage() {
       : 'Бүртгэлтэй сурагч одоогоор байхгүй байна.';
   const activeListTargetRole =
     activeRoster === 'teachers' ? 'student' : 'teacher';
+  const bannedCount = bannedTeachers.length + bannedStudents.length;
 
   const renderUserCard = (
     user: ManagedUser,
@@ -133,6 +148,61 @@ export default function AdminTeacherPage() {
       </article>
     );
   };
+
+  const renderBannedUserCard = (user: ManagedUser) => (
+    <article
+      key={user.id}
+      className="rounded-2xl border border-[#f3d5d8] bg-white px-4 py-3 shadow-sm"
+    >
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="truncate text-base font-semibold text-[#183153]">
+              {user.name}
+            </h3>
+            <StatusBadge
+              type={user.role}
+              text={user.role === 'teacher' ? 'Багш' : 'Сурагч'}
+            />
+            <StatusBadge type="banned" text="Хориглосон" />
+          </div>
+          <p className="mt-0.5 truncate text-sm text-[#6f86a7]">{user.email}</p>
+          <p className="mt-1 whitespace-pre-wrap break-words text-sm text-[#60789a]">
+            {user.reason}
+          </p>
+        </div>
+
+        <div className="shrink-0 text-right text-xs text-[#6f86a7]">
+          <p>Сүүлд идэвхтэй</p>
+          <p className="mt-0.5 text-base font-semibold text-[#183153]">
+            {user.lastActive}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-2.5 flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => void toggleUserBan(user.id)}
+          disabled={isSaving}
+          className="rounded-full border border-[#f4b5ba] bg-white px-3 py-1.5 text-xs font-semibold text-[#de4a58] transition hover:bg-[#fff6f7] disabled:opacity-50"
+        >
+          Хориг цуцлах
+        </button>
+        <button
+          type="button"
+          onClick={() => setPendingDeleteUser(user)}
+          disabled={isSaving}
+          className="rounded-full border border-[#f0c1c1] bg-white px-3 py-1.5 text-xs font-semibold text-[#b8454f] transition hover:bg-[#fff5f5] disabled:opacity-50"
+        >
+          <span className="inline-flex items-center gap-1">
+            <Trash2 className="h-3.5 w-3.5" />
+            Устгах
+          </span>
+        </button>
+      </div>
+    </article>
+  );
 
   return (
     <div className="space-y-4">
@@ -322,6 +392,65 @@ export default function AdminTeacherPage() {
         </div>
       </section>
 
+      <section className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-4 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-[#183153]">
+              Хориглосон дансууд ({bannedCount})
+            </h2>
+            <p className="text-sm text-[#6f86a7]">
+              Хориглосон багш, сурагчдыг тусад нь харуулж, хэрэггүй бол устгана.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <div className="rounded-full bg-[#fff6f7] px-3 py-1.5 text-xs font-semibold text-[#b8454f]">
+              Багш: {bannedTeachers.length}
+            </div>
+            <div className="rounded-full bg-[#fff6f7] px-3 py-1.5 text-xs font-semibold text-[#b8454f]">
+              Сурагч: {bannedStudents.length}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-4 xl:grid-cols-2">
+          <div className="rounded-[24px] border border-[#f3d5d8] bg-[#fffafb] p-4">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-base font-semibold text-[#183153]">
+                Хориглосон багш ({bannedTeachers.length})
+              </h3>
+              <Users className="h-4 w-4 text-[#de4a58]" />
+            </div>
+            <div className="mt-4 space-y-2.5">
+              {bannedTeachers.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-[#f0c1c1] bg-white p-5 text-center text-sm text-[#6f86a7]">
+                  Хориглосон багш алга.
+                </div>
+              ) : (
+                bannedTeachers.map((user) => renderBannedUserCard(user))
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-[24px] border border-[#f3d5d8] bg-[#fffafb] p-4">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-base font-semibold text-[#183153]">
+                Хориглосон сурагч ({bannedStudents.length})
+              </h3>
+              <Users className="h-4 w-4 text-[#de4a58]" />
+            </div>
+            <div className="mt-4 space-y-2.5">
+              {bannedStudents.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-[#f0c1c1] bg-white p-5 text-center text-sm text-[#6f86a7]">
+                  Хориглосон сурагч алга.
+                </div>
+              ) : (
+                bannedStudents.map((user) => renderBannedUserCard(user))
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {pendingBanUser ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
           <div className="w-full max-w-md rounded-[28px] bg-white shadow-xl">
@@ -363,6 +492,51 @@ export default function AdminTeacherPage() {
                   className="rounded-full bg-[color:var(--primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(79,114,213,0.22)] transition hover:opacity-90 disabled:opacity-50"
                 >
                   Yes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {pendingDeleteUser ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+          <div className="w-full max-w-md rounded-[28px] bg-white shadow-xl">
+            <div className="border-b border-[#e2eaf5] px-6 py-4">
+              <h2 className="text-lg font-bold text-[#183153]">
+                Энэ дансыг устгах уу?
+              </h2>
+              <p className="mt-1 text-sm text-[#6f86a7]">
+                {pendingDeleteUser.name}-ийн данс болон түүнтэй холбоотой session,
+                клуб, бичлэгийн өгөгдөл устгагдана.
+              </p>
+            </div>
+
+            <div className="px-6 py-5">
+              <div className="rounded-2xl border border-dashed border-[#f3d5d8] bg-[#fffafb] p-4 text-sm text-[#60789a]">
+                Энэ үйлдлийг буцаах боломжгүй.
+              </div>
+
+              <div className="mt-5 flex flex-wrap items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPendingDeleteUser(null)}
+                  className="rounded-full border border-[color:var(--border)] bg-white px-5 py-2.5 text-sm font-semibold text-[#56708f] transition hover:bg-[color:var(--surface)]"
+                >
+                  Буцах
+                </button>
+                <button
+                  type="button"
+                  disabled={isSaving}
+                  onClick={async () => {
+                    const user = pendingDeleteUser;
+                    setPendingDeleteUser(null);
+                    if (!user) return;
+                    await deleteUser(user.id);
+                  }}
+                  className="rounded-full bg-[#de4a58] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(222,74,88,0.22)] transition hover:opacity-90 disabled:opacity-50"
+                >
+                  Устгах
                 </button>
               </div>
             </div>
