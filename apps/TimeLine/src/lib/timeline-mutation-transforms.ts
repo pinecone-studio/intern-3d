@@ -1,12 +1,12 @@
 import { DEFAULT_VALID_FROM, DEFAULT_VALID_UNTIL, type ScheduleEventInput } from '@/lib/timeline-mutation-types'
 
 function toDatabaseEventType(type: ScheduleEventInput['type']): string {
-  return type === 'openlab' ? 'open' : type
+  if (type === 'event') return 'closed'
+  return type
 }
 
 function toBlockEventType(type: ScheduleEventInput['type']): string {
-  if (type === 'openlab') return 'open_lab'
-  if (type === 'closed') return 'event'
+  if (type === 'event') return 'event'
   return type
 }
 
@@ -21,7 +21,7 @@ function normalizeOptionalText(value?: string | null): string | null {
 }
 
 function shouldSaveAsOverride(input: ScheduleEventInput): boolean {
-  return input.isOverride || input.type === 'closed' || Boolean(input.date)
+  return input.isOverride || input.type === 'event' || Boolean(input.date)
 }
 
 function toRecurrence(input: ScheduleEventInput): 'one_time' | 'daily' | 'weekly' {

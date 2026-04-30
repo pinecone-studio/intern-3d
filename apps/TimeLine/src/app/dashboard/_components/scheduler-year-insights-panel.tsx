@@ -1,77 +1,89 @@
 'use client'
 
-import type { YearMonthSummary } from '@/app/dashboard/_lib/scheduler-types'
+import type { YearCalendarSummary, YearMonthSummary } from '@/app/dashboard/_lib/scheduler-types'
 import { cn } from '@/lib/utils'
 
 type SchedulerYearInsightsPanelProps = {
   monthName: string
   selectedYearSummary: YearMonthSummary | null
-  suggestion: string
+  yearLabel: string
+  yearSummary: YearCalendarSummary
 }
 
-export function SchedulerYearInsightsPanel({ monthName, selectedYearSummary, suggestion }: SchedulerYearInsightsPanelProps) {
-  const busiestRoom = selectedYearSummary?.roomLoads[0] ?? null
-  const quietestRoom = selectedYearSummary?.roomLoads.at(-1) ?? null
-  const capacityLabel = (selectedYearSummary?.utilization ?? 0) >= 75 ? 'Ачаалалтай' : (selectedYearSummary?.utilization ?? 0) >= 45 ? 'Дунд' : 'Сул'
-  const capacityTone = (selectedYearSummary?.utilization ?? 0) >= 75 ? 'text-[#c4314b]' : (selectedYearSummary?.utilization ?? 0) >= 45 ? 'text-[#8a5a00]' : 'text-[#1f7a52]'
+function getCapacityLabel(utilization: number) {
+  if (utilization >= 75) return 'Ачаалалтай'
+  if (utilization >= 45) return 'Дунд'
+  return 'Сул'
+}
+
+function getCapacityTone(utilization: number) {
+  if (utilization >= 75) return 'text-[#c4314b]'
+  if (utilization >= 45) return 'text-[#8a5a00]'
+  return 'text-[#1f7a52]'
+}
+
+function getSuggestion(summary: YearMonthSummary | null) {
+  const busiestRoom = summary?.roomLoads[0] ?? null
+  const quietestRoom = summary?.roomLoads.at(-1) ?? null
+  if (!summary || summary.totalCount === 0) return 'Одоогоор дата алга'
+  if (summary.roomLoads.length === 0) return 'Event hall-ыг хасахад ангийн ачааллын дата алга'
+  if (summary.conflictCount > 0) return 'Давхцалтай өдрүүдийг эхэлж шалгаарай'
+  if (busiestRoom && quietestRoom && busiestRoom.roomId !== quietestRoom.roomId) return `Шинэ хуваарийг ${quietestRoom.roomNumber} ангид эхэлж тавих нь зөв`
+  return 'Шинэ хичээл нэмэхэд тохиромжтой'
+}
+
+export function SchedulerYearInsightsPanel({ monthName, selectedYearSummary, yearLabel, yearSummary }: SchedulerYearInsightsPanelProps) {
+  const roomLoads = selectedYearSummary?.roomLoads ?? []
+  const busiestRoom = roomLoads[0] ?? null
+  const quietestRoom = roomLoads.at(-1) ?? null
+  const utilization = selectedYearSummary?.utilization ?? 0
 
   return (
-    <aside className="rounded-3xl border border-[#e7e9f6] bg-[linear-gradient(180deg,#ffffff_0%,#fbfbfe_100%)] p-4 shadow-sm dark:border-[#2c3149] dark:bg-[linear-gradient(180deg,#171b27_0%,#121724_100%)]">
-      <div className="mb-3">
-        <div className="text-lg font-semibold text-foreground">{monthName}</div>
-        <div className="text-sm text-muted-foreground">{selectedYearSummary?.totalCount ?? 0} хуваарь</div>
+    <div className="space-y-4 text-xs text-muted-foreground">
+      <div className="space-y-1.5">
+        <div className="font-semibold text-foreground">{yearLabel} оны тойм</div>
+        <div>{yearSummary.uniqueTotal} төрлийн хуваарь</div>
+        <div>{yearSummary.activeMonths} идэвхтэй сар</div>
+        <div>{yearSummary.classes} хичээл · {yearSummary.clubs} клуб · {yearSummary.events} event</div>
+        <div>Ачаалалтай: {yearSummary.busiestMonth ? `${yearSummary.busiestMonth.shortLabel} (${yearSummary.busiestMonth.utilization}%)` : '-'}</div>
+        <div>Сул: {yearSummary.quietestMonth ? `${yearSummary.quietestMonth.shortLabel} (${yearSummary.quietestMonth.utilization}%)` : '-'}</div>
       </div>
 
-      <div className="mb-4 rounded-2xl border border-[#e7e9f6] bg-white/80 p-3 dark:border-[#2c3149] dark:bg-[#151a27]">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">Ачаалал</div>
-        <div className={cn('mt-1 text-xl font-semibold', capacityTone)}>{selectedYearSummary?.utilization ?? 0}% {capacityLabel}</div>
+      <div className="border-t border-dashed border-[#d7d8f4] pt-3 dark:border-[#323858]">
+        <div className="font-semibold text-foreground">{monthName}</div>
+        <div className={cn('mt-1 text-lg font-semibold', getCapacityTone(utilization))}>{utilization}% {getCapacityLabel(utilization)}</div>
+        <div className="mt-1">{selectedYearSummary?.uniqueCounts.class ?? 0} хичээл · {selectedYearSummary?.uniqueCounts.club ?? 0} клуб · {selectedYearSummary?.uniqueCounts.event ?? 0} event</div>
+        <div>{selectedYearSummary?.activeDays ?? 0} идэвхтэй өдөр · {selectedYearSummary?.conflictCount ?? 0} давхцал</div>
       </div>
 
-      <div className="mb-4">
-        <div className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">Цагийн бүс</div>
-        {([
-          ['Өглөө', selectedYearSummary?.timeBuckets.morning ?? 0],
-          ['Өдөр', selectedYearSummary?.timeBuckets.afternoon ?? 0],
-          ['Орой', selectedYearSummary?.timeBuckets.evening ?? 0],
-        ] as const).map(([label, value]) => {
-          const total = Math.max(
-            selectedYearSummary?.timeBuckets.morning ?? 0,
-            selectedYearSummary?.timeBuckets.afternoon ?? 0,
-            selectedYearSummary?.timeBuckets.evening ?? 0,
-            1,
-          )
-
-          return (
-            <div key={label} className="mb-2">
-              <div className="mb-1 flex items-center justify-between text-[11px]">
-                <span>{label}</span>
-                <span>{value}</span>
+      <div>
+        <div className="mb-2 font-medium text-foreground">Анги бүрийн ачаалал</div>
+        <div className="max-h-48 space-y-2 overflow-y-auto pr-1">
+          {roomLoads.length === 0 ? (
+            <div>Ангийн дата алга</div>
+          ) : roomLoads.map((load) => (
+            <div key={load.roomId}>
+              <div className="mb-1 flex items-center justify-between gap-2">
+                <span className="truncate font-medium text-foreground">{load.roomNumber}</span>
+                <span>{load.utilization}%</span>
               </div>
               <div className="h-1.5 rounded-full bg-[#ebeefe] dark:bg-[#232b45]">
-                <div className="h-1.5 rounded-full bg-[#6264a7]" style={{ width: `${(value / total) * 100}%` }} />
+                <div className="h-1.5 rounded-full bg-[#6264a7]" style={{ width: `${load.utilization}%` }} />
               </div>
             </div>
-          )
-        })}
-      </div>
-
-      <div className="mb-4">
-        <div className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">Ангиуд</div>
-        <div className="space-y-2 text-sm">
-          <div>{quietestRoom ? `${quietestRoom.roomNumber} сул` : 'Сул ангийн дата алга'}</div>
-          <div>{busiestRoom ? `${busiestRoom.roomNumber} ачаалалтай` : 'Ачаалалтай ангийн дата алга'}</div>
+          ))}
         </div>
       </div>
 
-      <div className="mb-4 text-sm">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">Давхцал</div>
-        <div className="mt-1 font-medium text-foreground">⚠️ {selectedYearSummary?.conflictCount ?? 0} давхцал</div>
+      <div className="space-y-1">
+        <div>{quietestRoom ? `${quietestRoom.roomNumber} хамгийн сул` : 'Сул ангийн дата алга'}</div>
+        <div>{busiestRoom ? `${busiestRoom.roomNumber} хамгийн ачаалалтай` : 'Ачаалалтай ангийн дата алга'}</div>
       </div>
 
-      <div className="rounded-2xl border border-dashed border-[#d7d8f4] bg-white/70 p-3 text-sm dark:border-[#323858] dark:bg-[#111522]">
-        <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">Санал</div>
-        <div className="font-medium text-foreground">💡 {suggestion}</div>
+      <div className="rounded-xl border border-dashed border-[#d7d8f4] bg-white/70 p-2.5 dark:border-[#323858] dark:bg-[#111522]">
+        <div className="mb-1 font-medium text-foreground">Санал</div>
+        <div>{getSuggestion(selectedYearSummary)}</div>
       </div>
-    </aside>
+    </div>
   )
 }

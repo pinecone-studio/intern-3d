@@ -8,19 +8,24 @@ import { RoomCard } from '@/components/rooms/room-card'
 import { Button } from '@/components/ui/button'
 import { PineconeLoader } from '@/components/ui/pinecone-loader'
 import { STATUS_CONFIG } from '@/lib/constants'
+import { applyRealtimeRoomStatus } from '@/lib/timeline-status'
+import { useTimelineClock } from '@/lib/use-timeline-clock'
 import { useTimelineLiveUpdates } from '@/lib/use-timeline-live-updates'
 import type { RoomStatus } from '@/lib/types'
 
+type RoomStatusFilter = RoomStatus | 'all'
+
 export function StudentDashboard() {
+  const clock = useTimelineClock()
   const [selectedFloor, setSelectedFloor] = useState<3 | 4>(3)
-  const [selectedStatus, setSelectedStatus] = useState<RoomStatus | 'all'>('all')
-  const { data, loading, error, refetch } = useQuery<Pick<SchedulerQueryResult, 'rooms'>>(GET_SCHEDULER_DATA, { variables: { floor: selectedFloor } })
+  const [selectedStatus, setSelectedStatus] = useState<RoomStatusFilter>('all')
+  const { data, loading, error, refetch } = useQuery<SchedulerQueryResult>(GET_SCHEDULER_DATA, { variables: { floor: selectedFloor } })
   useTimelineLiveUpdates({ enabled: !loading, onEventsChanged: () => refetch() })
 
-  const rooms = data?.rooms ?? []
-  const filteredRooms = useMemo(() => rooms.filter((room) => selectedStatus === 'all' || room.status === selectedStatus), [rooms, selectedStatus])
-  const roomSummary = useMemo(() => rooms.reduce((counts, room) => { if (room.status === 'club') counts.club += 1; else if (room.status === 'class') counts.class += 1; else if (room.status === 'closed') counts.unavailable += 1; else counts.open += 1; return counts }, { open: 0, class: 0, club: 0, unavailable: 0 }), [rooms])
-  const statusBadges = [{ key: 'class' as const, label: STATUS_CONFIG.class.label, count: roomSummary.class, activeClasses: 'border-blue-600 bg-blue-600 text-white hover:bg-blue-600/90', inactiveClasses: 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100' }, { key: 'club' as const, label: STATUS_CONFIG.club.label, count: roomSummary.club, activeClasses: 'border-violet-600 bg-violet-600 text-white hover:bg-violet-600/90', inactiveClasses: 'border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100' }, { key: 'available' as const, label: 'Open Lab', count: roomSummary.open, activeClasses: 'border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-600/90', inactiveClasses: 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' }, { key: 'closed' as const, label: 'Event', count: roomSummary.unavailable, activeClasses: 'border-amber-600 bg-amber-600 text-white hover:bg-amber-600/90', inactiveClasses: 'border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100' }]
+  const floorRooms = useMemo(() => applyRealtimeRoomStatus(data?.rooms ?? [], data?.events ?? [], clock?.now ?? new Date()), [clock?.now, data?.events, data?.rooms])
+  const filteredRooms = useMemo(() => floorRooms.filter((room) => selectedStatus === 'all' || room.status === selectedStatus), [floorRooms, selectedStatus])
+  const roomSummary = useMemo(() => floorRooms.reduce((counts, room) => { if (room.status === 'club') counts.club += 1; else if (room.status === 'class') counts.class += 1; else if (room.status === 'event') counts.event += 1; else counts.openlab += 1; return counts }, { openlab: 0, class: 0, club: 0, event: 0 }), [floorRooms])
+  const statusBadges = [{ key: 'class' as const, label: STATUS_CONFIG.class.label, count: roomSummary.class, activeClasses: 'border-blue-600 bg-blue-600 text-white hover:bg-blue-600/90', inactiveClasses: 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100' }, { key: 'club' as const, label: STATUS_CONFIG.club.label, count: roomSummary.club, activeClasses: 'border-violet-600 bg-violet-600 text-white hover:bg-violet-600/90', inactiveClasses: 'border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100' }, { key: 'open_lab' as const, label: STATUS_CONFIG.open_lab.label, count: roomSummary.openlab, activeClasses: 'border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-600/90', inactiveClasses: 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' }, { key: 'event' as const, label: STATUS_CONFIG.event.label, count: roomSummary.event, activeClasses: 'border-red-600 bg-red-600 text-white hover:bg-red-600/90', inactiveClasses: 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100' }]
 
   return (
     <section className="overflow-hidden rounded-md border border-border bg-card">

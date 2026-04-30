@@ -7,9 +7,7 @@ import type { EventType, ScheduleEvent } from '@/lib/types'
 const INSERT_CHUNK_SIZE = 8
 
 function toBlockEventType(type: EventType): string {
-  if (type === 'openlab') return 'open_lab'
-  if (type === 'closed') return 'event'
-  return type
+  return type === 'event' ? 'event' : type
 }
 
 function timeToMinutes(time: string): number {
@@ -25,14 +23,15 @@ function toEndHour(minutes: number): number {
   return Math.ceil(minutes / 60)
 }
 
-function toScheduleEventFromSchedule(schedule: typeof seedSchedules[number]): ScheduleEvent {
+function toScheduleEventFromSchedule(schedule: typeof seedSchedules[number]): ScheduleEvent | null {
   const daysOfWeek = JSON.parse(schedule.daysOfWeek) as number[]
+  if (schedule.type === 'open') return null
 
   return {
     id: schedule.id,
     roomId: schedule.roomId,
     title: schedule.title,
-    type: (schedule.type === 'open' ? 'openlab' : schedule.type) as EventType,
+    type: (schedule.type === 'closed' ? 'event' : schedule.type) as EventType,
     startTime: schedule.startTime,
     endTime: schedule.endTime,
     dayOfWeek: daysOfWeek[0] ?? 0,
@@ -45,15 +44,16 @@ function toScheduleEventFromSchedule(schedule: typeof seedSchedules[number]): Sc
   }
 }
 
-function toScheduleEventFromOverride(override: typeof seedOverrides[number]): ScheduleEvent {
+function toScheduleEventFromOverride(override: typeof seedOverrides[number]): ScheduleEvent | null {
   const day = new Date(`${override.date}T00:00:00`).getDay()
   const dayOfWeek = day === 0 ? 7 : day
+  if (override.type === 'open') return null
 
   return {
     id: override.id,
     roomId: override.roomId,
     title: override.title,
-    type: (override.type === 'open' ? 'openlab' : override.type) as EventType,
+    type: (override.type === 'closed' ? 'event' : override.type) as EventType,
     startTime: override.startTime,
     endTime: override.endTime,
     dayOfWeek,
@@ -66,7 +66,7 @@ function toScheduleEventFromOverride(override: typeof seedOverrides[number]): Sc
 }
 
 function toScheduleBlock(event: ScheduleEvent): typeof scheduleBlocksTable.$inferInsert {
-  const isOneTime = event.isOverride || event.type === 'closed' || Boolean(event.date)
+  const isOneTime = event.isOverride || event.type === 'event' || Boolean(event.date)
   const date = event.date ?? event.validFrom ?? '2026-04-01'
   const isDaily = !isOneTime && event.daysOfWeek.length >= 5
   const startMinute = timeToMinutes(event.startTime)
@@ -99,7 +99,7 @@ function getScheduleBlocks(): Array<typeof scheduleBlocksTable.$inferInsert> {
   return [
     ...seedSchedules.map(toScheduleEventFromSchedule),
     ...seedOverrides.map(toScheduleEventFromOverride),
-  ].map(toScheduleBlock)
+  ].filter((event): event is ScheduleEvent => event !== null).map(toScheduleBlock)
 }
 
 async function insertChunks<T>(values: T[], insertChunk: (_chunk: T[]) => Promise<unknown>) {
@@ -112,7 +112,7 @@ export async function seedTimelineDatabase(options: { reset?: boolean } = {}) {
   const db = getDrizzleDb()
   const users = seedUsers
   const rooms = seedRooms
-  const schedules = seedSchedules
+  const schedules = seedSchedules.filter(schedule => schedule.type !== 'open')
   const overrides = seedOverrides
   const scheduleBlocks = getScheduleBlocks()
   const devices = seedDeviceAssignments

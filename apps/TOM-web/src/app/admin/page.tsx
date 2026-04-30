@@ -94,6 +94,10 @@ export function AdminDashboardContent({
     resetEventForm();
   };
 
+  const pausedClubsCount = activeClubs.filter(
+    (club) => club.clubStatus !== 'active'
+  ).length;
+
   const summaryCards = [
     {
       label: 'Нийт хэрэглэгч',
@@ -106,7 +110,7 @@ export function AdminDashboardContent({
     {
       label: 'Идэвхтэй клуб',
       value: activeCount,
-      delta: `+${activeClubs.length}`,
+      delta: pausedClubsCount > 0 ? `${pausedClubsCount} түр зогссон` : '·',
       icon: ShieldCheck,
       tint: 'bg-gradient-teacher',
       badge: 'bg-[#eaf8ff] text-[#1f95ca]',
@@ -114,7 +118,10 @@ export function AdminDashboardContent({
     {
       label: 'Хүлээгдэж буй хүсэлт',
       value: summary.pendingRequests,
-      delta: `+${thresholdReachedCount}`,
+      delta:
+        thresholdReachedCount > 0
+          ? `${thresholdReachedCount} босго давсан`
+          : '·',
       icon: CalendarDays,
       tint: 'bg-gradient-student',
       badge: 'bg-[#eef4ff] text-[#4f77d6]',
@@ -173,6 +180,12 @@ export function AdminDashboardContent({
         } ${100 - value}`
     )
     .join(' ');
+
+  const hasActivityData =
+    summary.totalUsers > 0 ||
+    activeClubs.length > 0 ||
+    requests.length > 0 ||
+    events.length > 0;
 
   const spotlightClubs = requests.slice(0, 3);
   const spotlightUsers = leaderboard.slice(0, 3);
@@ -273,6 +286,12 @@ export function AdminDashboardContent({
             </div>
 
             <div className="mt-4 h-[190px] rounded-xl border border-[color:var(--border)] bg-white px-3 py-2.5">
+              {!hasActivityData ? (
+                <div className="flex h-full items-center justify-center text-xs text-[#6983a4]">
+                  Идэвхжлийн өгөгдөл одоогоор алга.
+                </div>
+              ) : (
+              <>
               <div className="relative h-[145px]">
                 <div className="absolute inset-0 rounded-xl bg-[linear-gradient(180deg,_rgba(245,249,255,0.72),_rgba(255,255,255,0.92))]" />
                 <div className="absolute inset-0">
@@ -316,6 +335,8 @@ export function AdminDashboardContent({
                   <span key={month} className="truncate text-center">{month}</span>
                 ))}
               </div>
+              </>
+              )}
             </div>
           </article>
 
@@ -365,6 +386,25 @@ export function AdminDashboardContent({
                             : 'Хориглосон'}
                         </p>
                       </div>
+              ) : null}
+              {spotlightUsers.map((user, index) => (
+                <div
+                  key={user.id}
+                  className="flex items-center justify-between gap-3 rounded-xl bg-[color:var(--surface)] px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
+                >
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <div
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
+                        index === 0
+                          ? 'bg-[#f5bf50] text-[#6b4a00]'
+                          : index === 1
+                          ? 'bg-[#e8f0fb] text-[#486382]'
+                          : index === 2
+                          ? 'bg-[#c9e6ff] text-[#28638c]'
+                          : 'bg-[#eef5ff] text-[#4f6b8d]'
+                      }`}
+                    >
+                      {user.rank}
                     </div>
 
                     <div className="text-right">

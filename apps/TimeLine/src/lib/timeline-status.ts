@@ -1,4 +1,4 @@
-import type { RoomStatus, ScheduleEvent } from '@/lib/types'
+import type { Room, RoomStatus, ScheduleEvent } from '@/lib/types'
 
 function timeToMinutes(time: string): number {
   const [hours, minutes] = time.split(':').map(Number)
@@ -10,16 +10,21 @@ function toIsoDay(date: Date): number {
   return day === 0 ? 7 : day
 }
 
+function toLocalDateString(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 function getPriority(type: ScheduleEvent['type']): number {
   switch (type) {
-    case 'closed':
+    case 'event':
       return 4
     case 'class':
       return 3
     case 'club':
       return 2
-    case 'openlab':
-      return 1
     default:
       return 0
   }
@@ -45,13 +50,11 @@ function isOverrideEventActive(event: ScheduleEvent, currentDate: string, curren
 }
 
 export function getRoomStatusFromEvent(event: ScheduleEvent | null): RoomStatus {
-  if (!event) return 'available'
-  if (event.type === 'openlab') return 'available'
-  return event.type
+  return event?.type ?? 'open_lab'
 }
 
 export function getCurrentEvent(events: ScheduleEvent[], now = new Date()): ScheduleEvent | null {
-  const currentDate = now.toISOString().slice(0, 10)
+  const currentDate = toLocalDateString(now)
   const currentDay = toIsoDay(now)
   const currentMinutes = now.getHours() * 60 + now.getMinutes()
 
@@ -90,7 +93,7 @@ function nextOccurrenceStart(event: ScheduleEvent, now: Date): Date | null {
     candidate.setHours(0, 0, 0, 0)
     candidate.setDate(candidate.getDate() + offset)
 
-    const dateString = candidate.toISOString().slice(0, 10)
+    const dateString = toLocalDateString(candidate)
     const day = toIsoDay(candidate)
     if (!event.daysOfWeek.includes(day)) continue
     if (event.validFrom && dateString < event.validFrom) continue
@@ -115,4 +118,28 @@ export function getNextEvent(events: ScheduleEvent[], now = new Date()): Schedul
     })
 
   return candidates[0]?.event ?? null
+}
+
+export function getRealtimeRoomState(events: ScheduleEvent[], now = new Date()) {
+  const currentEvent = getCurrentEvent(events, now)
+
+  return {
+    status: getRoomStatusFromEvent(currentEvent),
+    currentEvent,
+    nextEvent: getNextEvent(events, now),
+  }
+}
+
+export function applyRealtimeRoomStatus(rooms: Room[], events: ScheduleEvent[], now = new Date()): Room[] {
+  const eventsByRoom = events.reduce<Map<string, ScheduleEvent[]>>((accumulator, event) => {
+    const roomEvents = accumulator.get(event.roomId) ?? []
+    roomEvents.push(event)
+    accumulator.set(event.roomId, roomEvents)
+    return accumulator
+  }, new Map())
+
+  return rooms.map((room) => ({
+    ...room,
+    ...getRealtimeRoomState(eventsByRoom.get(room.id) ?? [], now),
+  }))
 }

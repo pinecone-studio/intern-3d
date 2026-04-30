@@ -1,18 +1,34 @@
 'use client'
 
-import { getEventLabel, getEventTone } from '@/app/dashboard/_lib/scheduler-event-utils'
 import type { YearMonthSummary } from '@/app/dashboard/_lib/scheduler-types'
-import type { Room } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
 type SchedulerYearMonthCardProps = {
   isSelected: boolean
-  selectedRoomView: Room | null
   summary: YearMonthSummary
   onSelectMonth: (_date: Date) => void
 }
 
-export function SchedulerYearMonthCard({ isSelected, selectedRoomView, summary, onSelectMonth }: SchedulerYearMonthCardProps) {
+function RoomLoadLine({ label, room }: { label: string; room: YearMonthSummary['roomLoads'][number] | null }) {
+  return (
+    <div className="rounded-xl border border-[#e7e9f6] bg-white/70 px-2.5 py-2 text-[11px] dark:border-[#2c3149] dark:bg-[#151a27]">
+      <div className="text-muted-foreground">{label}</div>
+      {room ? (
+        <div className="mt-1 flex items-center justify-between gap-2">
+          <span className="truncate font-semibold text-foreground">{room.roomNumber}</span>
+          <span className="font-medium text-[#323769] dark:text-[#dfe3ff]">{room.utilization}%</span>
+        </div>
+      ) : (
+        <div className="mt-1 font-medium text-muted-foreground">Дата алга</div>
+      )}
+    </div>
+  )
+}
+
+export function SchedulerYearMonthCard({ isSelected, summary, onSelectMonth }: SchedulerYearMonthCardProps) {
+  const busiestRoom = summary.roomLoads[0] ?? null
+  const quietestRoom = summary.roomLoads.at(-1) ?? null
+
   return (
     <button
       type="button"
@@ -28,8 +44,8 @@ export function SchedulerYearMonthCard({ isSelected, selectedRoomView, summary, 
           <div className="text-[11px] text-muted-foreground">{summary.activeDays} идэвхтэй өдөр</div>
         </div>
         <div className="text-right">
-          <div className="text-sm font-semibold text-foreground">{summary.totalCount}</div>
-          <div className="text-[10px] text-muted-foreground">хуваарь</div>
+          <div className="text-sm font-semibold text-foreground">{summary.uniqueTotal}</div>
+          <div className="text-[10px] text-muted-foreground">төрөл</div>
         </div>
       </div>
 
@@ -41,26 +57,15 @@ export function SchedulerYearMonthCard({ isSelected, selectedRoomView, summary, 
       </div>
 
       <div className="mb-3 flex flex-wrap gap-1.5">
-        {summary.counts.class > 0 ? <span className="rounded-full bg-[#eaf2ff] px-2 py-1 text-[10px] font-medium text-[#17375e]">{summary.counts.class} анги</span> : null}
-        {summary.counts.club > 0 ? <span className="rounded-full bg-[#f1ecff] px-2 py-1 text-[10px] font-medium text-[#3f2a76]">{summary.counts.club} клуб</span> : null}
-        {summary.counts.closed > 0 ? <span className="rounded-full bg-[#fff4ce] px-2 py-1 text-[10px] font-medium text-[#5d2d00]">{summary.counts.closed} хаалттай</span> : null}
+        {summary.uniqueCounts.class > 0 ? <span className="rounded-full bg-[#eaf2ff] px-2 py-1 text-[10px] font-medium text-[#17375e]">{summary.uniqueCounts.class} хичээл</span> : null}
+        {summary.uniqueCounts.club > 0 ? <span className="rounded-full bg-[#f1ecff] px-2 py-1 text-[10px] font-medium text-[#3f2a76]">{summary.uniqueCounts.club} клуб</span> : null}
+        {summary.uniqueCounts.event > 0 ? <span className="rounded-full bg-[#fde7e9] px-2 py-1 text-[10px] font-medium text-[#7c2030]">{summary.uniqueCounts.event} event</span> : null}
         {summary.conflictCount > 0 ? <span className="rounded-full bg-[#fde7e9] px-2 py-1 text-[10px] font-medium text-[#c4314b]">{summary.conflictCount} давхцал</span> : null}
       </div>
 
-      <div className="space-y-1.5">
-        {summary.previewEvents.length === 0 ? (
-          <div className="text-[11px] text-muted-foreground">Хуваарь алга</div>
-        ) : (
-          summary.previewEvents.slice(0, 2).map(({ event, room }) => (
-            <div
-              key={`${summary.shortLabel}-${event.id}-${room?.id ?? event.roomId}`}
-              className={cn('rounded-xl border px-2.5 py-2 text-[11px] shadow-sm', getEventTone(event.type))}
-            >
-              <div className="truncate font-semibold">{event.title}</div>
-              <div className="truncate opacity-80">{selectedRoomView ? getEventLabel(event.type) : `${room?.number ?? ''} · ${getEventLabel(event.type)}`}</div>
-            </div>
-          ))
-        )}
+      <div className="grid gap-2">
+        <RoomLoadLine label="Хамгийн сул анги" room={quietestRoom} />
+        <RoomLoadLine label="Хамгийн ачаалалтай анги" room={busiestRoom} />
       </div>
     </button>
   )

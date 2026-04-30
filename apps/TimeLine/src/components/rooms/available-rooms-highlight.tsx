@@ -10,8 +10,7 @@ interface AvailableRoomsHighlightProps {
 }
 
 export function AvailableRoomsHighlight({ rooms }: AvailableRoomsHighlightProps) {
-  // "available" status now includes both free rooms and open lab periods
-  const availableRooms = rooms.filter(room => room.status === 'available')
+  const availableRooms = rooms.filter(room => room.status === 'open_lab')
 
   if (availableRooms.length === 0) {
     return (
@@ -42,7 +41,7 @@ export function AvailableRoomsHighlight({ rooms }: AvailableRoomsHighlightProps)
           </span>
         </CardTitle>
         <p className="mt-1 text-xs text-muted-foreground">
-          Эдгээр ангиуд одоо нээлттэй байна (Open Lab болон сул цаг)
+          Эдгээр ангиуд одоо Open Lab төлөвтэй байна
         </p>
       </CardHeader>
       <CardContent>

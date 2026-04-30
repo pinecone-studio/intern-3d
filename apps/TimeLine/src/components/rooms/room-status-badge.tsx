@@ -25,11 +25,7 @@ export function RoomStatusBadge({ status, size = 'md', className }: RoomStatusBa
         className
       )}
     >
-      <span className={cn(
-        'h-1.5 w-1.5 rounded-full',
-        config.dotColor,
-        status === 'available' && 'animate-pulse'
-      )} />
+      <span className={cn('h-1.5 w-1.5 rounded-full', config.dotColor)} />
       {config.label}
     </span>
   )

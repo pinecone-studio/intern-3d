@@ -1,4 +1,17 @@
-export type RoomStatus = 'available' | 'class' | 'club' | 'closed'
+export const EVENT_TYPES = ['class', 'club', 'event'] as const
+export const OPEN_LAB_STATUS = 'open_lab'
+export const ROOM_STATUSES = [OPEN_LAB_STATUS, ...EVENT_TYPES] as const
+
+export type EventType = typeof EVENT_TYPES[number]
+export type RoomStatus = typeof ROOM_STATUSES[number]
+
+export function isEventType(value: string): value is EventType {
+  return EVENT_TYPES.includes(value as EventType)
+}
+
+export function isRoomStatus(value: string): value is RoomStatus {
+  return ROOM_STATUSES.includes(value as RoomStatus)
+}
 
 export type Room = {
   id: string
@@ -10,8 +23,6 @@ export type Room = {
   nextEvent: ScheduleEvent | null
   devices: Device[]
 }
-
-export type EventType = 'class' | 'club' | 'openlab' | 'closed'
 
 export type ScheduleEvent = {
   id: string
