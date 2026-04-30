@@ -10,6 +10,7 @@ This workspace contains internship team projects for Team2, TOM, and TimeLine.
 ## Finish your Nx platform setup
 
 🚀 [Finish setting up your workspace](https://cloud.nx.app/connect/bgVRxftp6F) to get faster builds with remote caching, distributed task execution, and self-healing CI. [Learn more about Nx Cloud](https://nx.dev/ci/intro/why-nx-cloud).
+
 ## Generate a library
 
 ```sh
