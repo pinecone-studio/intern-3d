@@ -90,7 +90,7 @@ export default function TeacherEventDetailPage() {
               Буцах
             </Link>
 
-            <h1 className="mt-3 truncate text-2xl font-bold text-[#0f1f3d]">
+            <h1 className="mt-3 truncate text-2xl font-bold text-[#183153]">
               {pageTitle}
             </h1>
             {event?.description ? (
@@ -143,4 +143,3 @@ export default function TeacherEventDetailPage() {
     </div>
   );
 }
-

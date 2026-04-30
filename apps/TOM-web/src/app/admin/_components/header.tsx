@@ -21,7 +21,9 @@ const navItems = [
 ] as const;
 
 function normalizePathname(pathname: string) {
-  return pathname !== '/' && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+  return pathname !== '/' && pathname.endsWith('/')
+    ? pathname.slice(0, -1)
+    : pathname;
 }
 
 export default function AdminHeader() {
@@ -32,7 +34,10 @@ export default function AdminHeader() {
   const activeHref =
     navItems.find(({ href }) => normalizedPathname === href)?.href ??
     navItems
-      .filter(({ href }) => href !== '/admin' && normalizedPathname.startsWith(`${href}/`))
+      .filter(
+        ({ href }) =>
+          href !== '/admin' && normalizedPathname.startsWith(`${href}/`)
+      )
       .sort((left, right) => right.href.length - left.href.length)[0]?.href;
 
   async function handleLogout() {
@@ -48,7 +53,7 @@ export default function AdminHeader() {
     <header className="rounded-[28px] border border-[#dce7f8] bg-white/95 px-5 py-4 shadow-soft">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Link href="/" className="flex min-w-0 items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#1a3560] text-white shadow-[0_10px_22px_rgba(24,58,112,0.18)]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#49a0e3] text-white shadow-[0_10px_22px_rgba(24,58,112,0.18)]">
             <GraduationCap className="h-5 w-5" />
           </div>
           <div className="min-w-0">
@@ -70,7 +75,7 @@ export default function AdminHeader() {
                 href={href}
                 className={`inline-flex flex-none items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition ${
                   isActive
-                    ? 'bg-[#1a3560] text-white shadow-[0_12px_24px_rgba(24,58,112,0.22)]'
+                    ? 'bg-[#49a0e3] text-white shadow-[0_12px_24px_rgba(24,58,112,0.22)]'
                     : 'text-[#4a6080] hover:bg-[#eef4ff] hover:text-[#1a3560]'
                 }`}
               >

@@ -1,13 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-
 import { useRouter } from 'next/navigation';
-
 import { GraduationCap, Search, UserCheck, Users } from 'lucide-react';
-
+import { PineconeLoading } from '@/app/_components';
 import { useTomSession } from '@/app/_providers/tom-session-provider';
-
 import type { ManagedUser } from '@/lib/tom-types';
 
 type UsersResponse = {
@@ -72,13 +69,9 @@ export default function HomePage() {
     useTomSession();
 
   const [users, setUsers] = useState<ManagedUser[]>([]);
-
   const [isUsersLoading, setIsUsersLoading] = useState(true);
-
   const [usersError, setUsersError] = useState('');
-
   const [searchQuery, setSearchQuery] = useState('');
-
   const [selectedUserId, setSelectedUserId] = useState('');
 
   useEffect(() => {
@@ -161,6 +154,10 @@ export default function HomePage() {
 
   const combinedError = errorMessage || usersError;
 
+  if (isLoading) {
+    return <PineconeLoading />;
+  }
+
   return (
     <main
       className="min-h-screen px-4 py-6 flex items-center"
@@ -175,10 +172,10 @@ export default function HomePage() {
     >
       <div className="mx-auto grid h-fit max-w-6xl gap-8 lg:grid-cols-[1.05fr_0.95fr]">
         <section className="flex flex-col justify-center rounded-[32px] border border-[#dbe7f6] bg-white/85 p-8 shadow-[0_24px_70px_rgba(20,47,82,0.10)] backdrop-blur">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[#16345f] text-white shadow-[0_16px_30px_rgba(22,52,95,0.24)]">
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[#49a0e3] text-white shadow-[0_16px_30px_rgba(22,52,95,0.24)]">
             <GraduationCap className="h-7 w-7" />
           </div>
-          <h1 className="mt-6 text-4xl font-semibold tracking-tight text-[#142f52]">
+          <h1 className="mt-6 text-4xl font-semibold tracking-tight text-[#49a0e3]">
             School Club Platform
           </h1>
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
@@ -190,7 +187,6 @@ export default function HomePage() {
 
                 icon: Users,
               },
-
               {
                 title: 'Search',
 
@@ -198,7 +194,6 @@ export default function HomePage() {
 
                 icon: Search,
               },
-
               {
                 title: 'One-click login',
 
@@ -230,7 +225,7 @@ export default function HomePage() {
         <section className="flex flex-col justify-center rounded-[32px] border border-[#dbe7f6] bg-white p-8 shadow-[0_24px_70px_rgba(20,47,82,0.10)]">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="text-2xl font-semibold text-[#142f52]">
+              <h2 className="text-2xl font-semibold text-[#49a0e3]">
                 Хэрэглэгчээр нэвтрэх
               </h2>
 
@@ -302,7 +297,7 @@ export default function HomePage() {
               isLoading ||
               selectedUser?.accountStatus === 'banned'
             }
-            className="mt-4 inline-flex items-center justify-center rounded-[18px] bg-[#172a4e] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1e3a6b] disabled:cursor-not-allowed disabled:bg-[#9eb1cd]"
+            className="mt-4 inline-flex items-center justify-center rounded-[18px] bg-[#49a0e3] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1e3a6b] disabled:cursor-not-allowed disabled:bg-[#9eb1cd]"
           >
             {isAuthenticating
               ? 'Нэвтэрч байна...'

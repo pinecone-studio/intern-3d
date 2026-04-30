@@ -18,7 +18,9 @@ async function readJson<T>(response: Response) {
     | null;
 
   if (!response.ok) {
-    throw new Error(data?.error || `Request failed with status ${response.status}.`);
+    throw new Error(
+      data?.error || `Request failed with status ${response.status}.`
+    );
   }
 
   return data as T;
@@ -46,10 +48,7 @@ export default function AdminEventDetailPage() {
   const [isPosting, setIsPosting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const pageTitle = useMemo(
-    () => event?.title || 'Event дэлгэрэнгүй',
-    [event]
-  );
+  const pageTitle = useMemo(() => event?.title || 'Event дэлгэрэнгүй', [event]);
 
   const load = async () => {
     const data = await apiRequest<FeedResponse>(`/api/events/${eventId}/posts`);
@@ -89,16 +88,21 @@ export default function AdminEventDetailPage() {
     setErrorMessage('');
 
     try {
-      const data = await apiRequest<{ post: EventPost }>(`/api/events/${eventId}/posts`, {
-        method: 'POST',
-        body: JSON.stringify({ title: title.trim(), body: trimmed }),
-      });
+      const data = await apiRequest<{ post: EventPost }>(
+        `/api/events/${eventId}/posts`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ title: title.trim(), body: trimmed }),
+        }
+      );
 
       setPosts((current) => [{ ...data.post, comments: [] }, ...current]);
       setTitle('');
       setBody('');
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Post нэмэж чадсангүй.');
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Post нэмэж чадсангүй.'
+      );
     } finally {
       setIsPosting(false);
     }
@@ -185,7 +189,7 @@ export default function AdminEventDetailPage() {
                 type="button"
                 onClick={() => void submitPost()}
                 disabled={isPosting || !body.trim()}
-                className="rounded-full bg-[#1a3560] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(26,53,96,0.25)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-full bg-[#49a0e3] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(26,53,96,0.25)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isPosting ? 'Нэмэж байна...' : 'Нэмэх'}
               </button>
@@ -209,4 +213,3 @@ export default function AdminEventDetailPage() {
     </div>
   );
 }
-

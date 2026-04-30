@@ -12,9 +12,13 @@ type DashboardResponse = { events: SchoolEvent[] };
 const EVENT_DEFAULT_CAPACITY = 30;
 
 async function readJson<T>(response: Response) {
-  const data = (await response.json().catch(() => null)) as ({ error?: string; message?: string } & T) | null;
+  const data = (await response.json().catch(() => null)) as
+    | ({ error?: string; message?: string } & T)
+    | null;
   if (!response.ok) {
-    throw new Error(data?.error || data?.message || `Request failed: ${response.status}`);
+    throw new Error(
+      data?.error || data?.message || `Request failed: ${response.status}`
+    );
   }
   return data as T;
 }
@@ -29,7 +33,9 @@ export default function EventsPage() {
   const [joinedEventIds, setJoinedEventIds] = useState<string[]>([]);
   const [search, setSearch] = useState('');
   const deferredSearch = useDeferredValue(search);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'upcoming' | 'ongoing' | 'completed' | 'cancelled'>('all');
+  const [statusFilter, setStatusFilter] = useState<
+    'all' | 'upcoming' | 'ongoing' | 'completed' | 'cancelled'
+  >('all');
   const [isLoading, setIsLoading] = useState(true);
   const [pendingEventId, setPendingEventId] = useState('');
   const [banner, setBanner] = useState('');
@@ -57,7 +63,10 @@ export default function EventsPage() {
 
     void loadData()
       .catch((error) => {
-        if (!cancelled) setErrorMessage(error instanceof Error ? error.message : 'Event ачаалж чадсангүй.');
+        if (!cancelled)
+          setErrorMessage(
+            error instanceof Error ? error.message : 'Event ачаалж чадсангүй.'
+          );
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
@@ -68,24 +77,55 @@ export default function EventsPage() {
     };
   }, [deferredSearch, statusFilter]);
 
-  const summary = useMemo(() => ({
-    total: events.length,
-    joined: events.filter((event) => joinedEventIds.includes(event.id)).length,
-    upcoming: events.filter((event) => event.status === 'upcoming').length,
-  }), [events, joinedEventIds]);
+  const summary = useMemo(
+    () => ({
+      total: events.length,
+      joined: events.filter((event) => joinedEventIds.includes(event.id))
+        .length,
+      upcoming: events.filter((event) => event.status === 'upcoming').length,
+    }),
+    [events, joinedEventIds]
+  );
 
   async function joinEvent(eventId: string) {
     setPendingEventId(eventId);
     setBanner('');
     setErrorMessage('');
     try {
-      const data = await apiRequest<{ message?: string; awardedBadges?: Array<{ badge: { icon: string; name: string } }>; gainedXp?: number }>(`/api/events/${eventId}/join`, { method: 'POST' });
-      setJoinedEventIds((current) => (current.includes(eventId) ? current : [...current, eventId]));
-      setEvents((current) => current.map((event) => event.id === eventId ? { ...event, participantCount: Math.min(EVENT_DEFAULT_CAPACITY, event.participantCount + 1) } : event));
-      const badgeMessage = data.awardedBadges?.length ? ` Шинэ badge: ${data.awardedBadges.map((item) => `${item.badge.icon} ${item.badge.name}`).join(', ')}` : '';
-      setBanner((data.message || `Амжилттай нэгдлээ. +${data.gainedXp ?? 0} XP`) + badgeMessage);
+      const data = await apiRequest<{
+        message?: string;
+        awardedBadges?: Array<{ badge: { icon: string; name: string } }>;
+        gainedXp?: number;
+      }>(`/api/events/${eventId}/join`, { method: 'POST' });
+      setJoinedEventIds((current) =>
+        current.includes(eventId) ? current : [...current, eventId]
+      );
+      setEvents((current) =>
+        current.map((event) =>
+          event.id === eventId
+            ? {
+                ...event,
+                participantCount: Math.min(
+                  EVENT_DEFAULT_CAPACITY,
+                  event.participantCount + 1
+                ),
+              }
+            : event
+        )
+      );
+      const badgeMessage = data.awardedBadges?.length
+        ? ` Шинэ badge: ${data.awardedBadges
+            .map((item) => `${item.badge.icon} ${item.badge.name}`)
+            .join(', ')}`
+        : '';
+      setBanner(
+        (data.message || `Амжилттай нэгдлээ. +${data.gainedXp ?? 0} XP`) +
+          badgeMessage
+      );
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Event-д нэгдэж чадсангүй.');
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Event-д нэгдэж чадсангүй.'
+      );
     } finally {
       setPendingEventId('');
     }
@@ -98,10 +138,21 @@ export default function EventsPage() {
     try {
       await apiRequest(`/api/events/${eventId}/join`, { method: 'DELETE' });
       setJoinedEventIds((current) => current.filter((id) => id !== eventId));
-      setEvents((current) => current.map((event) => event.id === eventId ? { ...event, participantCount: Math.max(0, event.participantCount - 1) } : event));
+      setEvents((current) =>
+        current.map((event) =>
+          event.id === eventId
+            ? {
+                ...event,
+                participantCount: Math.max(0, event.participantCount - 1),
+              }
+            : event
+        )
+      );
       setBanner('Event-ээс гарлаа.');
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Event-ээс гарч чадсангүй.');
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Event-ээс гарч чадсангүй.'
+      );
     } finally {
       setPendingEventId('');
     }
@@ -113,12 +164,20 @@ export default function EventsPage() {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-[#0f1f3d]">Events</h1>
-            <p className="mt-1 text-sm text-[#6f86a7]">Нэгдэх, гарах, ойрын арга хэмжээгээ эндээс удирдана.</p>
+            <p className="mt-1 text-sm text-[#6f86a7]">
+              Нэгдэх, гарах, ойрын арга хэмжээгээ эндээс удирдана.
+            </p>
           </div>
           <div className="flex flex-wrap gap-2 text-sm">
-            <span className="rounded-full bg-[#eef4ff] px-3 py-1 font-semibold text-[#496da8]">Нийт: {summary.total}</span>
-            <span className="rounded-full bg-[#edf7ef] px-3 py-1 font-semibold text-[#1f7a42]">Нэгдсэн: {summary.joined}</span>
-            <span className="rounded-full bg-[#fff6e8] px-3 py-1 font-semibold text-[#9a5b00]">Удахгүй: {summary.upcoming}</span>
+            <span className="rounded-full bg-[#eef4ff] px-3 py-1 font-semibold text-[#496da8]">
+              Нийт: {summary.total}
+            </span>
+            <span className="rounded-full bg-[#edf7ef] px-3 py-1 font-semibold text-[#1f7a42]">
+              Нэгдсэн: {summary.joined}
+            </span>
+            <span className="rounded-full bg-[#fff6e8] px-3 py-1 font-semibold text-[#9a5b00]">
+              Удахгүй: {summary.upcoming}
+            </span>
           </div>
         </div>
 
@@ -134,7 +193,9 @@ export default function EventsPage() {
           </label>
           <select
             value={statusFilter}
-            onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)}
+            onChange={(event) =>
+              setStatusFilter(event.target.value as typeof statusFilter)
+            }
             className="rounded-[16px] border border-[#d7e4f4] bg-[#f8fbff] px-3 py-2 text-sm text-[#17365f] outline-none"
           >
             <option value="all">Бүх төлөв</option>
@@ -145,30 +206,57 @@ export default function EventsPage() {
           </select>
         </div>
 
-        {(banner || errorMessage) ? (
-          <div className={`mt-4 rounded-2xl border px-4 py-3 text-sm ${errorMessage ? 'border-[#ffd2d5] bg-[#fff7f8] text-[#b23a49]' : 'border-[#c8e6c9] bg-[#f1f8f1] text-[#2e7d32]'}`}>
+        {banner || errorMessage ? (
+          <div
+            className={`mt-4 rounded-2xl border px-4 py-3 text-sm ${
+              errorMessage
+                ? 'border-[#ffd2d5] bg-[#fff7f8] text-[#b23a49]'
+                : 'border-[#c8e6c9] bg-[#f1f8f1] text-[#2e7d32]'
+            }`}
+          >
             {errorMessage || banner}
           </div>
         ) : null}
       </section>
 
       {isLoading ? (
-        <div className="rounded-2xl border border-[#e2eaf5] bg-white p-8 text-sm text-[#6f86a7]">Ачаалж байна...</div>
+        <div className="rounded-2xl border border-[#e2eaf5] bg-white p-8 text-sm text-[#6f86a7]">
+          Ачаалж байна...
+        </div>
       ) : (
         <section className="grid gap-4 md:grid-cols-2">
           {events.map((event) => {
             const isJoined = joinedEventIds.includes(event.id);
             const isFull = event.participantCount >= EVENT_DEFAULT_CAPACITY;
-            const canJoin = !isJoined && !isFull && ['upcoming', 'ongoing'].includes(event.status);
+            const canJoin =
+              !isJoined &&
+              !isFull &&
+              ['upcoming', 'ongoing'].includes(event.status);
 
             return (
-              <article key={event.id} className="rounded-2xl border border-[#e2eaf5] bg-white p-5 shadow-sm">
-                <h2 className="text-lg font-semibold text-[#0f1f3d]">{event.title}</h2>
-                <p className="mt-2 text-sm text-[#6f86a7]">{event.description || 'Тайлбар оруулаагүй.'}</p>
+              <article
+                key={event.id}
+                className="rounded-2xl border border-[#e2eaf5] bg-white p-5 shadow-sm"
+              >
+                <h2 className="text-lg font-semibold text-[#0f1f3d]">
+                  {event.title}
+                </h2>
+                <p className="mt-2 text-sm text-[#6f86a7]">
+                  {event.description || 'Тайлбар оруулаагүй.'}
+                </p>
                 <div className="mt-3 space-y-1 text-xs text-[#6f86a7]">
-                  <p className="inline-flex items-center gap-1"><CalendarDays className="h-3.5 w-3.5" /> {event.eventDate}{event.startTime ? ` · ${event.startTime}` : ''}</p>
-                  <p className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {event.location || 'Байршилгүй'}</p>
-                  <p className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" /> {event.participantCount}/{EVENT_DEFAULT_CAPACITY}</p>
+                  <p className="inline-flex items-center gap-1">
+                    <CalendarDays className="h-3.5 w-3.5" /> {event.eventDate}
+                    {event.startTime ? ` · ${event.startTime}` : ''}
+                  </p>
+                  <p className="inline-flex items-center gap-1">
+                    <MapPin className="h-3.5 w-3.5" />{' '}
+                    {event.location || 'Байршилгүй'}
+                  </p>
+                  <p className="inline-flex items-center gap-1">
+                    <Users className="h-3.5 w-3.5" /> {event.participantCount}/
+                    {EVENT_DEFAULT_CAPACITY}
+                  </p>
                 </div>
                 <div className="mt-4 flex items-center gap-2">
                   <Link
@@ -191,12 +279,18 @@ export default function EventsPage() {
                       type="button"
                       disabled={!canJoin || pendingEventId === event.id}
                       onClick={() => void joinEvent(event.id)}
-                      className="rounded-full bg-[#1a3560] px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="rounded-full bg-[#49a0e3] px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {pendingEventId === event.id ? 'Нэгдэж байна...' : isFull ? 'Суудал дүүрсэн' : 'Нэгдэх'}
+                      {pendingEventId === event.id
+                        ? 'Нэгдэж байна...'
+                        : isFull
+                        ? 'Суудал дүүрсэн'
+                        : 'Нэгдэх'}
                     </button>
                   )}
-                  <span className="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-semibold text-[#496da8]">{event.status}</span>
+                  <span className="rounded-full bg-[#eef4ff] px-3 py-1 text-xs font-semibold text-[#496da8]">
+                    {event.status}
+                  </span>
                 </div>
               </article>
             );

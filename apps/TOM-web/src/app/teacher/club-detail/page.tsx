@@ -77,8 +77,11 @@ async function apiRequest<T>(input: string, init?: RequestInit) {
 }
 
 export default function DetailPage() {
-  const { options, isLoading: isOptionsLoading, errorMessage: optionsError } =
-    useTomOptions();
+  const {
+    options,
+    isLoading: isOptionsLoading,
+    errorMessage: optionsError,
+  } = useTomOptions();
   const [clubs, setClubs] = useState<Club[]>([]);
   const [selectedClubId, setSelectedClubId] = useState<string>('');
   const [draft, setDraft] = useState<EditableClub | null>(null);
@@ -207,7 +210,7 @@ export default function DetailPage() {
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em]">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em]">
               {errorMessage
                 ? 'Синк алдаа'
                 : isLoading
@@ -243,9 +246,11 @@ export default function DetailPage() {
       <section className="grid gap-6 xl:grid-cols-[0.9fr_1.4fr]">
         <article className="rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-6 shadow-soft">
           <div className="flex items-center gap-3">
-            <FileText className="h-5 w-5 text-[#1a3560]" />
+            <FileText className="h-5 w-5 text-[#49a0e3]" />
             <div>
-              <h2 className="text-xl font-semibold text-[#17304f]">Клубийн жагсаалт</h2>
+              <h2 className="text-xl font-semibold text-[#17304f]">
+                Клубийн жагсаалт
+              </h2>
               <p className="mt-1 text-sm text-[#6e84a3]">
                 Засах клубээ эндээс сонгоно.
               </p>
@@ -265,7 +270,7 @@ export default function DetailPage() {
                   onClick={() => setSelectedClubId(club.id)}
                   className={`w-full rounded-[24px] border px-4 py-4 text-left transition ${
                     selectedClubId === club.id
-                      ? 'border-[#1a3560] bg-[#edf4ff]'
+                      ? 'border-[#49a0e3] bg-[#edf4ff]'
                       : 'border-[#deebf7] bg-white hover:border-[#bfd4f1]'
                   }`}
                 >
@@ -311,14 +316,15 @@ export default function DetailPage() {
                     ) : null}
                   </div>
                   <p className="mt-2 text-sm text-[#6e84a3]">
-                    {selectedClub.createdBy} · шинэчилсэн: {selectedClub.updatedAt}
+                    {selectedClub.createdBy} · шинэчилсэн:{' '}
+                    {selectedClub.updatedAt}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => void saveClub()}
                   disabled={isSaving}
-                  className="inline-flex items-center gap-2 rounded-full bg-[#1a3560] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#24478a] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#49a0e3] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Save className="h-4 w-4" />
                   Өөрчлөлт хадгалах

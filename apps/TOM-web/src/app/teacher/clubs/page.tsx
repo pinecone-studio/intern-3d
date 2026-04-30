@@ -6,7 +6,12 @@ import { CheckCircle2, Search, ShieldCheck, XCircle } from 'lucide-react';
 import { CapacityBar, StatusBadge } from '@/app/_components';
 import { useTomOptions } from '@/app/_hooks/useTomOptions';
 import { useTomSession } from '@/app/_providers/tom-session-provider';
-import type { Club, ClubRequest, TomCurrentUser, TomFormOptions } from '@/lib/tom-types';
+import type {
+  Club,
+  ClubRequest,
+  TomCurrentUser,
+  TomFormOptions,
+} from '@/lib/tom-types';
 
 type TeacherClubsResponse = {
   user: TomCurrentUser;
@@ -31,7 +36,9 @@ type ClubRequestForm = {
   note: string;
 };
 
-function createInitialClubRequestForm(options: TomFormOptions): ClubRequestForm {
+function createInitialClubRequestForm(
+  options: TomFormOptions
+): ClubRequestForm {
   return {
     clubName: '',
     studentLimit: '12',
@@ -82,9 +89,7 @@ export default function ClubsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [message, setMessage] = useState(
-    'Клубийн мэдээллийг D1-ээс ачааллаа.'
-  );
+  const [message, setMessage] = useState('Клубийн мэдээллийг D1-ээс ачааллаа.');
 
   const loadData = async (nextMessage?: string) => {
     const query = new URLSearchParams();
@@ -94,19 +99,25 @@ export default function ClubsPage() {
     }
 
     const suffix = query.toString() ? `?${query.toString()}` : '';
-    const data = await apiRequest<TeacherClubsResponse>(`/api/teacher/clubs${suffix}`);
+    const data = await apiRequest<TeacherClubsResponse>(
+      `/api/teacher/clubs${suffix}`
+    );
 
     setClubs(data.clubs);
     setRequests(data.requests);
     setTeacherScopeName(data.teacherScopeName);
-    setMessage(nextMessage || `${data.teacherScopeName} нэр дээрх клубүүдийг шинэчиллээ.`);
+    setMessage(
+      nextMessage || `${data.teacherScopeName} нэр дээрх клубүүдийг шинэчиллээ.`
+    );
   };
 
   useEffect(() => {
     setClubRequestForm((current) => ({
       ...current,
-      gradeRange: current.gradeRange || options.gradeRanges[0] || current.gradeRange,
-      allowedDays: current.allowedDays || options.allowedDays[0] || current.allowedDays,
+      gradeRange:
+        current.gradeRange || options.gradeRanges[0] || current.gradeRange,
+      allowedDays:
+        current.allowedDays || options.allowedDays[0] || current.allowedDays,
     }));
   }, [options.allowedDays, options.gradeRanges]);
 
@@ -154,7 +165,10 @@ export default function ClubsPage() {
     }
   };
 
-  const updateClubRequestField = (field: keyof ClubRequestForm, value: string) => {
+  const updateClubRequestField = (
+    field: keyof ClubRequestForm,
+    value: string
+  ) => {
     setClubRequestForm((current) => ({ ...current, [field]: value }));
   };
 
@@ -184,7 +198,12 @@ export default function ClubsPage() {
           endDate: clubRequestForm.endDate,
           note:
             clubRequestForm.note ||
-            `${teacherScopeName || user?.teacherProfileName || user?.name || 'Багш'}-ийн шинээр үүсгэсэн клубийн хүсэлт.`,
+            `${
+              teacherScopeName ||
+              user?.teacherProfileName ||
+              user?.name ||
+              'Багш'
+            }-ийн шинээр үүсгэсэн клубийн хүсэлт.`,
         }),
       });
 
@@ -204,9 +223,12 @@ export default function ClubsPage() {
 
   const approveAndCreateKickoffEvent = async (request: ClubRequest) => {
     await runAction(async () => {
-      const approved = await apiRequest<ApproveRequestResponse>(`/api/club-requests/${request.id}/approve`, {
-        method: 'POST',
-      });
+      const approved = await apiRequest<ApproveRequestResponse>(
+        `/api/club-requests/${request.id}/approve`,
+        {
+          method: 'POST',
+        }
+      );
 
       const now = new Date();
       now.setDate(now.getDate() + 3);
@@ -224,7 +246,9 @@ export default function ClubsPage() {
         }),
       });
 
-      await loadData(`${request.clubName} батлагдаж kickoff event автоматаар үүслээ.`);
+      await loadData(
+        `${request.clubName} батлагдаж kickoff event автоматаар үүслээ.`
+      );
     }, 'Хүсэлт баталж kickoff event үүсгэж чадсангүй.');
   };
 
@@ -270,11 +294,12 @@ export default function ClubsPage() {
       pending: 'Хүлээгдэж буй',
       draft: 'Ноорог',
       archived: 'Архивласан',
-    })[status] ?? status;
+    }[status] ?? status);
 
   const inputClass =
     'w-full rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm text-[#17304f] outline-none transition placeholder:text-[#8fa3bf] focus:border-[#4f72d5] focus:ring-2 focus:ring-[#dce8ff]';
-  const labelClass = 'mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-[#7a90af]';
+  const labelClass =
+    'mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-[#7a90af]';
 
   return (
     <div className="space-y-6">
@@ -287,7 +312,7 @@ export default function ClubsPage() {
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em]">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em]">
               {errorMessage
                 ? 'Синк алдаа'
                 : isLoading
@@ -307,7 +332,10 @@ export default function ClubsPage() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <div className="rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm font-semibold text-[#4a6080]">
-              {teacherScopeName || user?.teacherProfileName || user?.name || 'Багш'}
+              {teacherScopeName ||
+                user?.teacherProfileName ||
+                user?.name ||
+                'Багш'}
             </div>
             <label className="flex items-center gap-2 rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm text-[#4a6080]">
               <Search className="h-4 w-4" />
@@ -345,7 +373,9 @@ export default function ClubsPage() {
             className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft"
           >
             <p className="text-sm font-semibold text-[#5f7697]">{item.label}</p>
-            <p className="mt-3 text-3xl font-bold text-[#17304f]">{item.value}</p>
+            <p className="mt-3 text-3xl font-bold text-[#17304f]">
+              {item.value}
+            </p>
             <p className="mt-2 text-sm text-[#6e84a3]">{item.caption}</p>
           </article>
         ))}
@@ -355,9 +385,15 @@ export default function ClubsPage() {
         <article className="self-start rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-6 shadow-soft">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-xl font-semibold text-[#17304f]">Удирдаж буй клубүүд</h2>
+              <h2 className="text-xl font-semibold text-[#17304f]">
+                Удирдаж буй клубүүд
+              </h2>
               <p className="mt-1 text-sm text-[#6e84a3]">
-                {teacherScopeName || user?.teacherProfileName || user?.name || 'Багш'} нэр дээрх клубүүдийг эндээс удирдана.
+                {teacherScopeName ||
+                  user?.teacherProfileName ||
+                  user?.name ||
+                  'Багш'}{' '}
+                нэр дээрх клубүүдийг эндээс удирдана.
               </p>
             </div>
             <StatusBadge
@@ -396,7 +432,8 @@ export default function ClubsPage() {
                         ) : null}
                       </div>
                       <p className="mt-2 text-sm text-[#6e84a3]">
-                        {club.teacherName} · {club.gradeRange || 'Анги заагаагүй'} ·{' '}
+                        {club.teacherName} ·{' '}
+                        {club.gradeRange || 'Анги заагаагүй'} ·{' '}
                         {club.allowedDays || 'Өдөр тохируулаагүй'}
                       </p>
                     </div>
@@ -406,7 +443,9 @@ export default function ClubsPage() {
                       disabled={isSaving}
                       className="rounded-full border border-[#d8e4f4] px-4 py-2 text-sm font-semibold text-[#17304f] transition hover:bg-[#eef4ff] disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      {club.status === 'active' ? 'Клуб түр зогсоох' : 'Клуб идэвхжүүлэх'}
+                      {club.status === 'active'
+                        ? 'Клуб түр зогсоох'
+                        : 'Клуб идэвхжүүлэх'}
                     </button>
                   </div>
 
@@ -434,14 +473,17 @@ export default function ClubsPage() {
                           Хугацаа
                         </p>
                         <p className="mt-1 text-sm font-semibold text-[#17304f]">
-                          {club.startDate || 'Тодорхойгүй'} - {club.endDate || 'Тодорхойгүй'}
+                          {club.startDate || 'Тодорхойгүй'} -{' '}
+                          {club.endDate || 'Тодорхойгүй'}
                         </p>
                       </div>
                     </div>
                   </div>
 
                   <p className="mt-4 text-sm leading-6 text-[#526987]">
-                    {club.note || club.description || 'Клубийн тайлбар хараахан байхгүй.'}
+                    {club.note ||
+                      club.description ||
+                      'Клубийн тайлбар хараахан байхгүй.'}
                   </p>
                 </div>
               ))
@@ -453,7 +495,9 @@ export default function ClubsPage() {
           <article className="rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-6 shadow-soft">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-xl font-semibold text-[#17304f]">Клубийн хүсэлт</h2>
+                <h2 className="text-xl font-semibold text-[#17304f]">
+                  Клубийн хүсэлт
+                </h2>
                 <p className="mt-1 text-sm text-[#6e84a3]">
                   Клубийн хүсэлтээ эндээс үүсгээд admin руу илгээнэ.
                 </p>
@@ -570,7 +614,10 @@ export default function ClubsPage() {
                     min="0"
                     value={clubRequestForm.interestCount}
                     onChange={(event) =>
-                      updateClubRequestField('interestCount', event.target.value)
+                      updateClubRequestField(
+                        'interestCount',
+                        event.target.value
+                      )
                     }
                     className={inputClass}
                   />
@@ -593,7 +640,7 @@ export default function ClubsPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="inline-flex items-center gap-2 rounded-full bg-[#1a3560] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#24478a] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#49a0e3] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <CheckCircle2 className="h-4 w-4" />
                   Club request үүсгэх
@@ -612,11 +659,14 @@ export default function ClubsPage() {
 
           <article className="rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-6 shadow-soft">
             <div className="flex items-center gap-3">
-              <ShieldCheck className="h-5 w-5 text-[#1a3560]" />
+              <ShieldCheck className="h-5 w-5 text-[#49a0e3]" />
               <div>
-                <h2 className="text-xl font-semibold text-[#17304f]">Хүлээгдэж буй саналууд</h2>
+                <h2 className="text-xl font-semibold text-[#17304f]">
+                  Хүлээгдэж буй саналууд
+                </h2>
                 <p className="mt-1 text-sm text-[#6e84a3]">
-                  Энэ багшийн нэр дээр ирсэн хүсэлтүүдийг хурдан батлах эсвэл буцаана.
+                  Энэ багшийн нэр дээр ирсэн хүсэлтүүдийг хурдан Зөвшөөрөх эсвэл
+                  буцаана.
                 </p>
               </div>
             </div>
@@ -672,16 +722,18 @@ export default function ClubsPage() {
                         type="button"
                         onClick={() => void approveRequest(request)}
                         disabled={isSaving}
-                        className="inline-flex items-center gap-2 rounded-full bg-[#1a3560] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#24478a] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="inline-flex items-center gap-2 rounded-full bg-[#49a0e3] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         <CheckCircle2 className="h-4 w-4" />
-                        Батлах
+                        Зөвшөөрөх
                       </button>
                       <button
                         type="button"
-                        onClick={() => void approveAndCreateKickoffEvent(request)}
+                        onClick={() =>
+                          void approveAndCreateKickoffEvent(request)
+                        }
                         disabled={isSaving}
-                        className="inline-flex items-center gap-2 rounded-full border border-[#1a3560] bg-[#eef4ff] px-4 py-2 text-sm font-semibold text-[#1a3560] transition hover:bg-[#dfeaff] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="inline-flex items-center gap-2 rounded-full border border-[#49a0e3] bg-[#eef4ff] px-4 py-2 text-sm font-semibold text-[#49a0e3] transition hover:bg-[#dfeaff] disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         <CheckCircle2 className="h-4 w-4" />
                         Батлаад kickoff event

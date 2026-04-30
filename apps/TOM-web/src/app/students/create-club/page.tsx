@@ -84,7 +84,7 @@ export default function CreateClubPage() {
           <button
             onClick={handleSubmit}
             disabled={!name.trim()}
-            className="rounded-xl bg-[#1a3560] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#24478a] disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-xl bg-[#49a0e3] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#24478a] disabled:cursor-not-allowed disabled:opacity-40"
           >
             Хүсэлт илгээх
           </button>

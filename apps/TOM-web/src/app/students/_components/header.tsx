@@ -3,13 +3,28 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
-import { Bell, CalendarDays, GraduationCap, LogOut, Sparkles, Users } from 'lucide-react';
+import {
+  Bell,
+  CalendarDays,
+  GraduationCap,
+  LayoutDashboardIcon,
+  LogOut,
+  Sparkles,
+  Users,
+} from 'lucide-react';
 
 import { useTomSession } from '@/app/_providers/tom-session-provider';
-import type { Badge, Club, ClubRequest, SchoolEvent, UserBadge, XpLog } from '@/lib/tom-types';
+import type {
+  Badge,
+  Club,
+  ClubRequest,
+  SchoolEvent,
+  UserBadge,
+  XpLog,
+} from '@/lib/tom-types';
 
 const navItems = [
-  { href: '/students', label: 'Home', icon: Bell },
+  { href: '/students', label: 'Home', icon: LayoutDashboardIcon },
   { href: '/students/clubs', label: 'Клубүүд', icon: Users },
   { href: '/students/events', label: 'Events', icon: CalendarDays },
   { href: '/students/gamification', label: 'XP & Badge', icon: Sparkles },
@@ -36,7 +51,9 @@ type NotificationItem = {
 };
 
 function normalizePathname(pathname: string) {
-  return pathname !== '/' && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+  return pathname !== '/' && pathname.endsWith('/')
+    ? pathname.slice(0, -1)
+    : pathname;
 }
 
 export default function StudentHeader() {
@@ -46,12 +63,16 @@ export default function StudentHeader() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
   const [notificationsError, setNotificationsError] = useState('');
-  const [notificationData, setNotificationData] = useState<StudentHeaderDashboardResponse | null>(null);
+  const [notificationData, setNotificationData] =
+    useState<StudentHeaderDashboardResponse | null>(null);
   const normalizedPathname = normalizePathname(pathname);
   const activeHref =
     navItems.find(({ href }) => normalizedPathname === href)?.href ??
     navItems
-      .filter(({ href }) => href !== '/students' && normalizedPathname.startsWith(`${href}/`))
+      .filter(
+        ({ href }) =>
+          href !== '/students' && normalizedPathname.startsWith(`${href}/`)
+      )
       .sort((left, right) => right.href.length - left.href.length)[0]?.href;
 
   useEffect(() => {
@@ -62,7 +83,9 @@ export default function StudentHeader() {
       setNotificationsError('');
       try {
         const response = await fetch('/api/students/dashboard');
-        const data = (await response.json().catch(() => null)) as (StudentHeaderDashboardResponse & { error?: string }) | null;
+        const data = (await response.json().catch(() => null)) as
+          | (StudentHeaderDashboardResponse & { error?: string })
+          | null;
 
         if (!response.ok) {
           throw new Error(data?.error || 'Мэдэгдлийг ачаалж чадсангүй.');
@@ -73,7 +96,11 @@ export default function StudentHeader() {
         }
       } catch (error) {
         if (!cancelled) {
-          setNotificationsError(error instanceof Error ? error.message : 'Мэдэгдлийг ачаалж чадсангүй.');
+          setNotificationsError(
+            error instanceof Error
+              ? error.message
+              : 'Мэдэгдлийг ачаалж чадсангүй.'
+          );
         }
       } finally {
         if (!cancelled) {
@@ -111,29 +138,57 @@ export default function StudentHeader() {
       .sort((left, right) => left.eventDate.localeCompare(right.eventDate))[0];
 
     if (joinedClubIds.length > 0) {
-      items.push({ title: 'Таны клубийн тоо', detail: `Та одоогоор ${joinedClubIds.length} клубт нэгдсэн байна.` });
+      items.push({
+        title: 'Таны клубийн тоо',
+        detail: `Та одоогоор ${joinedClubIds.length} клубт нэгдсэн байна.`,
+      });
     }
     if (requests.length > 0) {
-      items.push({ title: 'Таны клубийн хүсэлтүүд', detail: `${requests.length} хүсэлт тань системд байна.` });
+      items.push({
+        title: 'Таны клубийн хүсэлтүүд',
+        detail: `${requests.length} хүсэлт тань системд байна.`,
+      });
     }
     if (nextMeeting) {
-      items.push({ title: 'Удахгүй болох арга хэмжээ', detail: `${nextMeeting.title} · ${nextMeeting.eventDate}` });
+      items.push({
+        title: 'Удахгүй болох арга хэмжээ',
+        detail: `${nextMeeting.title} · ${nextMeeting.eventDate}`,
+      });
     }
     if (user?.accountStatus === 'restricted') {
-      items.push({ title: 'Хандалтын анхааруулга', detail: 'Таны бүртгэл түр хязгаарлагдсан төлөвтэй байна.' });
+      items.push({
+        title: 'Хандалтын анхааруулга',
+        detail: 'Таны бүртгэл түр хязгаарлагдсан төлөвтэй байна.',
+      });
     }
     if (xpTotal > 0) {
-      items.push({ title: 'XP өсөлт', detail: `Нийт XP: ${xpTotal}. Сүүлийн өөрчлөлт: ${xpLogs[0]?.amount ?? 0} XP` });
+      items.push({
+        title: 'XP өсөлт',
+        detail: `Нийт XP: ${xpTotal}. Сүүлийн өөрчлөлт: ${
+          xpLogs[0]?.amount ?? 0
+        } XP`,
+      });
     }
     if (earnedBadges.length > 0) {
-      items.push({ title: 'Badge ахиц', detail: `${earnedBadges.length}/${totalBadgeCount} badge нээгдсэн байна.` });
+      items.push({
+        title: 'Badge ахиц',
+        detail: `${earnedBadges.length}/${totalBadgeCount} badge нээгдсэн байна.`,
+      });
     }
     if (items.length === 0) {
-      items.push({ title: 'Шинэ мэдэгдэл алга', detail: 'Одоогоор шинэ мэдээлэлгүй байна.' });
+      items.push({
+        title: 'Шинэ мэдэгдэл алга',
+        detail: 'Одоогоор шинэ мэдээлэлгүй байна.',
+      });
     }
 
     return items.slice(0, 4);
-  }, [isLoadingNotifications, notificationData, notificationsError, user?.accountStatus]);
+  }, [
+    isLoadingNotifications,
+    notificationData,
+    notificationsError,
+    user?.accountStatus,
+  ]);
 
   async function handleLogout() {
     try {
@@ -148,11 +203,11 @@ export default function StudentHeader() {
     <header className="rounded-[28px] border border-[#dce7f8] bg-white/95 px-5 py-4 shadow-soft">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#1a3560] text-white shadow-[0_10px_22px_rgba(24,58,112,0.18)]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#49a0e3] text-white shadow-[0_10px_22px_rgba(24,58,112,0.18)]">
             <GraduationCap className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-[#1a3560]">
+            <p className="text-sm font-semibold text-[#49a0e3]">
               Сургуулийн клубүүд
             </p>
             <p className="text-xs text-[#7a90af]">
@@ -170,8 +225,8 @@ export default function StudentHeader() {
                 href={href}
                 className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition ${
                   isActive
-                    ? 'bg-[#1a3560] text-white shadow-[0_12px_24px_rgba(24,58,112,0.22)]'
-                    : 'text-[#4a6080] hover:bg-[#eef4ff] hover:text-[#1a3560]'
+                    ? 'bg-[#49a0e3] text-white shadow-[0_12px_24px_rgba(24,58,112,0.22)]'
+                    : 'text-[#4a6080] hover:bg-[#eef4ff] hover:text-[#49a0e3]'
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -192,7 +247,7 @@ export default function StudentHeader() {
           </button>
 
           {notifications.length > 0 ? (
-            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#1a3560] px-1 text-[10px] font-semibold text-white">
+            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#49a0e3] px-1 text-[10px] font-semibold text-white">
               {notifications.length}
             </span>
           ) : null}
@@ -200,7 +255,9 @@ export default function StudentHeader() {
           {isNotificationsOpen ? (
             <div className="absolute right-0 z-20 mt-3 w-[320px] rounded-[24px] border border-[#dce7f8] bg-white p-4 shadow-[0_24px_60px_rgba(24,58,112,0.16)]">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-[#183153]">Мэдэгдэл</h3>
+                <h3 className="text-sm font-semibold text-[#183153]">
+                  Мэдэгдэл
+                </h3>
                 <button
                   type="button"
                   onClick={() => setIsNotificationsOpen(false)}
@@ -212,9 +269,16 @@ export default function StudentHeader() {
 
               <div className="mt-3 space-y-3">
                 {notifications.map((item) => (
-                  <div key={`${item.title}-${item.detail}`} className="rounded-2xl bg-[color:var(--surface)] px-4 py-3">
-                    <p className="text-sm font-semibold text-[#183153]">{item.title}</p>
-                    <p className="mt-1 text-xs leading-5 text-[#6f86a7]">{item.detail}</p>
+                  <div
+                    key={`${item.title}-${item.detail}`}
+                    className="rounded-2xl bg-[color:var(--surface)] px-4 py-3"
+                  >
+                    <p className="text-sm font-semibold text-[#183153]">
+                      {item.title}
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-[#6f86a7]">
+                      {item.detail}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -226,7 +290,7 @@ export default function StudentHeader() {
           type="button"
           onClick={() => void handleLogout()}
           disabled={isAuthenticating}
-          className="inline-flex items-center gap-2 rounded-full border border-[#e2eaf5] bg-white px-4 py-2 text-sm font-semibold text-[#4a6080] transition hover:bg-[#eef4ff] hover:text-[#1a3560]"
+          className="inline-flex items-center gap-2 rounded-full border border-[#e2eaf5] bg-white px-4 py-2 text-sm font-semibold text-[#4a6080] transition hover:bg-[#eef4ff] hover:text-[#49a0e3]"
         >
           <LogOut className="h-4 w-4 shrink-0" />
           {isAuthenticating ? 'Гарч байна...' : 'Гарах'}

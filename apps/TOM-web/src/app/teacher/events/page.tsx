@@ -80,9 +80,7 @@ export default function EventsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [message, setMessage] = useState(
-    'Арга хэмжээний мэдээллийг ачааллаа.'
-  );
+  const [message, setMessage] = useState('Арга хэмжээний мэдээллийг ачааллаа.');
 
   const loadData = async (nextMessage?: string) => {
     const query = new URLSearchParams();
@@ -102,7 +100,10 @@ export default function EventsPage() {
 
     setEvents(eventData.events);
     setTeacherScopeName(eventData.teacherScopeName);
-    setMessage(nextMessage || `${eventData.teacherScopeName} нэр дээрх арга хэмжээнүүдийг шинэчиллээ.`);
+    setMessage(
+      nextMessage ||
+        `${eventData.teacherScopeName} нэр дээрх арга хэмжээнүүдийг шинэчиллээ.`
+    );
   };
 
   useEffect(() => {
@@ -166,7 +167,9 @@ export default function EventsPage() {
         method: 'PATCH',
         body: JSON.stringify({ status }),
       });
-      await loadData(`${event.title} төлөв ${eventStatusLabel[status]} боллоо.`);
+      await loadData(
+        `${event.title} төлөв ${eventStatusLabel[status]} боллоо.`
+      );
     }, 'Арга хэмжээний төлөв шинэчилж чадсангүй.');
   };
 
@@ -203,7 +206,7 @@ export default function EventsPage() {
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em]">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em]">
               {errorMessage
                 ? 'Синк алдаа'
                 : isLoading
@@ -223,7 +226,10 @@ export default function EventsPage() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <div className="rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm font-semibold text-[#4a6080]">
-              {teacherScopeName || user?.teacherProfileName || user?.name || 'Багш'}
+              {teacherScopeName ||
+                user?.teacherProfileName ||
+                user?.name ||
+                'Багш'}
             </div>
             <label className="rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm text-[#4a6080]">
               <span className="mr-2 font-semibold">Төлөв</span>
@@ -267,7 +273,9 @@ export default function EventsPage() {
             className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft"
           >
             <p className="text-sm font-semibold text-[#5f7697]">{item.label}</p>
-            <p className="mt-3 text-3xl font-bold text-[#17304f]">{item.value}</p>
+            <p className="mt-3 text-3xl font-bold text-[#17304f]">
+              {item.value}
+            </p>
           </article>
         ))}
       </section>
@@ -275,11 +283,17 @@ export default function EventsPage() {
       <section className="grid gap-6 xl:grid-cols-[1.2fr_1.5fr]">
         <article className="rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-6 shadow-soft">
           <div className="flex items-center gap-3">
-            <Plus className="h-5 w-5 text-[#1a3560]" />
+            <Plus className="h-5 w-5 text-[#49a0e3]" />
             <div>
-              <h2 className="text-xl font-semibold text-[#17304f]">Арга хэмжээ үүсгэх</h2>
+              <h2 className="text-xl font-semibold text-[#17304f]">
+                Арга хэмжээ үүсгэх
+              </h2>
               <p className="mt-1 text-sm text-[#6e84a3]">
-                {teacherScopeName || user?.teacherProfileName || user?.name || 'Багш'} нэр дээр шууд шинэ арга хэмжээ нэмнэ.
+                {teacherScopeName ||
+                  user?.teacherProfileName ||
+                  user?.name ||
+                  'Багш'}{' '}
+                нэр дээр шууд шинэ арга хэмжээ нэмнэ.
               </p>
             </div>
           </div>
@@ -288,7 +302,10 @@ export default function EventsPage() {
             <input
               value={form.title}
               onChange={(event) =>
-                setForm((current) => ({ ...current, title: event.target.value }))
+                setForm((current) => ({
+                  ...current,
+                  title: event.target.value,
+                }))
               }
               placeholder="Арга хэмжээний нэр"
               className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
@@ -318,7 +335,11 @@ export default function EventsPage() {
                 className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
               />
               <div className="flex items-center rounded-2xl border border-[#d8e4f4] bg-[#f6f9ff] px-4 py-3 text-sm font-semibold text-[#5c7395]">
-                Үүсгэх нэр: {teacherScopeName || user?.teacherProfileName || user?.name || 'Багш'}
+                Үүсгэх нэр:{' '}
+                {teacherScopeName ||
+                  user?.teacherProfileName ||
+                  user?.name ||
+                  'Багш'}
               </div>
             </div>
             <div className="grid gap-4 md:grid-cols-3">
@@ -361,7 +382,7 @@ export default function EventsPage() {
               type="button"
               onClick={() => void createEvent()}
               disabled={isSaving || !form.title.trim() || !form.eventDate}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-[#1a3560] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#24478a] disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-[#49a0e3] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Plus className="h-4 w-4" />
               Арга хэмжээ үүсгэх
@@ -371,9 +392,11 @@ export default function EventsPage() {
 
         <article className="rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-6 shadow-soft">
           <div className="flex items-center gap-3">
-            <CalendarDays className="h-5 w-5 text-[#1a3560]" />
+            <CalendarDays className="h-5 w-5 text-[#49a0e3]" />
             <div>
-              <h2 className="text-xl font-semibold text-[#17304f]">Арга хэмжээний хуваарь</h2>
+              <h2 className="text-xl font-semibold text-[#17304f]">
+                Арга хэмжээний хуваарь
+              </h2>
               <p className="mt-1 text-sm text-[#6e84a3]">
                 Багшийн талаас арга хэмжээний явц, төлөв, оролцоог удирдана.
               </p>
@@ -398,14 +421,19 @@ export default function EventsPage() {
                           {event.title}
                         </h3>
                         <StatusBadge
-                          type={event.status === 'cancelled' ? 'rejected' : event.status}
+                          type={
+                            event.status === 'cancelled'
+                              ? 'rejected'
+                              : event.status
+                          }
                           text={eventStatusLabel[event.status]}
                         />
                       </div>
                       <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-[#6e84a3]">
                         <span>{event.eventDate}</span>
                         <span>
-                          {event.startTime || '--:--'} - {event.endTime || '--:--'}
+                          {event.startTime || '--:--'} -{' '}
+                          {event.endTime || '--:--'}
                         </span>
                         <span className="inline-flex items-center gap-1">
                           <MapPin className="h-4 w-4" />
@@ -425,7 +453,8 @@ export default function EventsPage() {
                   </div>
 
                   <p className="mt-4 text-sm leading-6 text-[#526987]">
-                    {event.description || 'Энэ арга хэмжээнд тайлбар хараахан ороогүй.'}
+                    {event.description ||
+                      'Энэ арга хэмжээнд тайлбар хараахан ороогүй.'}
                   </p>
 
                   <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
@@ -443,7 +472,7 @@ export default function EventsPage() {
                         disabled={isSaving || event.status === status}
                         className={`rounded-full px-3 py-2 font-semibold transition ${
                           event.status === status
-                            ? 'bg-[#1a3560] text-white'
+                            ? 'bg-[#49a0e3] text-white'
                             : 'border border-[#d8e4f4] text-[#17304f] hover:bg-[#eef4ff]'
                         } disabled:cursor-not-allowed disabled:opacity-50`}
                       >

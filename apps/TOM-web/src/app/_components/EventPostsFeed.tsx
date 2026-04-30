@@ -21,7 +21,9 @@ async function readJson<T>(response: Response) {
     | null;
 
   if (!response.ok) {
-    throw new Error(data?.error || `Request failed with status ${response.status}.`);
+    throw new Error(
+      data?.error || `Request failed with status ${response.status}.`
+    );
   }
 
   return data as T;
@@ -70,7 +72,9 @@ export function EventPostsFeed({ eventId, posts, setPosts, onError }: Props) {
       );
       setDrafts((current) => ({ ...current, [postId]: '' }));
     } catch (error) {
-      onError?.(error instanceof Error ? error.message : 'Comment илгээж чадсангүй.');
+      onError?.(
+        error instanceof Error ? error.message : 'Comment илгээж чадсангүй.'
+      );
     } finally {
       setPendingCommentPostId('');
     }
@@ -96,7 +100,9 @@ export function EventPostsFeed({ eventId, posts, setPosts, onError }: Props) {
         )
       );
     } catch (error) {
-      onError?.(error instanceof Error ? error.message : 'Like дарж чадсангүй.');
+      onError?.(
+        error instanceof Error ? error.message : 'Like дарж чадсангүй.'
+      );
     } finally {
       setPendingLikePostId('');
     }
@@ -150,7 +156,9 @@ export function EventPostsFeed({ eventId, posts, setPosts, onError }: Props) {
                 className="inline-flex items-center gap-2 rounded-full border border-[#d7e4f4] bg-white px-4 py-2 text-xs font-semibold text-[#4a6080] transition hover:bg-[#eef4ff] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Heart
-                  className={post.likedByMe ? 'h-4 w-4 text-[#e11d48]' : 'h-4 w-4'}
+                  className={
+                    post.likedByMe ? 'h-4 w-4 text-[#e11d48]' : 'h-4 w-4'
+                  }
                   fill={post.likedByMe ? '#e11d48' : 'none'}
                 />
                 {post.likeCount}
@@ -180,7 +188,9 @@ export function EventPostsFeed({ eventId, posts, setPosts, onError }: Props) {
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-[#6f86a7]">Эхний comment бичээрэй.</p>
+                <p className="text-xs text-[#6f86a7]">
+                  Эхний comment бичээрэй.
+                </p>
               )}
 
               <div className="flex items-end gap-2">
@@ -200,7 +210,7 @@ export function EventPostsFeed({ eventId, posts, setPosts, onError }: Props) {
                   type="button"
                   onClick={() => void submitComment(post.id)}
                   disabled={isSending || !draft.trim()}
-                  className="inline-flex items-center gap-2 rounded-full bg-[#1a3560] px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#49a0e3] px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <Send className="h-4 w-4" />
                   {isSending ? 'Илгээж байна...' : 'Илгээх'}
@@ -213,4 +223,3 @@ export function EventPostsFeed({ eventId, posts, setPosts, onError }: Props) {
     </section>
   );
 }
-

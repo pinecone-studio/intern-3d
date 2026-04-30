@@ -2,9 +2,23 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowRight, CalendarDays, Sparkles, Trophy, Users } from 'lucide-react';
+import {
+  ArrowRight,
+  CalendarDays,
+  Sparkles,
+  Trophy,
+  Users,
+} from 'lucide-react';
 
-import type { Badge, Club, ClubRequest, SchoolEvent, TomCurrentUser, UserBadge, XpLog } from '@/lib/tom-types';
+import type {
+  Badge,
+  Club,
+  ClubRequest,
+  SchoolEvent,
+  TomCurrentUser,
+  UserBadge,
+  XpLog,
+} from '@/lib/tom-types';
 
 type StudentDashboardResponse = {
   user: TomCurrentUser;
@@ -65,9 +79,13 @@ const DAY_NAME_TO_INDEX: Record<string, number> = {
 };
 
 async function readJson<T>(response: Response) {
-  const data = (await response.json().catch(() => null)) as ({ error?: string } & T) | null;
+  const data = (await response.json().catch(() => null)) as
+    | ({ error?: string } & T)
+    | null;
   if (!response.ok) {
-    throw new Error(data?.error || `Хүсэлт амжилтгүй боллоо (код: ${response.status}).`);
+    throw new Error(
+      data?.error || `Хүсэлт амжилтгүй боллоо (код: ${response.status}).`
+    );
   }
   return data as T;
 }
@@ -118,9 +136,13 @@ export default function StudentDashboard() {
   const [upcomingEvents, setUpcomingEvents] = useState<SchoolEvent[]>([]);
   const [joinedClubIds, setJoinedClubIds] = useState<string[]>([]);
   const [xpTotal, setXpTotal] = useState(0);
-  const [earnedBadges, setEarnedBadges] = useState<Array<UserBadge & { badge: Badge }>>([]);
+  const [earnedBadges, setEarnedBadges] = useState<
+    Array<UserBadge & { badge: Badge }>
+  >([]);
   const [totalBadgeCount, setTotalBadgeCount] = useState(0);
-  const [activity, setActivity] = useState<StudentDashboardResponse['activity']>([]);
+  const [activity, setActivity] = useState<
+    StudentDashboardResponse['activity']
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [, setErrorMessage] = useState('');
 
@@ -131,7 +153,9 @@ export default function StudentDashboard() {
       setIsLoading(true);
       setErrorMessage('');
       try {
-        const data = await apiRequest<StudentDashboardResponse>('/api/students/dashboard');
+        const data = await apiRequest<StudentDashboardResponse>(
+          '/api/students/dashboard'
+        );
         if (!cancelled) {
           setClubs(data.clubs);
           setEvents(data.events);
@@ -144,7 +168,11 @@ export default function StudentDashboard() {
         }
       } catch (error) {
         if (!cancelled) {
-          setErrorMessage(error instanceof Error ? error.message : 'Өгөгдлийг ачаалж чадсангүй.');
+          setErrorMessage(
+            error instanceof Error
+              ? error.message
+              : 'Өгөгдлийг ачаалж чадсангүй.'
+          );
         }
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -158,14 +186,20 @@ export default function StudentDashboard() {
   }, []);
 
   const myClubs = useMemo(
-    () => clubs.slice().sort((left, right) => left.name.localeCompare(right.name)).slice(0, 5),
+    () =>
+      clubs
+        .slice()
+        .sort((left, right) => left.name.localeCompare(right.name))
+        .slice(0, 5),
     [clubs]
   );
 
   const nextMeeting = useMemo(() => {
     const upcoming = events
       .filter((event) => event.status === 'upcoming')
-      .sort((left, right) => sortByDateAscending(left.eventDate, right.eventDate));
+      .sort((left, right) =>
+        sortByDateAscending(left.eventDate, right.eventDate)
+      );
     return upcoming[0] ?? null;
   }, [events]);
 
@@ -195,7 +229,9 @@ export default function StudentDashboard() {
           id: `event-${event.id}`,
           kind: 'event' as const,
           title: event.title,
-          meta: [event.startTime, event.location].filter(Boolean).join(' · ') || 'Арга хэмжээ',
+          meta:
+            [event.startTime, event.location].filter(Boolean).join(' · ') ||
+            'Арга хэмжээ',
         }));
 
       return {
@@ -218,11 +254,15 @@ export default function StudentDashboard() {
       <section className="grid gap-5">
         <article className="rounded-[28px] border border-[#dce7f8] bg-white p-5 shadow-soft">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex items-center gap-2 text-[#183153]">
+            <div className="flex items-center gap-4 text-[#183153]">
               <CalendarDays className="h-5 w-5 text-[color:var(--primary)]" />
               <div>
-                <h2 className="text-md font-semibold">Энэ долоо хоногийн календарь</h2>
-                <p className="text-sm text-[#6f86a7]">Клубийн өдрүүд болон event-үүдийг 7 хоногоор харуулна.</p>
+                <h2 className="text-md font-semibold">
+                  Энэ долоо хоногийн календарь
+                </h2>
+                <p className="text-sm text-[#6f86a7]">
+                  Клубийн өдрүүд болон event-үүдийг 7 хоногоор харуулна.
+                </p>
               </div>
             </div>
             <div className="rounded-2xl bg-[color:var(--surface)] px-4 py-3 text-sm text-[#183153]">
@@ -243,29 +283,41 @@ export default function StudentDashboard() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-[#183153]">{day.label}</p>
+                    <p className="text-sm font-semibold text-[#183153]">
+                      {day.label}
+                    </p>
                     <p className="text-xs text-[#6f86a7]">{day.dateLabel}</p>
                   </div>
                   {day.isToday ? (
-                    <span className="rounded-full bg-[color:var(--primary)] px-2 py-1 text-[11px] font-semibold text-white">Өнөөдөр</span>
+                    <span className="rounded-full bg-[color:var(--primary)] px-2 py-1 text-[11px] font-semibold text-white">
+                      Өнөөдөр
+                    </span>
                   ) : null}
                 </div>
 
                 <div className="mt-4 flex flex-1 flex-col gap-2">
                   {day.items.length === 0 ? (
                     <p className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-[#c8d8ee] px-3 py-4 text-center text-xs text-[#6f86a7]">
-                      Төлөвлөгөө алга
+                      Төлөвлөгөө байхгүй
                     </p>
                   ) : (
                     day.items.map((item) => (
                       <div
                         key={item.id}
                         className={`rounded-2xl px-3 py-3 text-xs ${
-                          item.kind === 'club' ? 'bg-white text-[#183153]' : 'bg-[#183153] text-white'
+                          item.kind === 'club'
+                            ? 'bg-white text-[#183153]'
+                            : 'bg-[#183153] text-white'
                         }`}
                       >
                         <p className="font-semibold">{item.title}</p>
-                        <p className={item.kind === 'club' ? 'mt-1 text-[#6f86a7]' : 'mt-1 text-white/75'}>
+                        <p
+                          className={
+                            item.kind === 'club'
+                              ? 'mt-1 text-[#6f86a7]'
+                              : 'mt-1 text-white/75'
+                          }
+                        >
                           {item.meta}
                         </p>
                       </div>
@@ -285,14 +337,31 @@ export default function StudentDashboard() {
             <h2 className="text-md font-semibold">Миний клубүүд</h2>
           </div>
           <div className="mt-4 space-y-3">
-            {isLoading ? <p className="text-sm text-[#6f86a7]">Ачаалж байна...</p> : myClubs.length === 0 ? <p className="text-sm text-[#6f86a7]">Одоогоор таны нэгдсэн клуб алга байна.</p> : myClubs.map((club) => (
-              <div key={club.id} className="flex items-center justify-between rounded-2xl bg-[color:var(--surface)] p-4">
-                <p className="font-semibold text-[#183153] text-md">{club.name}</p>
-          
-              </div>
-            ))}
+            {isLoading ? (
+              <p className="text-sm text-[#6f86a7]">Ачаалж байна...</p>
+            ) : myClubs.length === 0 ? (
+              <p className="text-sm text-[#6f86a7]">
+                Одоогоор танд нэгдсэн клуб алга байна.
+              </p>
+            ) : (
+              myClubs.map((club) => (
+                <div
+                  key={club.id}
+                  className="flex items-center justify-between rounded-2xl bg-[color:var(--surface)] p-4"
+                >
+                  <p className="font-semibold text-[#183153] text-md">
+                    {club.name}
+                  </p>
+                </div>
+              ))
+            )}
           </div>
-          <Link href="/students/clubs" className="mt-auto inline-flex items-center gap-1 self-end pt-4 text-sm font-semibold text-[color:var(--primary)] hover:underline">Бүгдийг харах <ArrowRight className="h-4 w-4" /></Link>
+          <Link
+            href="/students/clubs"
+            className="mt-auto inline-flex items-center gap-1 self-end pt-4 text-sm font-semibold text-[color:var(--primary)] hover:underline"
+          >
+            Бүгдийг харах <ArrowRight className="h-4 w-4" />
+          </Link>
         </article>
 
         <article className="flex h-full flex-col rounded-[28px] border border-[#dce7f8] bg-white p-5 shadow-soft">
@@ -301,14 +370,31 @@ export default function StudentDashboard() {
             <h2 className="text-md font-semibold">Дараагийн уулзалт</h2>
           </div>
           <div className="mt-4 rounded-2xl bg-[color:var(--surface)] px-4 py-4">
-            {isLoading ? <p className="text-sm text-[#6f86a7]">Ачаалж байна...</p> : nextMeeting ? (
+            {isLoading ? (
+              <p className="text-sm text-[#6f86a7]">Ачаалж байна...</p>
+            ) : nextMeeting ? (
               <>
-                <p className="text-base font-semibold text-[#183153]">{nextMeeting.title}</p>
-                <p className="mt-1 text-sm text-[#6f86a7]">{nextMeeting.eventDate}{nextMeeting.startTime ? ` · ${nextMeeting.startTime}` : ''}{nextMeeting.location ? ` · ${nextMeeting.location}` : ''}</p>
+                <p className="text-base font-semibold text-[#183153]">
+                  {nextMeeting.title}
+                </p>
+                <p className="mt-1 text-sm text-[#6f86a7]">
+                  {nextMeeting.eventDate}
+                  {nextMeeting.startTime ? ` · ${nextMeeting.startTime}` : ''}
+                  {nextMeeting.location ? ` · ${nextMeeting.location}` : ''}
+                </p>
               </>
-            ) : <p className="text-sm text-[#6f86a7]">Төлөвлөгдсөн уулзалт алга байна.</p>}
+            ) : (
+              <p className="text-sm text-[#6f86a7]">
+                Төлөвлөгдсөн уулзалт алга байна.
+              </p>
+            )}
           </div>
-          <Link href="/students/events" className="mt-auto inline-flex self-end pt-4 text-sm font-semibold text-[color:var(--primary)] hover:underline">Арга хэмжээ рүү очих <ArrowRight className="h-4 w-4" /></Link>
+          <Link
+            href="/students/events"
+            className="mt-auto inline-flex self-end pt-4 text-sm font-semibold text-[color:var(--primary)] hover:underline"
+          >
+            Арга хэмжээ рүү очих <ArrowRight className="h-4 w-4" />
+          </Link>
         </article>
 
         <article className="flex h-full flex-col rounded-[28px] border border-[#dce7f8] bg-white p-5 shadow-soft">
@@ -319,9 +405,17 @@ export default function StudentDashboard() {
           <div className="mt-4 rounded-2xl bg-[color:var(--surface)] px-4 py-4">
             <p className="text-sm text-[#6f86a7]">Нийт XP</p>
             <p className="mt-1 text-2xl font-bold text-[#183153]">{xpTotal}</p>
-            <p className="mt-2 text-xs text-[#6f86a7]">Badge: {earnedBadges.length}/{totalBadgeCount}</p>
+            <p className="mt-2 text-xs text-[#6f86a7]">
+              Badge: {earnedBadges.length}/{totalBadgeCount}
+            </p>
           </div>
-          <Link href="/students/gamification" className="mt-auto inline-flex self-end pt-4 text-sm font-semibold text-[color:var(--primary)] hover:underline">XP болон badge дэлгэрэнгүй<ArrowRight className="h-4 w-4" /></Link>
+          <Link
+            href="/students/gamification"
+            className="mt-auto inline-flex self-end pt-4 text-sm font-semibold text-[color:var(--primary)] hover:underline"
+          >
+            XP болон badge дэлгэрэнгүй
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </article>
       </section>
 
@@ -332,12 +426,25 @@ export default function StudentDashboard() {
             <h2 className="text-md font-semibold">Сүүлийн үйл ажиллагаа</h2>
           </div>
           <div className="mt-4 space-y-3">
-            {activity.length === 0 ? <p className="text-sm text-[#6f86a7]">Одоогоор activity алга байна.</p> : activity.map((item) => (
-              <div key={item.id} className="rounded-2xl bg-[color:var(--surface)] px-4 py-3">
-                <p className="text-sm font-semibold text-[#183153]">{item.title}</p>
-                <p className="mt-1 text-xs leading-5 text-[#6f86a7]">{item.detail}</p>
-              </div>
-            ))}
+            {activity.length === 0 ? (
+              <p className="text-sm text-[#6f86a7]">
+                Одоогоор activity алга байна.
+              </p>
+            ) : (
+              activity.map((item) => (
+                <div
+                  key={item.id}
+                  className="rounded-2xl bg-[color:var(--surface)] px-4 py-3"
+                >
+                  <p className="text-sm font-semibold text-[#183153]">
+                    {item.title}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-[#6f86a7]">
+                    {item.detail}
+                  </p>
+                </div>
+              ))
+            )}
           </div>
         </article>
 
@@ -348,14 +455,32 @@ export default function StudentDashboard() {
           </div>
           <div className="mt-4 space-y-3">
             {upcomingEvents.slice(0, 5).map((event) => (
-              <div key={event.id} className="rounded-2xl bg-[color:var(--surface)] px-4 py-3">
-                <p className="text-sm font-semibold text-[#183153]">{event.title}</p>
-                <p className="mt-1 text-xs leading-5 text-[#6f86a7]">{event.eventDate}{event.startTime ? ` · ${event.startTime}` : ''}{event.location ? ` · ${event.location}` : ''}</p>
+              <div
+                key={event.id}
+                className="rounded-2xl bg-[color:var(--surface)] px-4 py-3"
+              >
+                <p className="text-sm font-semibold text-[#183153]">
+                  {event.title}
+                </p>
+                <p className="mt-1 text-xs leading-5 text-[#6f86a7]">
+                  {event.eventDate}
+                  {event.startTime ? ` · ${event.startTime}` : ''}
+                  {event.location ? ` · ${event.location}` : ''}
+                </p>
               </div>
             ))}
-            {upcomingEvents.length === 0 ? <p className="text-sm text-[#6f86a7]">Удахгүй event алга байна.</p> : null}
+            {upcomingEvents.length === 0 ? (
+              <p className="text-sm text-[#6f86a7]">
+                Удахгүй event алга байна.
+              </p>
+            ) : null}
           </div>
-          <Link href="/students/events" className="mt-4 inline-flex text-sm font-semibold text-[color:var(--primary)] hover:underline">Бүх event харах</Link>
+          <Link
+            href="/students/events"
+            className="mt-4 inline-flex text-sm font-semibold text-[color:var(--primary)] hover:underline"
+          >
+            Бүх event харах
+          </Link>
         </article>
       </section>
     </div>
