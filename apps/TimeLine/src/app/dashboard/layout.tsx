@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRole } from '@/lib/role-context'
 import { DashboardTopbar } from '@/components/layout/dashboard-topbar'
+import { PineconeLoader } from '@/components/ui/pinecone-loader'
 import type { User } from '@/lib/types'
 
 type UsersResponse = {
@@ -49,7 +50,7 @@ export default function DashboardLayout({
   if (loading || bootstrapping || !role) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <PineconeLoader />
       </div>
     )
   }

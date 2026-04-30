@@ -6,6 +6,7 @@ import { eventOccursInWeekOnDay, getEventLabel, getEventTone } from '@/app/dashb
 import { clampEventToPlanningDay, slotToTime, timeToMinutes } from '@/app/dashboard/_lib/scheduler-time-utils'
 import type { Selection } from '@/app/dashboard/_lib/scheduler-types'
 import { RoomWeeklySchedule } from '@/app/dashboard/_components/room-weekly-schedule'
+import { PineconeLoader } from '@/components/ui/pinecone-loader'
 import type { Room, ScheduleEvent } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
@@ -80,7 +81,7 @@ export function SchedulerWeekView({ errorMessage, events, loading, onContextMenu
       </div>
 
       {loading && rooms.length === 0 ? (
-        <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">Ачаалж байна...</div>
+        <PineconeLoader className="h-64" />
       ) : errorMessage ? (
         <div className="m-4 rounded-md border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">{errorMessage}</div>
       ) : rooms.length === 0 ? (
