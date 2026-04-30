@@ -1,13 +1,11 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import {
   AlertCircle,
   Calendar,
   CheckCircle2,
   ClipboardList,
-  Plus,
   ShieldCheck,
   XCircle,
 } from 'lucide-react';
@@ -62,12 +60,12 @@ export default function TeacherDashboard() {
     thresholdReachedRequests: 0,
   });
   const [teacherScopeName, setTeacherScopeName] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState(
+  const [, setMessage] = useState(
     'Багшийн самбарын шууд өгөгдөлд холбогдлоо.'
   );
-  const [errorMessage, setErrorMessage] = useState('');
+  const [, setErrorMessage] = useState('');
 
   const loadData = async (nextMessage?: string) => {
     const data = await apiRequest<TeacherDashboardResponse>('/api/teacher/dashboard');
@@ -223,43 +221,6 @@ export default function TeacherDashboard() {
   return (
     <div className="min-h-screen font-sans text-[color:var(--foreground)]">
       <main className="container mx-auto space-y-8 ">
-        <section
-          className={`shadow-soft rounded-3xl border px-5 py-4 ${
-            errorMessage
-              ? 'border-[#ffd2d5] bg-[#fff7f8] text-[#b23a49]'
-              : 'border-[color:var(--border)] bg-[color:var(--card)] text-[color:var(--muted-foreground)]'
-          }`}
-        >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em]">
-                {errorMessage
-                  ? 'Синк алдаа'
-                  : isLoading
-                  ? 'Шууд өгөгдөл ачаалж байна'
-                  : isSaving
-                  ? 'Өөрчлөлт хадгалж байна'
-                  : 'Холбогдсон'}
-              </p>
-            <p className="mt-1 text-sm">
-              {errorMessage ||
-                (isLoading
-                  ? 'Cloudflare D1 дээрх таны клуб, хүсэлтийн өгөгдлийг ачаалж байна.'
-                  : isSaving
-                  ? 'Сүүлд хийсэн багшийн үйлдлийг хадгалж байна.'
-                  : message)}
-            </p>
-          </div>
-            <Link
-              href="/teacher/clubs"
-              className="inline-flex items-center gap-2 rounded-full bg-[color:var(--primary)] px-4 py-2 text-sm font-medium text-[color:var(--primary-foreground)] shadow transition-colors hover:opacity-90"
-            >
-              <Plus className="h-4 w-4" />
-              Клубүүд рүү очих
-            </Link>
-          </div>
-        </section>
-
         <section className="grid gap-4 md:grid-cols-4">
           {stats.map((stat) => {
             const Icon = stat.icon;
