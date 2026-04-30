@@ -6,7 +6,6 @@ import { eventOccursInWeekOnDay, getEventLabel, getEventTone } from '@/app/dashb
 import { clampEventToPlanningDay, slotToTime, timeToMinutes } from '@/app/dashboard/_lib/scheduler-time-utils'
 import type { Selection } from '@/app/dashboard/_lib/scheduler-types'
 import { RoomWeeklySchedule } from '@/app/dashboard/_components/room-weekly-schedule'
-import { Badge } from '@/components/ui/badge'
 import type { Room, ScheduleEvent } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
@@ -68,7 +67,6 @@ export function SchedulerWeekView({ errorMessage, events, loading, onContextMenu
                 <p className="text-sm font-semibold leading-5 text-foreground">{day.label}</p>
                 <p className="text-[11px] text-muted-foreground">{weekDates[index]}</p>
               </div>
-              <Badge variant="outline" className="rounded-md text-[10px]">{day.short}</Badge>
             </div>
             <div className="relative mt-1.5 h-4 text-[10px] text-muted-foreground">
               {VISIBLE_HOUR_MARKS.map((hour) => (
