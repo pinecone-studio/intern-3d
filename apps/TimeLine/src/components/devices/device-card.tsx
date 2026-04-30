@@ -5,27 +5,19 @@ import { cn } from '@/lib/utils'
 
 interface DeviceCardProps {
   device: Device
-  isUserDevice?: boolean
 }
 
-export function DeviceCard({ device, isUserDevice }: DeviceCardProps) {
+export function DeviceCard({ device }: DeviceCardProps) {
   const statusLabels = {
     available: 'Сул',
-    assigned: isUserDevice ? 'Танд хуваарилагдсан' : 'Хуваарилагдсан',
+    assigned: 'Хуваарилагдсан',
     maintenance: 'Засвартай',
   }
 
   return (
-    <Card 
-      className={cn(
-        'rounded-md border-border p-3 shadow-none',
-        isUserDevice && 'bg-muted'
-      )}
-    >
+    <Card className="rounded-md border-border p-3 shadow-none">
       <div className="flex items-start gap-3">
-        <div className={cn(
-          'flex h-10 w-10 items-center justify-center rounded-md border border-border bg-background text-muted-foreground'
-        )}>
+        <div className={cn('flex h-10 w-10 items-center justify-center rounded-md border border-border bg-background text-muted-foreground')}>
           <Monitor className="h-5 w-5" />
         </div>
         <div className="flex-1 min-w-0">
@@ -33,11 +25,6 @@ export function DeviceCard({ device, isUserDevice }: DeviceCardProps) {
             <h4 className="font-semibold text-foreground truncate">
               {device.name}
             </h4>
-            {isUserDevice && (
-              <span className="shrink-0 rounded-md border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                Таных
-              </span>
-            )}
           </div>
           <p className="text-xs text-muted-foreground">
             Анги: {device.roomNumber}
@@ -54,6 +41,6 @@ export function DeviceCard({ device, isUserDevice }: DeviceCardProps) {
           </div>
         </div>
       </div>
-    </Card>////////
+    </Card>
   )
 }

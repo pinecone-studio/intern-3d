@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRole } from '@/lib/role-context'
 import { Badge } from '@/components/ui/badge'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { Monitor } from 'lucide-react'
 import type { User } from '@/lib/types'
 
 type UsersResponse = {
@@ -27,7 +26,7 @@ const createClockDisplay = (date: Date): ClockDisplay => ({
 })
 
 export function DashboardTopbar() {
-  const { role, user, loginAs } = useRole()
+  const { user, loginAs } = useRole()
   const [clockDisplay, setClockDisplay] = useState<ClockDisplay | null>(null)
   const [users, setUsers] = useState<User[]>([])
   const [loadingUsers, setLoadingUsers] = useState(true)
@@ -104,12 +103,6 @@ export function DashboardTopbar() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {role === 'student' && user?.assignedDevice && (
-              <Badge variant="outline" className="rounded-full px-3 py-1 text-xs font-medium">
-                <Monitor className="mr-1.5 h-3.5 w-3.5" />
-                Таны iMac: {user.assignedDevice.name}
-              </Badge>
-            )}
             <Badge variant="outline" className="text-xs font-mono">
               {formattedDate} {formattedTime}
             </Badge>
