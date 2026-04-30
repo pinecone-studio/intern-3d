@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { PineconeLoader } from '@/components/ui/pinecone-loader'
 
 export default function HomePage() {
   const router = useRouter()
@@ -12,7 +13,7 @@ export default function HomePage() {
 
   return (
     <div className="flex h-screen items-center justify-center">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <PineconeLoader />
     </div>
   )
 }
