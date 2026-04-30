@@ -1,3 +1,7 @@
+'use client';
+
+import { useState } from 'react';
+
 const clubs = [
   {
     status: 'Open spots',
@@ -37,6 +41,17 @@ const rules = [
 ] as const;
 
 export default function StudentsPage() {
+  const [activeRequest, setActiveRequest] = useState<string | null>(null);
+  const [expandedClub, setExpandedClub] = useState<string | null>(clubs[0].name);
+
+  const handleRequest = (clubName: string) => {
+    setActiveRequest(clubName);
+  };
+
+  const toggleDetails = (clubName: string) => {
+    setExpandedClub((current) => (current === clubName ? null : clubName));
+  };
+
   return (
     <main className="student-shell">
       <section className="student-frame">
@@ -52,10 +67,11 @@ export default function StudentsPage() {
 
           <div className="student-highlight">
             <p className="section-label">Current status</p>
-            <strong>No request yet</strong>
+            <strong>{activeRequest ? '1 active request' : 'No request yet'}</strong>
             <p>
-              Request yavuulaagui baina. Songolt hiisnii daraa teacher review
-              hesegt orno.
+              {activeRequest
+                ? `${activeRequest} ruu huselt yavuulsan baina. Odoo teacher review hesegt shiljij baina.`
+                : 'Request yavuulaagui baina. Songolt hiisnii daraa teacher review hesegt orno.'}
             </p>
           </div>
         </header>
@@ -88,19 +104,42 @@ export default function StudentsPage() {
                 </dl>
 
                 <div className="student-actions">
-                  <button type="button" className="student-primary-button">
+                  <button
+                    type="button"
+                    className="student-primary-button"
+                    onClick={() => handleRequest(club.name)}
+                    disabled={activeRequest !== null && activeRequest !== club.name}
+                  >
                     <span>Send request</span>
                     <span className="student-button-icon" aria-hidden="true">
-                      →
+                      {activeRequest === club.name ? '✓' : '→'}
                     </span>
                   </button>
-                  <button type="button" className="student-secondary-button">
-                    <span>View details</span>
+                  <button
+                    type="button"
+                    className="student-secondary-button"
+                    onClick={() => toggleDetails(club.name)}
+                    aria-expanded={expandedClub === club.name}
+                  >
+                    <span>
+                      {expandedClub === club.name ? 'Hide details' : 'View details'}
+                    </span>
                     <span className="student-button-icon" aria-hidden="true">
-                      +
+                      {expandedClub === club.name ? '−' : '+'}
                     </span>
                   </button>
                 </div>
+
+                {expandedClub === club.name ? (
+                  <section className="student-detail-panel">
+                    <p className="student-detail-label">Request preview</p>
+                    <p className="student-detail-copy">
+                      This request goes to {club.teacher} for review. Students can
+                      keep only one active request at a time, so sending this will
+                      lock the rest until the teacher responds.
+                    </p>
+                  </section>
+                ) : null}
               </article>
             ))}
           </div>

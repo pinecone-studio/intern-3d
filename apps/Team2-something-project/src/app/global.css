@@ -1113,6 +1113,27 @@ select {
   font-weight: 800;
 }
 
+.student-primary-button,
+.student-secondary-button {
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    opacity 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.student-primary-button:hover,
+.student-secondary-button:hover {
+  transform: translateY(-1px);
+}
+
+.student-primary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.56;
+  transform: none;
+  box-shadow: none;
+}
+
 .student-primary-button {
   border: 0;
   background: linear-gradient(135deg, #18365f, #2d5796);
@@ -1148,6 +1169,29 @@ select {
 
 .student-secondary-button .student-button-icon {
   background: rgba(31, 71, 120, 0.1);
+}
+
+.student-detail-panel {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border: 1px solid rgba(22, 48, 78, 0.1);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(237, 244, 255, 0.9), rgba(255, 255, 255, 0.96));
+}
+
+.student-detail-label {
+  margin: 0;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #6d84a3;
+}
+
+.student-detail-copy {
+  margin: 10px 0 0;
+  color: #4e607a;
+  line-height: 1.7;
 }
 
 .student-sidebar {
