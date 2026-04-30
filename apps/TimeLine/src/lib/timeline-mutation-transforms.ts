@@ -80,7 +80,6 @@ export function toScheduleBlockInsert(input: ScheduleEventInput, id: string, now
   return {
     id,
     roomId: input.roomId,
-    cohortId: null,
     type: toBlockEventType(input.type),
     title: input.title,
     description: normalizeOptionalText(input.notes),

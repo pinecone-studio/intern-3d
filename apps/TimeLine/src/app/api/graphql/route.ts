@@ -1,79 +1,9 @@
 import { NextResponse } from 'next/server'
-import { buildSchema, graphql } from 'graphql'
+import { graphql } from 'graphql'
 import { createScheduleEvent, deleteScheduleEvent, getRoomDetail, listRooms, listScheduleEvents, updateScheduleEvent } from '@/lib/timeline-rest'
+import { timelineGraphqlSchema } from '@/app/api/graphql/schema'
 import { getTimelineSessionUserIdFromRequest } from '@/lib/session'
 import type { ScheduleEventInput } from '@/lib/timeline-mutations'
-
-const schema = buildSchema(`
-  input ScheduleEventInput {
-    roomId: ID!
-    title: String!
-    type: String!
-    startTime: String!
-    endTime: String!
-    daysOfWeek: [Int!]!
-    date: String
-    isOverride: Boolean
-    instructor: String
-    notes: String
-    validFrom: String
-    validUntil: String
-  }
-
-  type Device {
-    id: ID!
-    name: String!
-    roomId: ID!
-    roomNumber: String!
-    status: String!
-    assignedTo: String
-  }
-
-  type ScheduleEvent {
-    id: ID!
-    roomId: ID!
-    title: String!
-    type: String!
-    startTime: String!
-    endTime: String!
-    dayOfWeek: Int!
-    daysOfWeek: [Int!]!
-    date: String
-    isOverride: Boolean!
-    instructor: String
-    notes: String
-    validFrom: String
-    validUntil: String
-  }
-
-  type Room {
-    id: ID!
-    number: String!
-    floor: Int!
-    type: String!
-    status: String!
-    currentEvent: ScheduleEvent
-    nextEvent: ScheduleEvent
-    devices: [Device!]!
-  }
-
-  type RoomDetail {
-    room: Room!
-    events: [ScheduleEvent!]!
-  }
-
-  type Query {
-    rooms(floor: Int, status: String, search: String): [Room!]!
-    events(roomId: ID, dayOfWeek: Int, instructor: String): [ScheduleEvent!]!
-    room(roomId: ID!): RoomDetail
-  }
-
-  type Mutation {
-    createScheduleEvent(input: ScheduleEventInput!): RoomDetail
-    updateScheduleEvent(id: ID!, input: ScheduleEventInput!): RoomDetail
-    deleteScheduleEvent(id: ID!): Boolean!
-  }
-`)
 
 type QueryArgs = {
   floor?: number | null
@@ -143,7 +73,7 @@ export async function POST(request: Request) {
   }
 
   const result = await graphql({
-    schema,
+    schema: timelineGraphqlSchema,
     source: payload.query,
     rootValue: createRoot(currentUserId),
     variableValues: payload.variables,

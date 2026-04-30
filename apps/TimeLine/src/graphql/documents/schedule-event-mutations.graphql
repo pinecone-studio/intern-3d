@@ -1,0 +1,19 @@
+mutation CreateScheduleEvent($input: ScheduleEventInput!) {
+  createScheduleEvent(input: $input) {
+    room {
+      id
+    }
+  }
+}
+
+mutation UpdateScheduleEvent($id: ID!, $input: ScheduleEventInput!) {
+  updateScheduleEvent(id: $id, input: $input) {
+    room {
+      id
+    }
+  }
+}
+
+mutation DeleteScheduleEvent($id: ID!) {
+  deleteScheduleEvent(id: $id)
+}

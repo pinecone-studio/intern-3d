@@ -41,6 +41,24 @@
         "command": "npm run cf-typegen"
       }
     },
+    "db-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/TimeLine",
+        "command": "npm run db:generate"
+      }
+    },
+    "graphql-codegen": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/TimeLine",
+        "command": "npm run graphql:codegen"
+      }
+    },
+    "codegen": {
+      "executor": "nx:noop",
+      "dependsOn": ["db-generate", "graphql-codegen"]
+    },
     "d1-migrate-local": {
       "executor": "nx:run-commands",
       "options": {
