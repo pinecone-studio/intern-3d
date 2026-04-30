@@ -22,7 +22,7 @@ type SchedulerCalendarSidebarProps = {
 }
 
 export function SchedulerCalendarSidebar({ calendarMonth, focusedDate, isCalendarOpen, monthDays, onSelectDay, onToday, setCalendarMonth, summaryContent, viewMode, weekStart }: SchedulerCalendarSidebarProps) {
-  const helperText = viewMode === 'day' ? 'Өдөр сонгоод баруун талын timeline-г шинэчилнэ' : viewMode === 'month' ? 'Өдөр дарвал өдрийн харагдац руу орно' : viewMode === 'year' ? 'Сар дарвал сарын харагдац руу шилжинэ' : null
+  const helperText = viewMode === 'month' ? 'Өдөр дарвал өдрийн харагдац руу орно' : viewMode === 'year' ? 'Сар дарвал сарын харагдац руу шилжинэ' : null
 
   return (
     <aside className={cn(isCalendarOpen ? 'block' : 'hidden', 'self-stretch rounded-2xl border border-[#e5e7f3] bg-[#fbfbfe] p-3 shadow-sm dark:border-[#2c3149] dark:bg-[#171b27] xl:block')}>
