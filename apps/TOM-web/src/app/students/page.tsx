@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { Bell, CalendarDays, Sparkles, Trophy, Users } from 'lucide-react';
+import { ArrowRight, Bell, CalendarDays, Sparkles, Trophy, Users } from 'lucide-react';
 
 import { useTomSession } from '@/app/_providers/tom-session-provider';
 import type { Badge, Club, ClubRequest, SchoolEvent, TomCurrentUser, UserBadge, XpLog } from '@/lib/tom-types';
@@ -149,26 +149,26 @@ export default function StudentDashboard() {
   return (
     <div className="space-y-6">
       <section className="grid gap-5 lg:grid-cols-4">
-        <article className="rounded-[28px] border border-[#dce7f8] bg-white p-5 shadow-soft">
+        <article className="flex h-full flex-col rounded-[28px] border border-[#dce7f8] bg-white p-5 shadow-soft">
           <div className="flex items-center gap-2 text-[#183153]">
             <Users className="h-5 w-5 text-[color:var(--primary)]" />
-            <h2 className="text-lg font-semibold">Миний клубүүд</h2>
+            <h2 className="text-md font-semibold">Миний клубүүд</h2>
           </div>
           <div className="mt-4 space-y-3">
             {isLoading ? <p className="text-sm text-[#6f86a7]">Ачаалж байна...</p> : myClubs.length === 0 ? <p className="text-sm text-[#6f86a7]">Одоогоор таны нэгдсэн клуб алга байна.</p> : myClubs.map((club) => (
-              <div key={club.id} className="flex items-center justify-between rounded-2xl bg-[color:var(--surface)] px-4 py-3">
-                <p className="font-semibold text-[#183153]">{club.name}</p>
-                <span className="text-xs font-semibold text-[#5f7697]">{club.memberCount} гишүүн</span>
+              <div key={club.id} className="flex items-center justify-between rounded-2xl bg-[color:var(--surface)] p-4">
+                <p className="font-semibold text-[#183153] text-md">{club.name}</p>
+          
               </div>
             ))}
           </div>
-          <Link href="/students/clubs" className="mt-4 inline-flex text-sm font-semibold text-[color:var(--primary)] hover:underline">Бүгдийг харах</Link>
+          <Link href="/students/clubs" className="mt-auto inline-flex items-center gap-1 self-end pt-4 text-sm font-semibold text-[color:var(--primary)] hover:underline">Бүгдийг харах <ArrowRight className="h-4 w-4" /></Link>
         </article>
 
-        <article className="rounded-[28px] border border-[#dce7f8] bg-white p-5 shadow-soft">
+        <article className="flex h-full flex-col rounded-[28px] border border-[#dce7f8] bg-white p-5 shadow-soft">
           <div className="flex items-center gap-2 text-[#183153]">
             <CalendarDays className="h-5 w-5 text-[color:var(--primary)]" />
-            <h2 className="text-lg font-semibold">Дараагийн уулзалт</h2>
+            <h2 className="text-md font-semibold">Дараагийн уулзалт</h2>
           </div>
           <div className="mt-4 rounded-2xl bg-[color:var(--surface)] px-4 py-4">
             {isLoading ? <p className="text-sm text-[#6f86a7]">Ачаалж байна...</p> : nextMeeting ? (
@@ -178,26 +178,26 @@ export default function StudentDashboard() {
               </>
             ) : <p className="text-sm text-[#6f86a7]">Төлөвлөгдсөн уулзалт алга байна.</p>}
           </div>
-          <Link href="/students/events" className="mt-4 inline-flex text-sm font-semibold text-[color:var(--primary)] hover:underline">Арга хэмжээ рүү очих</Link>
+          <Link href="/students/events" className="mt-auto inline-flex self-end pt-4 text-sm font-semibold text-[color:var(--primary)] hover:underline">Арга хэмжээ рүү очих <ArrowRight className="h-4 w-4" /></Link>
         </article>
 
-        <article className="rounded-[28px] border border-[#dce7f8] bg-white p-5 shadow-soft">
+        <article className="flex h-full flex-col rounded-[28px] border border-[#dce7f8] bg-white p-5 shadow-soft">
           <div className="flex items-center gap-2 text-[#183153]">
             <Sparkles className="h-5 w-5 text-[color:var(--primary)]" />
-            <h2 className="text-lg font-semibold">Gamification</h2>
+            <h2 className="text-md font-semibold">Gamification</h2>
           </div>
           <div className="mt-4 rounded-2xl bg-[color:var(--surface)] px-4 py-4">
             <p className="text-sm text-[#6f86a7]">Нийт XP</p>
             <p className="mt-1 text-2xl font-bold text-[#183153]">{xpTotal}</p>
             <p className="mt-2 text-xs text-[#6f86a7]">Badge: {earnedBadges.length}/{totalBadgeCount}</p>
           </div>
-          <Link href="/students/gamification" className="mt-4 inline-flex text-sm font-semibold text-[color:var(--primary)] hover:underline">XP болон badge дэлгэрэнгүй</Link>
+          <Link href="/students/gamification" className="mt-auto inline-flex self-end pt-4 text-sm font-semibold text-[color:var(--primary)] hover:underline">XP болон badge дэлгэрэнгүй<ArrowRight className="h-4 w-4" /></Link>
         </article>
 
         <article className="rounded-[28px] border border-[#dce7f8] bg-white p-5 shadow-soft">
           <div className="flex items-center gap-2 text-[#183153]">
             <Bell className="h-5 w-5 text-[color:var(--primary)]" />
-            <h2 className="text-lg font-semibold">Мэдэгдэл</h2>
+            <h2 className="text-md font-semibold">Мэдэгдэл</h2>
           </div>
           {errorMessage ? <p className="mt-4 rounded-2xl border border-[#ffd2d5] bg-[#fff7f8] px-4 py-3 text-sm text-[#b23a49]">{errorMessage}</p> : null}
           <div className="mt-4 space-y-3">
@@ -215,7 +215,7 @@ export default function StudentDashboard() {
         <article className="rounded-[28px] border border-[#dce7f8] bg-white p-5 shadow-soft">
           <div className="flex items-center gap-2 text-[#183153]">
             <Trophy className="h-5 w-5 text-[color:var(--primary)]" />
-            <h2 className="text-lg font-semibold">Сүүлийн үйл ажиллагаа</h2>
+            <h2 className="text-md font-semibold">Сүүлийн үйл ажиллагаа</h2>
           </div>
           <div className="mt-4 space-y-3">
             {activity.length === 0 ? <p className="text-sm text-[#6f86a7]">Одоогоор activity алга байна.</p> : activity.map((item) => (
@@ -230,7 +230,7 @@ export default function StudentDashboard() {
         <article className="rounded-[28px] border border-[#dce7f8] bg-white p-5 shadow-soft">
           <div className="flex items-center gap-2 text-[#183153]">
             <CalendarDays className="h-5 w-5 text-[color:var(--primary)]" />
-            <h2 className="text-lg font-semibold">Удахгүй болох event-үүд</h2>
+            <h2 className="text-md font-semibold">Удахгүй болох event-үүд</h2>
           </div>
           <div className="mt-4 space-y-3">
             {upcomingEvents.slice(0, 5).map((event) => (
