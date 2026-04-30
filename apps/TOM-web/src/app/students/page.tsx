@@ -260,9 +260,7 @@ export default function StudentDashboard() {
                 <h2 className="text-md font-semibold">
                   Энэ долоо хоногийн календарь
                 </h2>
-                <p className="text-sm text-[#6f86a7]">
-                  Клубийн өдрүүд болон event-үүдийг 7 хоногоор харуулна.
-                </p>
+                <p className="text-sm text-[#6f86a7]"></p>
               </div>
             </div>
             <div className="rounded-2xl bg-[color:var(--surface)] px-4 py-3 text-sm text-[#183153]">
@@ -347,9 +345,9 @@ export default function StudentDashboard() {
               myClubs.map((club) => (
                 <div
                   key={club.id}
-                  className="flex items-center justify-between rounded-2xl bg-[color:var(--surface)] p-4"
+                  className="flex items-center justify-between rounded-2xl bg-[color:var(--surface)] p-3"
                 >
-                  <p className="font-semibold text-[#183153] text-md">
+                  <p className="font-semibold text-[#183153] text-sm">
                     {club.name}
                   </p>
                 </div>
