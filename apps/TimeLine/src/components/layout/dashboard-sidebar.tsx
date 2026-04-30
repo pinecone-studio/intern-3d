@@ -19,7 +19,6 @@ import { Badge } from '@/components/ui/badge'
 import {
   Clock,
   LayoutDashboard,
-  Monitor,
   CalendarDays,
   LogOut,
 } from 'lucide-react'
@@ -99,27 +98,6 @@ export function DashboardSidebar() {
               <div className="mx-2 rounded-md border border-sidebar-border bg-muted p-3">
                 <p className="text-xs text-muted-foreground">
                   Өрөөний хуваарь удирдахын тулд өрөөн дээр дарна уу
-                </p>
-              </div>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
-
-        {role === 'student' && user?.assignedDevice && (
-          <SidebarGroup>
-            <SidebarGroupLabel className="text-xs uppercase tracking-wider text-muted-foreground/70">
-              Таны төхөөрөмж
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <div className="mx-2 rounded-md border border-sidebar-border bg-muted p-3">
-                <div className="flex items-center gap-2">
-                  <Monitor className="h-4 w-4 text-foreground" />
-                  <span className="text-sm font-medium text-foreground">
-                    {user.assignedDevice.name}
-                  </span>
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Анги {user.assignedDevice.roomNumber}
                 </p>
               </div>
             </SidebarGroupContent>

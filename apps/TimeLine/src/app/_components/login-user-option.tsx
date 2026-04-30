@@ -28,9 +28,7 @@ export function LoginUserOption({ disabled, user, onSelect }: LoginUserOptionPro
         <span className="text-sm text-muted-foreground">
           {isAdmin
             ? 'Хуваарь удирдах, төхөөрөмж хянах'
-            : user.assignedDevice
-              ? `Таны iMac: ${user.assignedDevice.name} / Анги ${user.assignedDevice.roomNumber}`
-              : 'Сул өрөө хайх, өөрийн iMac харах'}
+            : 'Сул өрөө хайх, хуваарь харах'}
         </span>
       </div>
     </Button>
