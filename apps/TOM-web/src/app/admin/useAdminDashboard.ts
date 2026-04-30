@@ -492,6 +492,19 @@ export function useAdminDashboard(options: TomFormOptions) {
     }, 'Хэрэглэгчийн түдгэлзүүлэлтийг шинэчилж чадсангүй.');
   };
 
+  const deleteUser = async (userId: string) => {
+    const user = users.find((item) => item.id === userId);
+    if (!user) return;
+
+    await runMutation(async () => {
+      await apiRequest<{ ok: boolean }>(`/api/users/${userId}`, {
+        method: 'DELETE',
+      });
+
+      await refreshDashboard(`${user.name} хэрэглэгч устгагдлаа.`);
+    }, 'Хэрэглэгч устгаж чадсангүй.');
+  };
+
   const updateEventField = (field: keyof EventForm, value: string) => {
     setEventFormError('');
     setEventForm((current) => ({ ...current, [field]: value }));
@@ -616,6 +629,7 @@ export function useAdminDashboard(options: TomFormOptions) {
     updateEventField,
     updateUserField,
     toggleClubStatus,
+    deleteUser,
     toggleUserBan,
     toggleUserRestriction,
     updateUserRole,

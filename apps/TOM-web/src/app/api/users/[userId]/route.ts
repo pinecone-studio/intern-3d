@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server'
 
 import { requireAdmin } from '@/lib/tom-api-auth'
 import { badRequest, notFound, ok, serverError } from '@/lib/tom-http'
-import { getUser, upsertUser } from '@/lib/tom-db'
+import { deleteUser, getUser, upsertUser } from '@/lib/tom-db'
 import { parseUserInput } from '@/lib/tom-validators'
 
 
@@ -40,5 +40,20 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ u
     return ok({ user })
   } catch (error) {
     return serverError('Failed to update user.', String(error))
+  }
+}
+
+export async function DELETE(request: NextRequest, context: { params: Promise<{ userId: string }> }) {
+  try {
+    const auth = await requireAdmin(request)
+    if (auth.response) return auth.response
+
+    const { userId } = await context.params
+    const removed = await deleteUser(userId)
+    if (!removed) return notFound('User not found.')
+
+    return ok({ ok: true })
+  } catch (error) {
+    return serverError('Failed to delete user.', String(error))
   }
 }

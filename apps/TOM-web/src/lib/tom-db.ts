@@ -1,5 +1,6 @@
 import { getTomDb } from '@/lib/d1'
 import { seedActiveClubs, seedClubRequests, seedManagedUsers } from '@/lib/tom-seed-data'
+import { deleteSessionsForUser } from '@/lib/tom-session'
 import type {
   Badge,
   BadgeInput,
@@ -724,6 +725,17 @@ export async function upsertUser(input: UserInput, id?: string) {
     .run()
 
   return user
+}
+
+export async function deleteUser(id: string) {
+  const db = getTomDb()
+  const current = await getUser(id)
+  if (!current) return false
+
+  await deleteSessionsForUser(id)
+  await db.prepare('DELETE FROM users WHERE id = ?').bind(id).run()
+
+  return true
 }
 
 export async function getDashboardSummary() {
