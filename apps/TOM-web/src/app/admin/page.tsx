@@ -113,7 +113,10 @@ export function AdminDashboardContent({
     {
       label: 'Хүлээгдэж буй хүсэлт',
       value: summary.pendingRequests,
-      delta: `+${thresholdReachedCount}`,
+      delta:
+        thresholdReachedCount > 0
+          ? `${thresholdReachedCount} босго давсан`
+          : '·',
       icon: CalendarDays,
       tint: 'bg-gradient-student',
       badge: 'bg-[#eef4ff] text-[#4f77d6]',
