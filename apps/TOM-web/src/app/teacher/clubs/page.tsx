@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, Search, ShieldCheck, XCircle } from 'lucide-react';
 
 import { CapacityBar, StatusBadge } from '@/app/_components';
+import { useTomOptions } from '@/app/_hooks/useTomOptions';
 import { useTomSession } from '@/app/_providers/tom-session-provider';
-import type { Club, ClubRequest, TomCurrentUser } from '@/lib/tom-types';
+import type { Club, ClubRequest, TomCurrentUser, TomFormOptions } from '@/lib/tom-types';
 
 type TeacherClubsResponse = {
   user: TomCurrentUser;
@@ -18,6 +19,30 @@ type ApproveRequestResponse = {
   request: ClubRequest;
   club: Club;
 };
+
+type ClubRequestForm = {
+  clubName: string;
+  studentLimit: string;
+  interestCount: string;
+  gradeRange: string;
+  allowedDays: string;
+  startDate: string;
+  endDate: string;
+  note: string;
+};
+
+function createInitialClubRequestForm(options: TomFormOptions): ClubRequestForm {
+  return {
+    clubName: '',
+    studentLimit: '12',
+    interestCount: '0',
+    gradeRange: options.gradeRanges[0] ?? '',
+    allowedDays: options.allowedDays[0] ?? '',
+    startDate: '',
+    endDate: '',
+    note: '',
+  };
+}
 
 async function readJson<T>(response: Response) {
   const data = (await response.json().catch(() => null)) as
@@ -45,11 +70,15 @@ async function apiRequest<T>(input: string, init?: RequestInit) {
 }
 
 export default function ClubsPage() {
+  const { options } = useTomOptions();
   const { user } = useTomSession();
   const [clubs, setClubs] = useState<Club[]>([]);
   const [requests, setRequests] = useState<ClubRequest[]>([]);
   const [teacherScopeName, setTeacherScopeName] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [clubRequestForm, setClubRequestForm] = useState<ClubRequestForm>(() =>
+    createInitialClubRequestForm(options)
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -72,6 +101,14 @@ export default function ClubsPage() {
     setTeacherScopeName(data.teacherScopeName);
     setMessage(nextMessage || `${data.teacherScopeName} нэр дээрх клубүүдийг шинэчиллээ.`);
   };
+
+  useEffect(() => {
+    setClubRequestForm((current) => ({
+      ...current,
+      gradeRange: current.gradeRange || options.gradeRanges[0] || current.gradeRange,
+      allowedDays: current.allowedDays || options.allowedDays[0] || current.allowedDays,
+    }));
+  }, [options.allowedDays, options.gradeRanges]);
 
   useEffect(() => {
     let cancelled = false;
@@ -115,6 +152,45 @@ export default function ClubsPage() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const updateClubRequestField = (field: keyof ClubRequestForm, value: string) => {
+    setClubRequestForm((current) => ({ ...current, [field]: value }));
+  };
+
+  const resetClubRequestForm = () => {
+    setErrorMessage('');
+    setClubRequestForm(createInitialClubRequestForm(options));
+  };
+
+  const submitClubRequest = async () => {
+    const clubName = clubRequestForm.clubName.trim();
+
+    if (!clubName) {
+      setErrorMessage('Клубийн нэр заавал оруулна уу.');
+      return;
+    }
+
+    await runAction(async () => {
+      await apiRequest('/api/teacher/clubs', {
+        method: 'POST',
+        body: JSON.stringify({
+          clubName,
+          studentLimit: Number(clubRequestForm.studentLimit) || 12,
+          interestCount: Number(clubRequestForm.interestCount) || 0,
+          gradeRange: clubRequestForm.gradeRange,
+          allowedDays: clubRequestForm.allowedDays,
+          startDate: clubRequestForm.startDate,
+          endDate: clubRequestForm.endDate,
+          note:
+            clubRequestForm.note ||
+            `${teacherScopeName || user?.teacherProfileName || user?.name || 'Багш'}-ийн шинээр үүсгэсэн клубийн хүсэлт.`,
+        }),
+      });
+
+      setClubRequestForm(createInitialClubRequestForm(options));
+      await loadData(`${clubName} клубийн хүсэлт илгээгдлээ.`);
+    }, 'Клубийн хүсэлт үүсгэж чадсангүй.');
   };
 
   const approveRequest = async (request: ClubRequest) => {
@@ -196,6 +272,10 @@ export default function ClubsPage() {
       archived: 'Архивласан',
     })[status] ?? status;
 
+  const inputClass =
+    'w-full rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm text-[#17304f] outline-none transition placeholder:text-[#8fa3bf] focus:border-[#4f72d5] focus:ring-2 focus:ring-[#dce8ff]';
+  const labelClass = 'mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-[#7a90af]';
+
   return (
     <div className="space-y-6">
       <section
@@ -271,8 +351,8 @@ export default function ClubsPage() {
         ))}
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
-        <article className="rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-6 shadow-soft">
+      <section className="grid items-start gap-6 xl:grid-cols-[1.4fr_1fr]">
+        <article className="self-start rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-6 shadow-soft">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="text-xl font-semibold text-[#17304f]">Удирдаж буй клубүүд</h2>
@@ -369,97 +449,259 @@ export default function ClubsPage() {
           </div>
         </article>
 
-        <article className="rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-6 shadow-soft">
-          <div className="flex items-center gap-3">
-            <ShieldCheck className="h-5 w-5 text-[#1a3560]" />
-            <div>
-              <h2 className="text-xl font-semibold text-[#17304f]">Хүлээгдэж буй саналууд</h2>
-              <p className="mt-1 text-sm text-[#6e84a3]">
-                Энэ багшийн нэр дээр ирсэн хүсэлтүүдийг хурдан батлах эсвэл буцаана.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-5 space-y-4">
-            {requests.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-[#d6e1ef] px-4 py-10 text-center text-sm text-[#7d93b2]">
-                Хүлээгдэж буй хүсэлт алга.
+        <div className="space-y-6 self-start">
+          <article className="rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-6 shadow-soft">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-semibold text-[#17304f]">Клубийн хүсэлт</h2>
+                <p className="mt-1 text-sm text-[#6e84a3]">
+                  Клубийн хүсэлтээ эндээс үүсгээд admin руу илгээнэ.
+                </p>
               </div>
-            ) : (
-              requests.map((request) => (
-                <div
-                  key={request.id}
-                  className="rounded-[24px] border border-[#deebf7] bg-white/90 p-5"
+              <StatusBadge type="review" text="Club request" />
+            </div>
+
+            <form
+              className="mt-5 space-y-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void submitClubRequest();
+              }}
+            >
+              <label className="block">
+                <span className={labelClass}>Клубийн нэр</span>
+                <input
+                  type="text"
+                  value={clubRequestForm.clubName}
+                  onChange={(event) =>
+                    updateClubRequestField('clubName', event.target.value)
+                  }
+                  className={inputClass}
+                  placeholder="Жишээ: Роботик клуб"
+                />
+              </label>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="block">
+                  <span className={labelClass}>Анги</span>
+                  <select
+                    value={clubRequestForm.gradeRange}
+                    onChange={(event) =>
+                      updateClubRequestField('gradeRange', event.target.value)
+                    }
+                    className={inputClass}
+                  >
+                    {options.gradeRanges.length > 0 ? null : (
+                      <option value="">Сонголт ачаалагдаагүй</option>
+                    )}
+                    {options.gradeRanges.map((gradeRange) => (
+                      <option key={gradeRange} value={gradeRange}>
+                        {gradeRange}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="block">
+                  <span className={labelClass}>Өдөр</span>
+                  <select
+                    value={clubRequestForm.allowedDays}
+                    onChange={(event) =>
+                      updateClubRequestField('allowedDays', event.target.value)
+                    }
+                    className={inputClass}
+                  >
+                    {options.allowedDays.length > 0 ? null : (
+                      <option value="">Сонголт ачаалагдаагүй</option>
+                    )}
+                    {options.allowedDays.map((allowedDay) => (
+                      <option key={allowedDay} value={allowedDay}>
+                        {allowedDay}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="block">
+                  <span className={labelClass}>Эхлэх огноо</span>
+                  <input
+                    type="date"
+                    value={clubRequestForm.startDate}
+                    onChange={(event) =>
+                      updateClubRequestField('startDate', event.target.value)
+                    }
+                    className={inputClass}
+                  />
+                </label>
+
+                <label className="block">
+                  <span className={labelClass}>Дуусах огноо</span>
+                  <input
+                    type="date"
+                    value={clubRequestForm.endDate}
+                    onChange={(event) =>
+                      updateClubRequestField('endDate', event.target.value)
+                    }
+                    className={inputClass}
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="block">
+                  <span className={labelClass}>Сурагчийн лимит</span>
+                  <input
+                    type="number"
+                    min="1"
+                    value={clubRequestForm.studentLimit}
+                    onChange={(event) =>
+                      updateClubRequestField('studentLimit', event.target.value)
+                    }
+                    className={inputClass}
+                  />
+                </label>
+
+                <label className="block">
+                  <span className={labelClass}>Сонирхлын тоо</span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={clubRequestForm.interestCount}
+                    onChange={(event) =>
+                      updateClubRequestField('interestCount', event.target.value)
+                    }
+                    className={inputClass}
+                  />
+                </label>
+              </div>
+
+              <label className="block">
+                <span className={labelClass}>Тайлбар</span>
+                <textarea
+                  value={clubRequestForm.note}
+                  onChange={(event) =>
+                    updateClubRequestField('note', event.target.value)
+                  }
+                  className={`${inputClass} min-h-[108px] resize-y`}
+                  placeholder="Клубийн зорилго, онцлог, нэмэлт мэдээлэл"
+                />
+              </label>
+
+              <div className="flex flex-wrap gap-3 pt-1">
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="inline-flex items-center gap-2 rounded-full bg-[#1a3560] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#24478a] disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="text-base font-semibold text-[#17304f]">
-                        {request.clubName}
-                      </h3>
-                      <p className="mt-1 text-sm text-[#6e84a3]">
-                        {request.teacherName} · {request.createdBy}
-                      </p>
-                    </div>
-                    <StatusBadge type="pending" text="Хүлээгдэж буй" />
-                  </div>
+                  <CheckCircle2 className="h-4 w-4" />
+                  Club request үүсгэх
+                </button>
+                <button
+                  type="button"
+                  onClick={resetClubRequestForm}
+                  disabled={isSaving}
+                  className="rounded-full border border-[#d8e4f4] px-4 py-2 text-sm font-semibold text-[#17304f] transition hover:bg-[#f3f7fd] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Цэвэрлэх
+                </button>
+              </div>
+            </form>
+          </article>
 
-                  <div className="mt-4 grid gap-3 text-sm text-[#5f7697]">
-                    <div className="rounded-2xl bg-[#f4f8fd] px-4 py-3">
-                      <p className="text-xs uppercase tracking-[0.14em] text-[#7d91ae]">
-                        Хуваарь
-                      </p>
-                      <p className="mt-1 font-semibold text-[#17304f]">
-                        {request.allowedDays} · {request.gradeRange}
-                      </p>
-                    </div>
-                    <div className="rounded-2xl bg-[#f4f8fd] px-4 py-3">
-                      <p className="text-xs uppercase tracking-[0.14em] text-[#7d91ae]">
-                        Сонирхсон сурагчид
-                      </p>
-                      <p className="mt-1 font-semibold text-[#17304f]">
-                        {request.interestCount} / {request.studentLimit}
-                      </p>
-                    </div>
-                  </div>
+          <article className="rounded-[32px] border border-[color:var(--border)] bg-[color:var(--card)] p-6 shadow-soft">
+            <div className="flex items-center gap-3">
+              <ShieldCheck className="h-5 w-5 text-[#1a3560]" />
+              <div>
+                <h2 className="text-xl font-semibold text-[#17304f]">Хүлээгдэж буй саналууд</h2>
+                <p className="mt-1 text-sm text-[#6e84a3]">
+                  Энэ багшийн нэр дээр ирсэн хүсэлтүүдийг хурдан батлах эсвэл буцаана.
+                </p>
+              </div>
+            </div>
 
-                  <p className="mt-4 text-sm leading-6 text-[#526987]">
-                    {request.note || 'Нэмэлт тайлбаргүй.'}
-                  </p>
-
-                  <div className="mt-4 flex flex-wrap gap-3">
-                    <button
-                      type="button"
-                      onClick={() => void approveRequest(request)}
-                      disabled={isSaving}
-                      className="inline-flex items-center gap-2 rounded-full bg-[#1a3560] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#24478a] disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <CheckCircle2 className="h-4 w-4" />
-                      Батлах
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void approveAndCreateKickoffEvent(request)}
-                      disabled={isSaving}
-                      className="inline-flex items-center gap-2 rounded-full border border-[#1a3560] bg-[#eef4ff] px-4 py-2 text-sm font-semibold text-[#1a3560] transition hover:bg-[#dfeaff] disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <CheckCircle2 className="h-4 w-4" />
-                      Батлаад kickoff event
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void rejectRequest(request)}
-                      disabled={isSaving}
-                      className="inline-flex items-center gap-2 rounded-full border border-[#d8e4f4] px-4 py-2 text-sm font-semibold text-[#17304f] transition hover:bg-[#fff3f4] disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <XCircle className="h-4 w-4" />
-                      Татгалзах
-                    </button>
-                  </div>
+            <div className="mt-5 space-y-4">
+              {requests.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-[#d6e1ef] px-4 py-10 text-center text-sm text-[#7d93b2]">
+                  Хүлээгдэж буй хүсэлт алга.
                 </div>
-              ))
-            )}
-          </div>
-        </article>
+              ) : (
+                requests.map((request) => (
+                  <div
+                    key={request.id}
+                    className="rounded-[24px] border border-[#deebf7] bg-white/90 p-5"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-base font-semibold text-[#17304f]">
+                          {request.clubName}
+                        </h3>
+                        <p className="mt-1 text-sm text-[#6e84a3]">
+                          {request.teacherName} · {request.createdBy}
+                        </p>
+                      </div>
+                      <StatusBadge type="pending" text="Хүлээгдэж буй" />
+                    </div>
+
+                    <div className="mt-4 grid gap-3 text-sm text-[#5f7697]">
+                      <div className="rounded-2xl bg-[#f4f8fd] px-4 py-3">
+                        <p className="text-xs uppercase tracking-[0.14em] text-[#7d91ae]">
+                          Хуваарь
+                        </p>
+                        <p className="mt-1 font-semibold text-[#17304f]">
+                          {request.allowedDays} · {request.gradeRange}
+                        </p>
+                      </div>
+                      <div className="rounded-2xl bg-[#f4f8fd] px-4 py-3">
+                        <p className="text-xs uppercase tracking-[0.14em] text-[#7d91ae]">
+                          Сонирхсон сурагчид
+                        </p>
+                        <p className="mt-1 font-semibold text-[#17304f]">
+                          {request.interestCount} / {request.studentLimit}
+                        </p>
+                      </div>
+                    </div>
+
+                    <p className="mt-4 text-sm leading-6 text-[#526987]">
+                      {request.note || 'Нэмэлт тайлбаргүй.'}
+                    </p>
+
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      <button
+                        type="button"
+                        onClick={() => void approveRequest(request)}
+                        disabled={isSaving}
+                        className="inline-flex items-center gap-2 rounded-full bg-[#1a3560] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#24478a] disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <CheckCircle2 className="h-4 w-4" />
+                        Батлах
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void approveAndCreateKickoffEvent(request)}
+                        disabled={isSaving}
+                        className="inline-flex items-center gap-2 rounded-full border border-[#1a3560] bg-[#eef4ff] px-4 py-2 text-sm font-semibold text-[#1a3560] transition hover:bg-[#dfeaff] disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <CheckCircle2 className="h-4 w-4" />
+                        Батлаад kickoff event
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void rejectRequest(request)}
+                        disabled={isSaving}
+                        className="inline-flex items-center gap-2 rounded-full border border-[#d8e4f4] px-4 py-2 text-sm font-semibold text-[#17304f] transition hover:bg-[#fff3f4] disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <XCircle className="h-4 w-4" />
+                        Татгалзах
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </article>
+        </div>
       </section>
     </div>
   );

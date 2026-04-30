@@ -24,6 +24,7 @@ export type ClubRequest = ClubBase & {
 };
 
 export type ActiveClub = ClubBase & {
+  memberCount: number;
   requestStatus: 'approved';
   clubStatus: 'active' | 'paused';
 };

@@ -40,6 +40,7 @@ function mapClub(club: ApiClub): ActiveClub {
     createdBy: club.createdBy,
     interestCount: club.interestCount,
     studentLimit: club.studentLimit,
+    memberCount: club.memberCount,
     gradeRange: club.gradeRange,
     allowedDays: club.allowedDays,
     startDate: club.startDate,
