@@ -46,7 +46,7 @@ export default function StudentClubDetailPage() {
   const [errorMessage, setErrorMessage] = useState('');
 
   const pageTitle = useMemo(
-    () => club?.name || 'ÐšÐ»ÑƒÐ± Ð´ÑÐ»Ð³ÑÑ€ÑÐ½Ð³Ò¯Ð¹',
+    () => club?.name || 'Клуб дэлгэрэнгүй',
     [club]
   );
 
@@ -68,7 +68,7 @@ export default function StudentClubDetailPage() {
         setErrorMessage(
           error instanceof Error
             ? error.message
-            : 'ÐšÐ»ÑƒÐ± Ð°Ñ‡Ð°Ð°Ð»Ð¶ Ñ‡Ð°Ð´ÑÐ°Ð½Ð³Ò¯Ð¹.'
+            : 'Клуб ачааллж чадсангүй.'
         );
       })
       .finally(() => {
@@ -91,7 +91,7 @@ export default function StudentClubDetailPage() {
               className="inline-flex items-center gap-1 rounded-full border border-[#d7e4f4] bg-white px-3 py-1 text-xs font-semibold text-[#4a6080] transition hover:bg-[#eef4ff]"
             >
               <ChevronLeft className="h-4 w-4" />
-              Ð‘ÑƒÑ†Ð°Ñ…
+              Буцах
             </Link>
 
             <h1 className="mt-3 truncate text-2xl font-bold text-[#0f1f3d]">
@@ -110,19 +110,19 @@ export default function StudentClubDetailPage() {
                 <p className="inline-flex items-center gap-1">
                   <CalendarDays className="h-3.5 w-3.5" />
                   {club.allowedDays}
-                  {club.gradeRange ? ` Â· ${club.gradeRange}` : ''}
+                  {club.gradeRange ? ` · ${club.gradeRange}` : ''}
                 </p>
                 <p className="inline-flex items-center gap-1">
                   <Users className="h-3.5 w-3.5" />
-                  {club.memberCount} / {club.studentLimit} Ð³Ð¸ÑˆÒ¯Ò¯Ð½ Â·{' '}
-                  {club.interestCount} ÑÐ¾Ð½Ð¸Ñ€Ñ…Ð¾Ð»
+                  {club.memberCount} / {club.studentLimit} гишүүн ·{' '}
+                  {club.interestCount} сонирхол
                 </p>
               </div>
             ) : null}
           </div>
 
           <div className="rounded-2xl bg-[#eef4ff] px-4 py-3 text-xs font-semibold text-[#496da8]">
-            {user?.name ? `${user.name} Â· Ð¡ÑƒÑ€Ð°Ð³Ñ‡` : 'Ð¡ÑƒÑ€Ð°Ð³Ñ‡'}
+            {user?.name ? `${user.name} · Сурагч` : 'Сурагч'}
           </div>
         </div>
 
@@ -135,7 +135,7 @@ export default function StudentClubDetailPage() {
 
       {isLoading ? (
         <div className="rounded-2xl border border-[#e2eaf5] bg-white p-8 text-sm text-[#6f86a7]">
-          ÐÑ‡Ð°Ð°Ð»Ð¶ Ð±Ð°Ð¹Ð½Ð°...
+          Ачааллж байна...
         </div>
       ) : (
         <ClubPostsFeed
@@ -148,4 +148,3 @@ export default function StudentClubDetailPage() {
     </div>
   );
 }
-
