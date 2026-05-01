@@ -87,7 +87,11 @@ function startOfWeek(date: Date) {
 }
 
 function formatIsoDate(date: Date) {
-  return date.toISOString().slice(0, 10);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
 }
 
 function formatShortDate(date: Date) {
@@ -112,12 +116,9 @@ export default function TeacherDashboard() {
   const [teacherScopeName, setTeacherScopeName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState(
-    'Багшийн самбарын шууд өгөгдөлд холбогдлоо.'
-  );
-  const [errorMessage, setErrorMessage] = useState('');
+  const [, setErrorMessage] = useState('');
 
-  const loadData = async (nextMessage?: string) => {
+  const loadData = async () => {
     const data = await apiRequest<TeacherDashboardResponse>(
       '/api/teacher/dashboard'
     );
@@ -125,10 +126,6 @@ export default function TeacherDashboard() {
     setRequests(data.requests);
     setClubs(data.clubs);
     setTeacherScopeName(data.teacherScopeName);
-    setMessage(
-      nextMessage ||
-        `${data.teacherScopeName} нэрээр багшийн өгөгдлийг ачааллаа.`
-    );
   };
 
   useEffect(() => {
@@ -175,23 +172,23 @@ export default function TeacherDashboard() {
     }
   };
 
-  const approveRequest = async (requestId: string, name: string) => {
+  const approveRequest = async (requestId: string) => {
     await runAction(async () => {
       await apiRequest<{ request: ClubRequest; club: Club }>(
         `/api/club-requests/${requestId}/approve`,
         { method: 'POST' }
       );
-      await loadData(`${name} хүсэлт батлагдаж клуб болсон.`);
+      await loadData();
     }, 'Хүсэлтийг баталж чадсангүй.');
   };
 
-  const rejectRequest = async (requestId: string, name: string) => {
+  const rejectRequest = async (requestId: string) => {
     await runAction(async () => {
       await apiRequest<{ request: ClubRequest }>(
         `/api/club-requests/${requestId}/reject`,
         { method: 'POST' }
       );
-      await loadData(`${name} хүсэлт татгалзагдлаа.`);
+      await loadData();
     }, 'Хүсэлтийг татгалзаж чадсангүй.');
   };
 
@@ -219,11 +216,7 @@ export default function TeacherDashboard() {
           verified: club.verified,
         }),
       });
-      await loadData(
-        nextStatus === 'active'
-          ? `${club.name} дахин идэвхжлээ.`
-          : `${club.name} түр зогссон төлөвт орлоо.`
-      );
+      await loadData();
     }, 'Клубийн төлөв шинэчилж чадсангүй.');
   };
 
@@ -272,42 +265,6 @@ export default function TeacherDashboard() {
   return (
     <div className="min-h-screen font-sans text-[color:var(--foreground)]">
       <main className="container mx-auto space-y-8 ">
-        <section
-          className={`rounded-[28px] border px-5 py-4 shadow-soft ${
-            errorMessage
-              ? 'border-[#ffd2d5] bg-[#fff7f8] text-[#b23a49]'
-              : 'border-[color:var(--border)] bg-white/90 text-[#56708f]'
-          }`}
-        >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em]">
-                {errorMessage
-                  ? 'Синк алдаа'
-                  : isLoading
-                  ? 'Самбар ачаалж байна'
-                  : isSaving
-                  ? 'Өөрчлөлт хадгалж байна'
-                  : 'Багшийн самбар'}
-              </p>
-              <p className="mt-1 text-sm">
-                {errorMessage ||
-                  (isLoading
-                    ? 'Таны клуб, хүсэлт, 7 хоногийн хуваарийг ачаалж байна.'
-                    : isSaving
-                    ? 'Сүүлд хийсэн өөрчлөлтийг хадгалж байна.'
-                    : message)}
-              </p>
-            </div>
-            <div className="rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm font-semibold text-[#4a6080]">
-              {teacherScopeName ||
-                user?.teacherProfileName ||
-                user?.name ||
-                'Багш'}
-            </div>
-          </div>
-        </section>
-
         <section>
           <article className="shadow-soft rounded-3xl border border-[color:var(--border)] bg-[color:var(--card)] p-5 text-[color:var(--card-foreground)]">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -345,11 +302,6 @@ export default function TeacherDashboard() {
                       </p>
                       <p className="text-xs text-[#6f86a7]">{day.dateLabel}</p>
                     </div>
-                    {day.isToday ? (
-                      <span className="rounded-full bg-[#49a0e3] px-2 py-1 text-[11px] font-semibold text-white">
-                        Өнөөдөр
-                      </span>
-                    ) : null}
                   </div>
 
                   <div className="mt-4 flex flex-1 flex-col gap-2">
@@ -415,7 +367,7 @@ export default function TeacherDashboard() {
                     <button
                       disabled={isSaving}
                       onClick={() =>
-                        void rejectRequest(request.id, request.clubName)
+                        void rejectRequest(request.id)
                       }
                       className="inline-flex h-8 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-[color:var(--input)] bg-[color:var(--background)] px-3 text-xs font-medium shadow-sm transition-colors hover:bg-[color:var(--accent)] hover:text-[color:var(--accent-foreground)] disabled:cursor-not-allowed disabled:opacity-50"
                     >
@@ -424,7 +376,7 @@ export default function TeacherDashboard() {
                     <button
                       disabled={isSaving}
                       onClick={() =>
-                        void approveRequest(request.id, request.clubName)
+                        void approveRequest(request.id)
                       }
                       className="inline-flex h-8 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-[#49a0e3] px-3 text-xs font-medium text-white shadow transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                     >
