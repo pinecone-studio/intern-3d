@@ -103,20 +103,16 @@ export default function ClubsPage() {
   const [clubRequestForm, setClubRequestForm] = useState<ClubRequestForm>(() =>
     createInitialClubRequestForm(options)
   );
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [message, setMessage] = useState('Клубийн мэдээллийг D1-ээс ачааллаа.');
 
-  const loadData = async (nextMessage?: string) => {
+  const loadData = async () => {
     const data = await apiRequest<TeacherClubsResponse>('/api/teacher/clubs');
 
     setClubs(data.clubs);
     setRequests(data.requests);
     setTeacherScopeName(data.teacherScopeName);
-    setMessage(
-      nextMessage || `${data.teacherScopeName} нэр дээрх клубүүдийг шинэчиллээ.`
-    );
   };
 
   useEffect(() => {
@@ -218,7 +214,7 @@ export default function ClubsPage() {
       setClubRequestForm(createInitialClubRequestForm(options));
       setIsRequestDialogOpen(false);
       setActiveTab('requests');
-      await loadData(`${clubName} клубийн хүсэлт илгээгдлээ.`);
+      await loadData();
     }, 'Клубийн хүсэлт үүсгэж чадсангүй.');
   };
 
@@ -227,7 +223,7 @@ export default function ClubsPage() {
       await apiRequest(`/api/club-requests/${request.id}/approve`, {
         method: 'POST',
       });
-      await loadData(`${request.clubName} хүсэлт батлагдлаа.`);
+      await loadData();
     }, 'Хүсэлт баталж чадсангүй.');
   };
 
@@ -256,9 +252,7 @@ export default function ClubsPage() {
         }),
       });
 
-      await loadData(
-        `${request.clubName} батлагдаж kickoff event автоматаар үүслээ.`
-      );
+      await loadData();
     }, 'Хүсэлт баталж kickoff event үүсгэж чадсангүй.');
   };
 
@@ -267,7 +261,7 @@ export default function ClubsPage() {
       await apiRequest(`/api/club-requests/${request.id}/reject`, {
         method: 'POST',
       });
-      await loadData(`${request.clubName} хүсэлт татгалзагдлаа.`);
+      await loadData();
     }, 'Хүсэлт татгалзаж чадсангүй.');
   };
 
@@ -281,11 +275,7 @@ export default function ClubsPage() {
           status: nextStatus,
         }),
       });
-      await loadData(
-        nextStatus === 'active'
-          ? `${club.name} дахин идэвхжлээ.`
-          : `${club.name} түр зогсоолоо.`
-      );
+      await loadData();
     }, 'Клубийн төлөв шинэчилж чадсангүй.');
   };
 
@@ -368,44 +358,6 @@ export default function ClubsPage() {
           Клуб үүсгэх
         </button>
       </div>
-
-      <section
-        className={`rounded-[28px] border px-5 py-4 shadow-soft ${
-          errorMessage
-            ? 'border-[#ffd2d5] bg-[#fff7f8] text-[#b23a49]'
-            : 'border-[color:var(--border)] bg-white/90 text-[#56708f]'
-        }`}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em]">
-              {errorMessage
-                ? 'Синк алдаа'
-                : isLoading
-                ? 'Клубүүд ачаалж байна'
-                : isSaving
-                ? 'Өөрчлөлт хадгалж байна'
-                : 'Багшийн клубүүд'}
-            </p>
-            <p className="mt-1 text-sm">
-              {errorMessage ||
-                (isLoading
-                  ? 'Таны багшийн нэр дээрх клуб, хүсэлтийн өгөгдлийг ачаалж байна.'
-                  : isSaving
-                  ? 'Сүүлд хийсэн өөрчлөлтийг хадгалж байна.'
-                  : message)}
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm font-semibold text-[#4a6080]">
-              {teacherScopeName ||
-                user?.teacherProfileName ||
-                user?.name ||
-                'Багш'}
-            </div>
-          </div>
-        </div>
-      </section>
 
       <section className="grid gap-3 md:grid-cols-3">
         {[
@@ -773,6 +725,12 @@ export default function ClubsPage() {
                 void submitClubRequest();
               }}
             >
+              {errorMessage ? (
+                <div className="rounded-2xl border border-[#ffd2d5] bg-[#fff7f8] px-4 py-3 text-sm font-medium text-[#b23a49]">
+                  {errorMessage}
+                </div>
+              ) : null}
+
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="block">
                   <span className={labelClass}>Клубийн нэр</span>
