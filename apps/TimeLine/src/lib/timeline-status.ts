@@ -82,6 +82,7 @@ export function getCurrentEvent(events: ScheduleEvent[], now = new Date()): Sche
 function nextOccurrenceStart(event: ScheduleEvent, now: Date): Date | null {
   const nowTime = now.getTime()
   const currentDate = toLocalDateString(now)
+  const currentDay = toIsoDay(now)
 
   if (event.isOverride) {
     if (!event.date || event.date !== currentDate) return null
@@ -89,22 +90,12 @@ function nextOccurrenceStart(event: ScheduleEvent, now: Date): Date | null {
     return startsAt.getTime() > nowTime ? startsAt : null
   }
 
-  for (let offset = 0; offset <= 7; offset += 1) {
-    const candidate = new Date(now)
-    candidate.setHours(0, 0, 0, 0)
-    candidate.setDate(candidate.getDate() + offset)
+  if (!event.daysOfWeek.includes(currentDay)) return null
+  if (event.validFrom && currentDate < event.validFrom) return null
+  if (event.validUntil && currentDate > event.validUntil) return null
 
-    const dateString = toLocalDateString(candidate)
-    const day = toIsoDay(candidate)
-    if (!event.daysOfWeek.includes(day)) continue
-    if (event.validFrom && dateString < event.validFrom) continue
-    if (event.validUntil && dateString > event.validUntil) continue
-
-    const startsAt = new Date(`${dateString}T${event.startTime}:00`)
-    if (startsAt.getTime() > nowTime) return startsAt
-  }
-
-  return null
+  const startsAt = new Date(`${currentDate}T${event.startTime}:00`)
+  return startsAt.getTime() > nowTime ? startsAt : null
 }
 
 export function getNextEvent(events: ScheduleEvent[], now = new Date()): ScheduleEvent | null {
