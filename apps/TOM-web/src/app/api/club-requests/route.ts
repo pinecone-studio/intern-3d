@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await requireRole(request, 'student', { activeOnly: true })
+    const auth = await requireRole(request, ['student', 'admin'], { activeOnly: true })
     if (auth.response) return auth.response
 
     const body = (await request.json().catch(() => ({}))) as Record<string, unknown>
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       clubName,
       teacherName: teacher.teacherProfileName || teacher.name,
       createdBy: auth.user.id,
-      interestCount: 0,
+      interestCount: auth.user.role === 'admin' ? input.interestCount : 0,
       studentLimit: input.studentLimit,
       gradeRange: input.gradeRange,
       allowedDays: input.allowedDays,

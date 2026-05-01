@@ -54,7 +54,7 @@ function mapClub(club: ApiClub): ActiveClub {
 function createInitialForm(options: TomFormOptions): ClubForm {
   return {
     ...initialForm,
-    teacher: options.teachers[0] ?? '',
+    teacherId: options.teacherOptions[0]?.id ?? '',
     allowedDays: options.allowedDays[0] ?? '',
     gradeRange: options.gradeRanges[0] ?? '',
   };
@@ -72,11 +72,12 @@ export function useClubsPage(options: TomFormOptions) {
   useEffect(() => {
     setForm((current) => ({
       ...current,
-      teacher: current.teacher || options.teachers[0] || current.teacher,
+      teacherId:
+        current.teacherId || options.teacherOptions[0]?.id || current.teacherId,
       allowedDays: current.allowedDays || options.allowedDays[0] || current.allowedDays,
       gradeRange: current.gradeRange || options.gradeRanges[0] || current.gradeRange,
     }));
-  }, [options.teachers, options.allowedDays, options.gradeRanges]);
+  }, [options.teacherOptions, options.allowedDays, options.gradeRanges]);
 
   const loadClubs = async () => {
     const data = await apiRequest<{ clubs: ApiClub[] }>('/api/clubs');
@@ -123,8 +124,7 @@ export function useClubsPage(options: TomFormOptions) {
         method: 'POST',
         body: JSON.stringify({
           clubName,
-          teacher: form.teacher,
-          createdBy: 'Админ самбар',
+          teacherId: form.teacherId,
           startDate: form.startDate,
           endDate: form.endDate,
           allowedDays: form.allowedDays,
@@ -132,8 +132,6 @@ export function useClubsPage(options: TomFormOptions) {
           studentLimit: Number(form.studentLimit) || 12,
           interestCount: Number(form.interestCount) || 0,
           note: form.note || 'Админ самбараас шинээр үүсгэсэн клубийн хүсэлт.',
-          requestStatus: 'pending',
-          clubStatus: 'pending',
         }),
       });
 

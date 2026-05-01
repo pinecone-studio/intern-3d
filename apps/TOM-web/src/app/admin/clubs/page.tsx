@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Plus, X } from 'lucide-react';
 
 import { CapacityBar, StatusBadge } from '@/app/_components';
@@ -89,7 +90,12 @@ export default function ClubsPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <h3 className="text-lg font-semibold text-[#183153]">
-                        {club.clubName}
+                        <Link
+                          href={`/admin/clubs/${club.id}`}
+                          className="transition hover:underline"
+                        >
+                          {club.clubName}
+                        </Link>
                       </h3>
                       <p className="mt-1 text-sm text-[#6f86a7]">
                         {club.teacher}
@@ -194,13 +200,13 @@ export default function ClubsPage() {
                 <label className="block">
                   <span className={inputLabelClass}>Багш</span>
                   <select
-                    value={form.teacher}
-                    onChange={(e) => updateField('teacher', e.target.value)}
+                    value={form.teacherId}
+                    onChange={(e) => updateField('teacherId', e.target.value)}
                     className={fieldClass}
                   >
-                    {options.teachers.map((teacher) => (
-                      <option key={teacher} value={teacher}>
-                        {teacher}
+                    {options.teacherOptions.map((teacher) => (
+                      <option key={teacher.id} value={teacher.id}>
+                        {teacher.name}
                       </option>
                     ))}
                   </select>
@@ -291,7 +297,7 @@ export default function ClubsPage() {
                   rows={3}
                   value={form.note}
                   onChange={(e) => updateField('note', e.target.value)}
-                  placeholder="Энэ клуб яагаад чухал, юуг шалгах, Зөвшөөрөхтай холбоотой тэмдэглэл."
+                  placeholder="Энэ клуб яагаад чухал болох, юуг шалгах, зөвшөөрөх эсэхтэй холбоотой тэмдэглэлээ энд бичнэ үү."
                   className={fieldClass}
                 />
               </label>

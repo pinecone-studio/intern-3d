@@ -191,7 +191,7 @@ const initialEventForm: EventForm = {
 function createInitialClubForm(options: TomFormOptions): ClubForm {
   return {
     ...initialForm,
-    teacher: options.teachers[0] ?? '',
+    teacherId: options.teacherOptions[0]?.id ?? '',
     allowedDays: options.allowedDays[0] ?? '',
     gradeRange: options.gradeRanges[0] ?? '',
   };
@@ -238,14 +238,14 @@ export function useAdminDashboard(options: TomFormOptions) {
   useEffect(() => {
     setForm((current) => ({
       ...current,
-      teacher:
-        current.teacher || options.teachers[0] || current.teacher,
+      teacherId:
+        current.teacherId || options.teacherOptions[0]?.id || current.teacherId,
       allowedDays:
         current.allowedDays || options.allowedDays[0] || current.allowedDays,
       gradeRange:
         current.gradeRange || options.gradeRanges[0] || current.gradeRange,
     }));
-  }, [options.allowedDays, options.gradeRanges, options.teachers]);
+  }, [options.allowedDays, options.gradeRanges, options.teacherOptions]);
 
   const loadDashboardSnapshot = async (): Promise<DashboardSnapshot> => {
     const [summaryData, requestData, clubData, userData, eventData, leaderboardData] =
@@ -342,8 +342,7 @@ export function useAdminDashboard(options: TomFormOptions) {
         method: 'POST',
         body: JSON.stringify({
           clubName,
-          teacher: form.teacher,
-          createdBy: 'Админ самбар',
+          teacherId: form.teacherId,
           startDate: form.startDate,
           endDate: form.endDate,
           allowedDays: form.allowedDays,
@@ -351,8 +350,6 @@ export function useAdminDashboard(options: TomFormOptions) {
           studentLimit: Number(form.studentLimit) || 12,
           interestCount: Number(form.interestCount) || 0,
           note: form.note || 'Админ самбараас шинээр үүсгэсэн клубийн хүсэлт.',
-          requestStatus: 'pending',
-          clubStatus: 'pending',
         }),
       });
 
