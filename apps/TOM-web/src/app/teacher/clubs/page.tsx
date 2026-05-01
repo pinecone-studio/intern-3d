@@ -365,7 +365,7 @@ export default function ClubsPage() {
           className="flex items-center gap-2 rounded-2xl bg-[#49a0e3] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(26,53,96,0.25)] transition hover:opacity-90"
         >
           <Plus className="h-4 w-4" />
-          Шинэ хүсэлт
+          Клуб үүсгэх
         </button>
       </div>
 
