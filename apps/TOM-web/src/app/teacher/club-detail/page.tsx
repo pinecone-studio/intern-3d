@@ -6,6 +6,13 @@ import { FileText, Save, Search } from 'lucide-react';
 import { CapacityBar, StatusBadge } from '@/app/_components';
 import { useDebouncedValue } from '@/app/_hooks/useDebouncedValue';
 import { useTomOptions } from '@/app/_hooks/useTomOptions';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { Club, ClubStatus } from '@/lib/tom-types';
 
 const clubStatusLabel: Record<ClubStatus, string> = {
@@ -393,40 +400,48 @@ export default function DetailPage() {
                   placeholder="Клубийн нэр"
                   className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
                 />
-                <select
+                <Select
                   value={draft.gradeRange}
-                  onChange={(event) =>
+                  onValueChange={(value) =>
                     setDraft((current) =>
                       current
-                        ? { ...current, gradeRange: event.target.value }
+                        ? { ...current, gradeRange: value }
                         : current
                     )
                   }
-                  className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
                 >
-                  {options.gradeRanges.map((grade) => (
-                    <option key={grade} value={grade}>
-                      {grade}
-                    </option>
-                  ))}
-                </select>
-                <select
+                  <SelectTrigger className="rounded-2xl border-[#d8e4f4] bg-white focus:border-[#88a9df] focus:ring-0">
+                    <SelectValue placeholder="Анги сонгох" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {options.gradeRanges.map((grade) => (
+                      <SelectItem key={grade} value={grade}>
+                        {grade}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
                   value={draft.allowedDays}
-                  onChange={(event) =>
+                  onValueChange={(value) =>
                     setDraft((current) =>
                       current
-                        ? { ...current, allowedDays: event.target.value }
+                        ? { ...current, allowedDays: value }
                         : current
                     )
                   }
-                  className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
                 >
-                  {options.allowedDays.map((day) => (
-                    <option key={day} value={day}>
-                      {day}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="rounded-2xl border-[#d8e4f4] bg-white focus:border-[#88a9df] focus:ring-0">
+                    <SelectValue placeholder="Өдөр сонгох" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {options.allowedDays.map((day) => (
+                      <SelectItem key={day} value={day}>
+                        {day}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <input
                   type="date"
                   value={draft.startDate}
@@ -477,28 +492,32 @@ export default function DetailPage() {
                   placeholder="Ангилал"
                   className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
                 />
-                <select
+                <Select
                   value={draft.status}
-                  onChange={(event) =>
+                  onValueChange={(value) =>
                     setDraft((current) =>
                       current
                         ? {
                             ...current,
-                            status: event.target.value as ClubStatus,
+                            status: value as ClubStatus,
                           }
                         : current
                     )
                   }
-                  className="rounded-2xl border border-[#d8e4f4] bg-white px-4 py-3 text-sm outline-none focus:border-[#88a9df]"
                 >
-                  {['draft', 'pending', 'active', 'paused', 'archived'].map(
-                    (status) => (
-                      <option key={status} value={status}>
-                        {clubStatusLabel[status as ClubStatus]}
-                      </option>
-                    )
-                  )}
-                </select>
+                  <SelectTrigger className="rounded-2xl border-[#d8e4f4] bg-white focus:border-[#88a9df] focus:ring-0">
+                    <SelectValue placeholder="Төлөв сонгох" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {['draft', 'pending', 'active', 'paused', 'archived'].map(
+                      (status) => (
+                        <SelectItem key={status} value={status}>
+                          {clubStatusLabel[status as ClubStatus]}
+                        </SelectItem>
+                      )
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
 
               <textarea

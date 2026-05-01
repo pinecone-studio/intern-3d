@@ -7,6 +7,13 @@ import { CalendarDays, MapPin, Plus, Search, Trash2 } from 'lucide-react';
 import { StatusBadge } from '@/app/_components';
 import { useDebouncedValue } from '@/app/_hooks/useDebouncedValue';
 import { useTomSession } from '@/app/_providers/tom-session-provider';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { EventStatus, SchoolEvent, TomCurrentUser } from '@/lib/tom-types';
 
 const eventStatuses: EventStatus[] = [
@@ -235,20 +242,24 @@ export default function EventsPage() {
             </div>
             <label className="rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm text-[#4a6080]">
               <span className="mr-2 font-semibold">Төлөв</span>
-              <select
+              <Select
                 value={statusFilter}
-                onChange={(event) =>
-                  setStatusFilter(event.target.value as 'all' | EventStatus)
+                onValueChange={(value) =>
+                  setStatusFilter(value as 'all' | EventStatus)
                 }
-                className="bg-transparent outline-none"
               >
-                <option value="all">Бүгд</option>
-                {eventStatuses.map((status) => (
-                  <option key={status} value={status}>
-                    {eventStatusLabel[status]}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="inline-flex h-auto w-auto min-w-24 border-0 bg-transparent p-0 text-[#4a6080] shadow-none focus:bg-transparent focus:ring-0">
+                  <SelectValue placeholder="Бүгд" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Бүгд</SelectItem>
+                  {eventStatuses.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {eventStatusLabel[status]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </label>
             <label className="flex items-center gap-2 rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm text-[#4a6080]">
               <Search className="h-4 w-4" />

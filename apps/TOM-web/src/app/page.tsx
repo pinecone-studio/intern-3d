@@ -5,6 +5,13 @@ import { useRouter } from 'next/navigation';
 import { GraduationCap, Search, UserCheck, Users } from 'lucide-react';
 import { PineconeLoading } from '@/app/_components';
 import { useTomSession } from '@/app/_providers/tom-session-provider';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { ManagedUser } from '@/lib/tom-types';
 
 type UsersResponse = {
@@ -260,31 +267,35 @@ export default function HomePage() {
 
           <label className="mt-6 block text-sm font-semibold text-[#1c3d6a]">
             Нэвтрэх хэрэглэгч
-            <select
+            <Select
               value={selectedUserId}
-              onChange={(event) => setSelectedUserId(event.target.value)}
+              onValueChange={setSelectedUserId}
               disabled={
                 isUsersLoading || isAuthenticating || visibleUsers.length === 0
               }
-              className="mt-2 w-full rounded-[18px] border border-[#d7e4f4] bg-[#f8fbff] px-4 py-3 text-sm text-[#17365f] outline-none transition focus:border-[#2e5aac] focus:bg-white focus:ring-4 focus:ring-[#dce8ff]"
             >
-              <option value="">
-                {isUsersLoading
-                  ? 'Хэрэглэгч дуудаж байна...'
-                  : 'Хэрэглэгч сонгоно уу'}
-              </option>
-
-              {visibleUsers.map((candidate) => (
-                <option
-                  key={candidate.id}
-                  value={candidate.id}
-                  disabled={candidate.accountStatus === 'banned'}
-                >
-                  {candidate.name} · {candidate.role} ·{' '}
-                  {candidate.accountStatus}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="mt-2 border-[#d7e4f4] bg-[#f8fbff] text-[#17365f] focus:border-[#2e5aac] focus:ring-[#dce8ff]">
+                <SelectValue
+                  placeholder={
+                    isUsersLoading
+                      ? 'Хэрэглэгч дуудаж байна...'
+                      : 'Хэрэглэгч сонгоно уу'
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {visibleUsers.map((candidate) => (
+                  <SelectItem
+                    key={candidate.id}
+                    value={candidate.id}
+                    disabled={candidate.accountStatus === 'banned'}
+                  >
+                    {candidate.name} · {candidate.role} ·{' '}
+                    {candidate.accountStatus}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </label>
 
           <button

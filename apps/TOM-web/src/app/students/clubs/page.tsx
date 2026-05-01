@@ -6,6 +6,13 @@ import { Plus, X } from 'lucide-react';
 
 import { CapacityBar } from '@/app/_components';
 import { useTomOptions } from '@/app/_hooks/useTomOptions';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { Club, TomFormOptions } from '@/lib/tom-types';
 
 type ClubRequestForm = {
@@ -450,21 +457,21 @@ export default function ClubsPage() {
 
                 <label className="block">
                   <span className={inputLabelClass}>Багш</span>
-                  <select
+                  <Select
                     value={form.teacherId}
-                    onChange={(e) => updateForm('teacherId', e.target.value)}
-                    className={fieldClass}
+                    onValueChange={(value) => updateForm('teacherId', value)}
                   >
-                    {options.teacherOptions.length > 0 ? (
-                      options.teacherOptions.map((teacher) => (
-                        <option key={teacher.id} value={teacher.id}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Багш сонгох" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {options.teacherOptions.map((teacher) => (
+                        <SelectItem key={teacher.id} value={teacher.id}>
                           {teacher.name}
-                        </option>
-                      ))
-                    ) : (
-                      <option value="">Сонгох боломжгүй</option>
-                    )}
-                  </select>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </label>
 
                 <label className="block">
@@ -501,40 +508,40 @@ export default function ClubsPage() {
 
                 <label className="block">
                   <span className={inputLabelClass}>Өдрүүд</span>
-                  <select
+                  <Select
                     value={form.allowedDays}
-                    onChange={(e) => updateForm('allowedDays', e.target.value)}
-                    className={fieldClass}
+                    onValueChange={(value) => updateForm('allowedDays', value)}
                   >
-                    {options.allowedDays.length > 0 ? (
-                      options.allowedDays.map((days) => (
-                        <option key={days} value={days}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Өдөр сонгох" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {options.allowedDays.map((days) => (
+                        <SelectItem key={days} value={days}>
                           {days}
-                        </option>
-                      ))
-                    ) : (
-                      <option value="">Сонгох боломжгүй</option>
-                    )}
-                  </select>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </label>
 
                 <label className="block">
                   <span className={inputLabelClass}>Ангийн хүрээ</span>
-                  <select
+                  <Select
                     value={form.gradeRange}
-                    onChange={(e) => updateForm('gradeRange', e.target.value)}
-                    className={fieldClass}
+                    onValueChange={(value) => updateForm('gradeRange', value)}
                   >
-                    {options.gradeRanges.length > 0 ? (
-                      options.gradeRanges.map((grade) => (
-                        <option key={grade} value={grade}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Анги сонгох" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {options.gradeRanges.map((grade) => (
+                        <SelectItem key={grade} value={grade}>
                           {grade}
-                        </option>
-                      ))
-                    ) : (
-                      <option value="">Сонгох боломжгүй</option>
-                    )}
-                  </select>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </label>
 
                 <label className="block md:col-span-2">

@@ -16,6 +16,13 @@ import {
 
 import { CapacityBar, StatusBadge } from '@/app/_components';
 import { useTomOptions } from '@/app/_hooks/useTomOptions';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { userRoleOptions } from './admin-data';
 import { useAdminDashboard } from './useAdminDashboard';
 
@@ -708,19 +715,23 @@ export function AdminDashboardContent({
 
                     <label className="block">
                       <span className={inputLabelClass}>Үүрэг</span>
-                      <select
+                      <Select
                         value={userForm.role}
-                        onChange={(event) =>
-                          updateUserField('role', event.target.value)
+                        onValueChange={(value) =>
+                          updateUserField('role', value)
                         }
-                        className={fieldClass}
                       >
-                        {userRoleOptions.map((role) => (
-                          <option key={role} value={role}>
-                            {role === 'teacher' ? 'Багш' : 'Сурагч'}
-                          </option>
-                        ))}
-                      </select>
+                        <SelectTrigger className="rounded-xl px-3 py-2 focus:ring-2">
+                          <SelectValue placeholder="Үүрэг сонгох" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {userRoleOptions.map((role) => (
+                            <SelectItem key={role} value={role}>
+                              {role === 'teacher' ? 'Багш' : 'Сурагч'}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </label>
 
                     <label className="block">
