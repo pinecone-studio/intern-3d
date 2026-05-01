@@ -5,6 +5,13 @@ import { useState } from 'react';
 
 import { StatusBadge } from '@/app/_components';
 import { useTomOptions } from '@/app/_hooks/useTomOptions';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 import type { ManagedUser } from '../admin-data';
 import { useAdminDashboard } from '../useAdminDashboard';
@@ -289,16 +296,18 @@ export default function AdminTeacherPage() {
 
             <label className="block">
               <span className={inputLabelClass}>Үүрэг</span>
-              <select
+              <Select
                 value={userForm.role}
-                onChange={(event) =>
-                  updateUserField('role', event.target.value)
-                }
-                className={fieldClass}
+                onValueChange={(value) => updateUserField('role', value)}
               >
-                <option value="teacher">Багш</option>
-                <option value="student">Сурагч</option>
-              </select>
+                <SelectTrigger className="rounded-xl px-3 py-2 focus:ring-2">
+                  <SelectValue placeholder="Үүрэг сонгох" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="teacher">Багш</SelectItem>
+                  <SelectItem value="student">Сурагч</SelectItem>
+                </SelectContent>
+              </Select>
             </label>
 
             <label className="block">

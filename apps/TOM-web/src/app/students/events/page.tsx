@@ -4,6 +4,13 @@ import Link from 'next/link';
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { CalendarDays, MapPin, Search, Users } from 'lucide-react';
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { SchoolEvent } from '@/lib/tom-types';
 
 type EventsResponse = { events: SchoolEvent[] };
@@ -191,19 +198,23 @@ export default function EventsPage() {
               className="w-full bg-transparent text-sm text-[#17365f] outline-none placeholder:text-[#93a6c0]"
             />
           </label>
-          <select
+          <Select
             value={statusFilter}
-            onChange={(event) =>
-              setStatusFilter(event.target.value as typeof statusFilter)
+            onValueChange={(value) =>
+              setStatusFilter(value as typeof statusFilter)
             }
-            className="rounded-[16px] border border-[#d7e4f4] bg-[#f8fbff] px-3 py-2 text-sm text-[#17365f] outline-none"
           >
-            <option value="all">Бүх төлөв</option>
-            <option value="upcoming">Удахгүй</option>
-            <option value="ongoing">Явагдаж буй</option>
-            <option value="completed">Дууссан</option>
-            <option value="cancelled">Цуцлагдсан</option>
-          </select>
+            <SelectTrigger className="rounded-[16px] border-[#d7e4f4] bg-[#f8fbff] px-3 py-2 text-[#17365f] focus:ring-0">
+              <SelectValue placeholder="Бүх төлөв" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Бүх төлөв</SelectItem>
+              <SelectItem value="upcoming">Удахгүй</SelectItem>
+              <SelectItem value="ongoing">Явагдаж буй</SelectItem>
+              <SelectItem value="completed">Дууссан</SelectItem>
+              <SelectItem value="cancelled">Цуцлагдсан</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {banner || errorMessage ? (

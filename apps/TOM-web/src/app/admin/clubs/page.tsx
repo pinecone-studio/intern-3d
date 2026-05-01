@@ -5,6 +5,13 @@ import { Plus, X } from 'lucide-react';
 
 import { CapacityBar, StatusBadge } from '@/app/_components';
 import { useTomOptions } from '@/app/_hooks/useTomOptions';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 import { thresholdGoal, formatThresholdLabel } from '../admin-data';
 import { useClubsPage } from './useClubsPage';
@@ -199,17 +206,21 @@ export default function ClubsPage() {
 
                 <label className="block">
                   <span className={inputLabelClass}>Багш</span>
-                  <select
+                  <Select
                     value={form.teacherId}
-                    onChange={(e) => updateField('teacherId', e.target.value)}
-                    className={fieldClass}
+                    onValueChange={(value) => updateField('teacherId', value)}
                   >
-                    {options.teacherOptions.map((teacher) => (
-                      <option key={teacher.id} value={teacher.id}>
-                        {teacher.name}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Багш сонгох" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {options.teacherOptions.map((teacher) => (
+                        <SelectItem key={teacher.id} value={teacher.id}>
+                          {teacher.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </label>
 
                 <label className="block">
@@ -234,32 +245,40 @@ export default function ClubsPage() {
 
                 <label className="block">
                   <span className={inputLabelClass}>Өдрүүд</span>
-                  <select
+                  <Select
                     value={form.allowedDays}
-                    onChange={(e) => updateField('allowedDays', e.target.value)}
-                    className={fieldClass}
+                    onValueChange={(value) => updateField('allowedDays', value)}
                   >
-                    {options.allowedDays.map((days) => (
-                      <option key={days} value={days}>
-                        {days}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Өдөр сонгох" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {options.allowedDays.map((days) => (
+                        <SelectItem key={days} value={days}>
+                          {days}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </label>
 
                 <label className="block">
                   <span className={inputLabelClass}>Ангийн хүрээ</span>
-                  <select
+                  <Select
                     value={form.gradeRange}
-                    onChange={(e) => updateField('gradeRange', e.target.value)}
-                    className={fieldClass}
+                    onValueChange={(value) => updateField('gradeRange', value)}
                   >
-                    {options.gradeRanges.map((grade) => (
-                      <option key={grade} value={grade}>
-                        {grade}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Анги сонгох" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {options.gradeRanges.map((grade) => (
+                        <SelectItem key={grade} value={grade}>
+                          {grade}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </label>
 
                 <label className="block">

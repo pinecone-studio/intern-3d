@@ -17,6 +17,13 @@ import {
 import { CapacityBar, StatusBadge } from '@/app/_components';
 import { useTomOptions } from '@/app/_hooks/useTomOptions';
 import { useTomSession } from '@/app/_providers/tom-session-provider';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type {
   Club,
   ClubRequest,
@@ -438,28 +445,32 @@ export default function ClubsPage() {
               </label>
               <label className="flex items-center gap-2 rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm text-[#4a6080]">
                 <SlidersHorizontal className="h-4 w-4" />
-                <select
+                <Select
                   value={statusFilter}
-                  onChange={(event) =>
-                    setStatusFilter(event.target.value as ClubStatusFilter)
+                  onValueChange={(value) =>
+                    setStatusFilter(value as ClubStatusFilter)
                   }
-                  className="bg-transparent outline-none"
                 >
-                  <option value="all">Бүх төлөв</option>
-                  {(
-                    [
-                      'active',
-                      'paused',
-                      'pending',
-                      'draft',
-                      'archived',
-                    ] as const
-                  ).map((status) => (
-                    <option key={status} value={status}>
-                      {clubStatusLabel(status)}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="h-auto border-0 bg-transparent p-0 text-[#4a6080] shadow-none focus:bg-transparent focus:ring-0">
+                    <SelectValue placeholder="Бүх төлөв" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Бүх төлөв</SelectItem>
+                    {(
+                      [
+                        'active',
+                        'paused',
+                        'pending',
+                        'draft',
+                        'archived',
+                      ] as const
+                    ).map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {clubStatusLabel(status)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </label>
             </div>
           ) : null}
@@ -747,42 +758,44 @@ export default function ClubsPage() {
 
                 <label className="block">
                   <span className={labelClass}>Анги</span>
-                  <select
+                  <Select
                     value={clubRequestForm.gradeRange}
-                    onChange={(event) =>
-                      updateClubRequestField('gradeRange', event.target.value)
+                    onValueChange={(value) =>
+                      updateClubRequestField('gradeRange', value)
                     }
-                    className={inputClass}
                   >
-                    {options.gradeRanges.length > 0 ? null : (
-                      <option value="">Сонголт ачаалагдаагүй</option>
-                    )}
-                    {options.gradeRanges.map((gradeRange) => (
-                      <option key={gradeRange} value={gradeRange}>
-                        {gradeRange}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Анги сонгох" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {options.gradeRanges.map((gradeRange) => (
+                        <SelectItem key={gradeRange} value={gradeRange}>
+                          {gradeRange}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </label>
 
                 <label className="block">
                   <span className={labelClass}>Өдөр</span>
-                  <select
+                  <Select
                     value={clubRequestForm.allowedDays}
-                    onChange={(event) =>
-                      updateClubRequestField('allowedDays', event.target.value)
+                    onValueChange={(value) =>
+                      updateClubRequestField('allowedDays', value)
                     }
-                    className={inputClass}
                   >
-                    {options.allowedDays.length > 0 ? null : (
-                      <option value="">Сонголт ачаалагдаагүй</option>
-                    )}
-                    {options.allowedDays.map((allowedDay) => (
-                      <option key={allowedDay} value={allowedDay}>
-                        {allowedDay}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Өдөр сонгох" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {options.allowedDays.map((allowedDay) => (
+                        <SelectItem key={allowedDay} value={allowedDay}>
+                          {allowedDay}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </label>
 
                 <label className="block">

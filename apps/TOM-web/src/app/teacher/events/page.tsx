@@ -6,6 +6,13 @@ import { CalendarDays, MapPin, Plus, Trash2 } from 'lucide-react';
 
 import { StatusBadge } from '@/app/_components';
 import { useTomSession } from '@/app/_providers/tom-session-provider';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { EventStatus, SchoolEvent, TomCurrentUser } from '@/lib/tom-types';
 
 const eventStatuses: EventStatus[] = [
