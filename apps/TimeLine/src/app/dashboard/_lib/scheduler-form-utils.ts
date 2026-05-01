@@ -35,6 +35,25 @@ export function createSchedulerMutationInput(selection: Selection, form: DraftFo
   return { roomId: selection.roomId, title: form.title.trim(), groupId: options.groupId ?? null, type: form.type, startTime, endTime, daysOfWeek: options.forceWeekly ? [selection.dayOfWeek] : form.recurrence === 'daily' ? WORK_DAYS.map((day) => day.value) : [selection.dayOfWeek], date: isOneTime ? form.date : null, isOverride: isOneTime, validFrom: isOneTime ? null : form.validFrom || null, validUntil: isOneTime ? null : form.validUntil || null, notes: form.notes.trim() || null }
 }
 
+export function createGroupEditMutationInput(event: ScheduleEvent, form: DraftForm, groupId: string | null): ScheduleEventMutationInput {
+  const isOneTime = event.isOverride
+  return {
+    roomId: event.roomId,
+    title: form.title.trim(),
+    groupId,
+    type: form.type,
+    startTime: normalizeTimelineTime(form.startTime),
+    endTime: normalizeTimelineTime(form.endTime),
+    daysOfWeek: event.daysOfWeek,
+    date: isOneTime ? event.date ?? form.date : null,
+    isOverride: isOneTime,
+    instructor: event.instructor ?? null,
+    notes: form.notes.trim() || null,
+    validFrom: isOneTime ? null : form.validFrom || null,
+    validUntil: isOneTime ? null : form.validUntil || null,
+  }
+}
+
 export function createMutationInputFromEvent(event: ScheduleEvent, overrides: Partial<ScheduleEventMutationInput> = {}): ScheduleEventMutationInput {
   const isOverride = overrides.isOverride ?? event.isOverride
   return {

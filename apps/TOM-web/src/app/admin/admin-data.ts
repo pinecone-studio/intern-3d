@@ -31,7 +31,7 @@ export type ActiveClub = ClubBase & {
 
 export type ClubForm = {
   clubName: string;
-  teacher: string;
+  teacherId: string;
   startDate: string;
   endDate: string;
   allowedDays: string;
@@ -67,7 +67,7 @@ export type UserForm = {
 
 export const initialForm: ClubForm = {
   clubName: '',
-  teacher: '',
+  teacherId: '',
   startDate: '2025-09-01',
   endDate: '2025-12-20',
   allowedDays: '',

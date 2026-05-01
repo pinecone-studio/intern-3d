@@ -136,6 +136,7 @@ export function SchedulerDayView({
                       draggable
                       className={cn('absolute bottom-2 top-2 z-[3] cursor-move overflow-hidden rounded-lg border border-[#d1d1d1] border-l-4 px-2.5 py-1.5 text-left text-xs shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md', getEventTone(event.type))}
                       style={{ left: `${position.left}%`, width: `${position.width}%` }}
+                      title={`${event.title} ${event.startTime}-${event.endTime} ${getEventLabel(event.type)}`}
                       onClick={() => onEditEvent(event, room.id, focusedDayOfWeek)}
                       onDragStart={(dragEvent) => {
                         dragEvent.dataTransfer.setData('text/plain', event.id)

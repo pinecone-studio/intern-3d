@@ -16,6 +16,13 @@ import {
 
 import { CapacityBar, StatusBadge } from '@/app/_components';
 import { useTomOptions } from '@/app/_hooks/useTomOptions';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { userRoleOptions } from './admin-data';
 import { useAdminDashboard } from './useAdminDashboard';
 
@@ -267,8 +274,9 @@ export function AdminDashboardContent({
   );
 
   return (
-    <main className="relative min-h-screen overflow-hidden text-[color:var(--foreground)]">
-      <div className="relative mx-auto">
+    <>
+      <main className="relative min-h-screen overflow-hidden text-[color:var(--foreground)]">
+        <div className="relative mx-auto">
         {!activeSection ? (
           <>
             <section className="dashboard-entrance dashboard-entrance-delay-3 mt-4">
@@ -707,19 +715,23 @@ export function AdminDashboardContent({
 
                     <label className="block">
                       <span className={inputLabelClass}>Үүрэг</span>
-                      <select
+                      <Select
                         value={userForm.role}
-                        onChange={(event) =>
-                          updateUserField('role', event.target.value)
+                        onValueChange={(value) =>
+                          updateUserField('role', value)
                         }
-                        className={fieldClass}
                       >
-                        {userRoleOptions.map((role) => (
-                          <option key={role} value={role}>
-                            {role === 'teacher' ? 'Багш' : 'Сурагч'}
-                          </option>
-                        ))}
-                      </select>
+                        <SelectTrigger className="rounded-xl px-3 py-2 focus:ring-2">
+                          <SelectValue placeholder="Үүрэг сонгох" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {userRoleOptions.map((role) => (
+                            <SelectItem key={role} value={role}>
+                              {role === 'teacher' ? 'Багш' : 'Сурагч'}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </label>
 
                     <label className="block">
@@ -1024,44 +1036,41 @@ export function AdminDashboardContent({
                       </p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3 text-center sm:grid-cols-5">
-                      {[
-                        ['Нийт', events.length],
-                        ['Удахгүй', upcomingEventCount],
-                        ['Явагдаж буй', ongoingEventCount],
-                        ['Дууссан', completedEventCount],
-                        ['Цуцлагдсан', cancelledEventCount],
-                      ].map(([label, value]) => (
-                        <div
-                          key={label}
-                          className="rounded-2xl bg-[color:var(--surface)] px-4 py-3"
-                        >
-                          <p className="text-xl font-semibold text-[#183153]">
-                            {value}
-                          </p>
-                          <p className="text-xs text-[#6f86a7]">{label}</p>
-                        </div>
-                      ))}
+                    <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
+                      <div className="grid grid-cols-2 gap-3 text-center sm:grid-cols-5">
+                        {[
+                          ['Нийт', events.length],
+                          ['Удахгүй', upcomingEventCount],
+                          ['Явагдаж буй', ongoingEventCount],
+                          ['Дууссан', completedEventCount],
+                          ['Цуцлагдсан', cancelledEventCount],
+                        ].map(([label, value]) => (
+                          <div
+                            key={label}
+                            className="rounded-2xl bg-[color:var(--surface)] px-4 py-3"
+                          >
+                            <p className="text-xl font-semibold text-[#183153]">
+                              {value}
+                            </p>
+                            <p className="text-xs text-[#6f86a7]">{label}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={openEventDialog}
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[color:var(--primary)] px-4 py-2 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(79,114,213,0.22)] transition hover:opacity-90 sm:w-auto"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Шинэ арга хэмжээ
+                      </button>
                     </div>
                   </div>
 
-                  <div className="mt-4 rounded-2xl bg-[color:var(--primary-soft)] px-4 py-3 text-sm font-semibold text-[#365f91]">
-                    Нийт автоматаар нэмэгдсэн оролцогч: {totalEventParticipants}
-                  </div>
                 </div>
 
-                <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-                  <div className="rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] p-5 shadow-soft">
-                    <button
-                      type="button"
-                      onClick={openEventDialog}
-                      className="flex w-full items-center justify-center gap-2 rounded-full bg-[color:var(--primary)] px-4 py-2 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(79,114,213,0.22)] transition hover:opacity-90"
-                    >
-                      <Plus className="h-4 w-4" />
-                      Шинэ арга хэмжээ
-                    </button>
-                  </div>
-
+                <div className="grid gap-6">
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
                       <Sparkles className="h-4 w-4 text-[color:var(--primary)]" />
@@ -1196,183 +1205,173 @@ export function AdminDashboardContent({
                   </div>
                 </div>
 
-                {isEventDialogOpen ? (
-                  <div
-                    className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:items-center"
-                    onClick={(e) => {
-                      if (e.target === e.currentTarget) closeEventDialog();
-                    }}
-                  >
-                    <div className="flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] shadow-2xl">
-                      <div className="p-6 pb-4">
-                        <div className="flex items-start justify-between gap-4">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <CalendarDays className="h-4 w-4 text-[color:var(--primary)]" />
-                              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7f93b1]">
-                                Шинэ арга хэмжээ
-                              </p>
-                            </div>
-                            <h3 className="mt-2 text-xl font-semibold text-[#183153]">
-                              Сургуулийн арга хэмжээ үүсгэх
-                            </h3>
-                            <p className="mt-2 text-sm text-[#6c829f]">
-                              Гарчиг болон огноо заавал оруулна. Үүссэний дараа
-                              бүх хэрэглэгч автоматаар арга хэмжээнд нэгдэнэ.
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={closeEventDialog}
-                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#6982a2] transition hover:bg-[color:var(--surface)]"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          void handleCreateEvent();
-                        }}
-                        className="flex min-h-0 flex-1 flex-col"
-                      >
-                        <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4">
-                          <div className="space-y-4">
-                            <label className="block">
-                              <span className={inputLabelClass}>
-                                Арга хэмжээний гарчиг
-                              </span>
-                              <input
-                                type="text"
-                                required
-                                value={eventForm.title}
-                                onChange={(e) =>
-                                  updateEventField('title', e.target.value)
-                                }
-                                placeholder="Жишээ: Сургуулийн тамирын өдөр"
-                                className={fieldClass}
-                              />
-                            </label>
-
-                            <label className="block">
-                              <span className={inputLabelClass}>Огноо</span>
-                              <input
-                                type="date"
-                                required
-                                value={eventForm.eventDate}
-                                onChange={(e) =>
-                                  updateEventField('eventDate', e.target.value)
-                                }
-                                className={fieldClass}
-                              />
-                            </label>
-
-                            <div className="grid gap-4 sm:grid-cols-2">
-                              <label className="block">
-                                <span className={inputLabelClass}>
-                                  Эхлэх цаг
-                                </span>
-                                <input
-                                  type="time"
-                                  value={eventForm.startTime}
-                                  onChange={(e) =>
-                                    updateEventField(
-                                      'startTime',
-                                      e.target.value
-                                    )
-                                  }
-                                  className={fieldClass}
-                                />
-                              </label>
-                              <label className="block">
-                                <span className={inputLabelClass}>
-                                  Дуусах цаг
-                                </span>
-                                <input
-                                  type="time"
-                                  value={eventForm.endTime}
-                                  onChange={(e) =>
-                                    updateEventField('endTime', e.target.value)
-                                  }
-                                  className={fieldClass}
-                                />
-                              </label>
-                            </div>
-
-                            <label className="block">
-                              <span className={inputLabelClass}>Байршил</span>
-                              <input
-                                type="text"
-                                value={eventForm.location}
-                                onChange={(e) =>
-                                  updateEventField('location', e.target.value)
-                                }
-                                placeholder="Жишээ: Тамирын заал, 3-р давхар"
-                                className={fieldClass}
-                              />
-                            </label>
-
-                            <label className="block">
-                              <span className={inputLabelClass}>Тайлбар</span>
-                              <textarea
-                                rows={3}
-                                value={eventForm.description}
-                                onChange={(e) =>
-                                  updateEventField(
-                                    'description',
-                                    e.target.value
-                                  )
-                                }
-                                placeholder="Арга хэмжээний дэлгэрэнгүй мэдээлэл..."
-                                className={fieldClass}
-                              />
-                            </label>
-                          </div>
-                        </div>
-
-                        <div className="shrink-0 border-t border-[color:var(--border)] bg-[color:var(--card)] px-6 py-4">
-                          {eventFormError ? (
-                            <div className="mb-3 rounded-2xl border border-[#ffd2d5] bg-[#fff7f8] px-4 py-3 text-sm font-semibold text-[#b23a49]">
-                              {eventFormError}
-                            </div>
-                          ) : null}
-
-                          <div className="flex flex-wrap items-center gap-3">
-                            <button
-                              type="submit"
-                              disabled={!canCreateEvent}
-                              className="rounded-full bg-[color:var(--primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(79,114,213,0.22)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-[#b5d0f3]"
-                            >
-                              Арга хэмжээ үүсгээд автоматаар нэмэх
-                            </button>
-                            <button
-                              type="button"
-                              onClick={resetEventForm}
-                              className="rounded-full border border-[color:var(--border)] bg-white px-5 py-2.5 text-sm font-semibold text-[#56708f] transition hover:bg-[color:var(--surface)]"
-                            >
-                              Цэвэрлэх
-                            </button>
-                            <button
-                              type="button"
-                              onClick={closeEventDialog}
-                              className="rounded-full border border-[color:var(--border)] bg-white px-5 py-2.5 text-sm font-semibold text-[#56708f] transition hover:bg-[color:var(--surface)]"
-                            >
-                              Цуцлах
-                            </button>
-                          </div>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                ) : null}
               </section>
             ) : null}
           </section>
         ) : null}
-      </div>
-    </main>
+        </div>
+      </main>
+
+      {isEventDialogOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/30 p-4 sm:items-center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeEventDialog();
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded-[28px] border border-[color:var(--border)] bg-[color:var(--card)] shadow-2xl">
+            <div className="p-6 pb-4">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <CalendarDays className="h-4 w-4 text-[color:var(--primary)]" />
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7f93b1]">
+                      Шинэ арга хэмжээ
+                    </p>
+                  </div>
+                  <h3 className="mt-2 text-xl font-semibold text-[#183153]">
+                    Сургуулийн арга хэмжээ үүсгэх
+                  </h3>
+                  <p className="mt-2 text-sm text-[#6c829f]">
+                    Гарчиг болон огноо заавал оруулна. Үүссэний дараа бүх
+                    хэрэглэгч автоматаар арга хэмжээнд нэгдэнэ.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={closeEventDialog}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#6982a2] transition hover:bg-[color:var(--surface)]"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                void handleCreateEvent();
+              }}
+              className="flex min-h-0 flex-1 flex-col"
+            >
+              <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4">
+                <div className="space-y-4">
+                  <label className="block">
+                    <span className={inputLabelClass}>Арга хэмжээний гарчиг</span>
+                    <input
+                      type="text"
+                      required
+                      value={eventForm.title}
+                      onChange={(e) => updateEventField('title', e.target.value)}
+                      placeholder="Жишээ: Сургуулийн тамирын өдөр"
+                      className={fieldClass}
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className={inputLabelClass}>Огноо</span>
+                    <input
+                      type="date"
+                      required
+                      value={eventForm.eventDate}
+                      onChange={(e) =>
+                        updateEventField('eventDate', e.target.value)
+                      }
+                      className={fieldClass}
+                    />
+                  </label>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <label className="block">
+                      <span className={inputLabelClass}>Эхлэх цаг</span>
+                      <input
+                        type="time"
+                        value={eventForm.startTime}
+                        onChange={(e) =>
+                          updateEventField('startTime', e.target.value)
+                        }
+                        className={fieldClass}
+                      />
+                    </label>
+                    <label className="block">
+                      <span className={inputLabelClass}>Дуусах цаг</span>
+                      <input
+                        type="time"
+                        value={eventForm.endTime}
+                        onChange={(e) =>
+                          updateEventField('endTime', e.target.value)
+                        }
+                        className={fieldClass}
+                      />
+                    </label>
+                  </div>
+
+                  <label className="block">
+                    <span className={inputLabelClass}>Байршил</span>
+                    <input
+                      type="text"
+                      value={eventForm.location}
+                      onChange={(e) =>
+                        updateEventField('location', e.target.value)
+                      }
+                      placeholder="Жишээ: Тамирын заал, 3-р давхар"
+                      className={fieldClass}
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className={inputLabelClass}>Тайлбар</span>
+                    <textarea
+                      rows={3}
+                      value={eventForm.description}
+                      onChange={(e) =>
+                        updateEventField('description', e.target.value)
+                      }
+                      placeholder="Арга хэмжээний дэлгэрэнгүй мэдээлэл..."
+                      className={fieldClass}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div className="shrink-0 border-t border-[color:var(--border)] bg-[color:var(--card)] px-6 py-4">
+                {eventFormError ? (
+                  <div className="mb-3 rounded-2xl border border-[#ffd2d5] bg-[#fff7f8] px-4 py-3 text-sm font-semibold text-[#b23a49]">
+                    {eventFormError}
+                  </div>
+                ) : null}
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="submit"
+                    disabled={!canCreateEvent}
+                    className="rounded-full bg-[color:var(--primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(79,114,213,0.22)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-[#b5d0f3]"
+                  >
+                    Арга хэмжээ үүсгээд автоматаар нэмэх
+                  </button>
+                  <button
+                    type="button"
+                    onClick={resetEventForm}
+                    className="rounded-full border border-[color:var(--border)] bg-white px-5 py-2.5 text-sm font-semibold text-[#56708f] transition hover:bg-[color:var(--surface)]"
+                  >
+                    Цэвэрлэх
+                  </button>
+                  <button
+                    type="button"
+                    onClick={closeEventDialog}
+                    className="rounded-full border border-[color:var(--border)] bg-white px-5 py-2.5 text-sm font-semibold text-[#56708f] transition hover:bg-[color:var(--surface)]"
+                  >
+                    Цуцлах
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }
 

@@ -17,6 +17,13 @@ import {
 import { CapacityBar, StatusBadge } from '@/app/_components';
 import { useTomOptions } from '@/app/_hooks/useTomOptions';
 import { useTomSession } from '@/app/_providers/tom-session-provider';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type {
   Club,
   ClubRequest,
@@ -103,20 +110,16 @@ export default function ClubsPage() {
   const [clubRequestForm, setClubRequestForm] = useState<ClubRequestForm>(() =>
     createInitialClubRequestForm(options)
   );
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [message, setMessage] = useState('Клубийн мэдээллийг D1-ээс ачааллаа.');
 
-  const loadData = async (nextMessage?: string) => {
+  const loadData = async () => {
     const data = await apiRequest<TeacherClubsResponse>('/api/teacher/clubs');
 
     setClubs(data.clubs);
     setRequests(data.requests);
     setTeacherScopeName(data.teacherScopeName);
-    setMessage(
-      nextMessage || `${data.teacherScopeName} нэр дээрх клубүүдийг шинэчиллээ.`
-    );
   };
 
   useEffect(() => {
@@ -218,7 +221,7 @@ export default function ClubsPage() {
       setClubRequestForm(createInitialClubRequestForm(options));
       setIsRequestDialogOpen(false);
       setActiveTab('requests');
-      await loadData(`${clubName} клубийн хүсэлт илгээгдлээ.`);
+      await loadData();
     }, 'Клубийн хүсэлт үүсгэж чадсангүй.');
   };
 
@@ -227,7 +230,7 @@ export default function ClubsPage() {
       await apiRequest(`/api/club-requests/${request.id}/approve`, {
         method: 'POST',
       });
-      await loadData(`${request.clubName} хүсэлт батлагдлаа.`);
+      await loadData();
     }, 'Хүсэлт баталж чадсангүй.');
   };
 
@@ -256,9 +259,7 @@ export default function ClubsPage() {
         }),
       });
 
-      await loadData(
-        `${request.clubName} батлагдаж kickoff event автоматаар үүслээ.`
-      );
+      await loadData();
     }, 'Хүсэлт баталж kickoff event үүсгэж чадсангүй.');
   };
 
@@ -267,7 +268,7 @@ export default function ClubsPage() {
       await apiRequest(`/api/club-requests/${request.id}/reject`, {
         method: 'POST',
       });
-      await loadData(`${request.clubName} хүсэлт татгалзагдлаа.`);
+      await loadData();
     }, 'Хүсэлт татгалзаж чадсангүй.');
   };
 
@@ -281,11 +282,7 @@ export default function ClubsPage() {
           status: nextStatus,
         }),
       });
-      await loadData(
-        nextStatus === 'active'
-          ? `${club.name} дахин идэвхжлээ.`
-          : `${club.name} түр зогсоолоо.`
-      );
+      await loadData();
     }, 'Клубийн төлөв шинэчилж чадсангүй.');
   };
 
@@ -365,47 +362,9 @@ export default function ClubsPage() {
           className="flex items-center gap-2 rounded-2xl bg-[#49a0e3] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(26,53,96,0.25)] transition hover:opacity-90"
         >
           <Plus className="h-4 w-4" />
-          Шинэ хүсэлт
+          Клуб үүсгэх
         </button>
       </div>
-
-      <section
-        className={`rounded-[28px] border px-5 py-4 shadow-soft ${
-          errorMessage
-            ? 'border-[#ffd2d5] bg-[#fff7f8] text-[#b23a49]'
-            : 'border-[color:var(--border)] bg-white/90 text-[#56708f]'
-        }`}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em]">
-              {errorMessage
-                ? 'Синк алдаа'
-                : isLoading
-                ? 'Клубүүд ачаалж байна'
-                : isSaving
-                ? 'Өөрчлөлт хадгалж байна'
-                : 'Багшийн клубүүд'}
-            </p>
-            <p className="mt-1 text-sm">
-              {errorMessage ||
-                (isLoading
-                  ? 'Таны багшийн нэр дээрх клуб, хүсэлтийн өгөгдлийг ачаалж байна.'
-                  : isSaving
-                  ? 'Сүүлд хийсэн өөрчлөлтийг хадгалж байна.'
-                  : message)}
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm font-semibold text-[#4a6080]">
-              {teacherScopeName ||
-                user?.teacherProfileName ||
-                user?.name ||
-                'Багш'}
-            </div>
-          </div>
-        </div>
-      </section>
 
       <section className="grid gap-3 md:grid-cols-3">
         {[
@@ -486,28 +445,32 @@ export default function ClubsPage() {
               </label>
               <label className="flex items-center gap-2 rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm text-[#4a6080]">
                 <SlidersHorizontal className="h-4 w-4" />
-                <select
+                <Select
                   value={statusFilter}
-                  onChange={(event) =>
-                    setStatusFilter(event.target.value as ClubStatusFilter)
+                  onValueChange={(value) =>
+                    setStatusFilter(value as ClubStatusFilter)
                   }
-                  className="bg-transparent outline-none"
                 >
-                  <option value="all">Бүх төлөв</option>
-                  {(
-                    [
-                      'active',
-                      'paused',
-                      'pending',
-                      'draft',
-                      'archived',
-                    ] as const
-                  ).map((status) => (
-                    <option key={status} value={status}>
-                      {clubStatusLabel(status)}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="h-auto border-0 bg-transparent p-0 text-[#4a6080] shadow-none focus:bg-transparent focus:ring-0">
+                    <SelectValue placeholder="Бүх төлөв" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Бүх төлөв</SelectItem>
+                    {(
+                      [
+                        'active',
+                        'paused',
+                        'pending',
+                        'draft',
+                        'archived',
+                      ] as const
+                    ).map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {clubStatusLabel(status)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </label>
             </div>
           ) : null}
@@ -557,7 +520,12 @@ export default function ClubsPage() {
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="truncate text-base font-semibold text-[#17304f]">
-                        {club.name}
+                        <Link
+                          href={`/teacher/clubs/${club.id}`}
+                          className="transition hover:underline"
+                        >
+                          {club.name}
+                        </Link>
                       </h3>
                       <StatusBadge
                         type={club.status}
@@ -768,6 +736,12 @@ export default function ClubsPage() {
                 void submitClubRequest();
               }}
             >
+              {errorMessage ? (
+                <div className="rounded-2xl border border-[#ffd2d5] bg-[#fff7f8] px-4 py-3 text-sm font-medium text-[#b23a49]">
+                  {errorMessage}
+                </div>
+              ) : null}
+
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="block">
                   <span className={labelClass}>Клубийн нэр</span>
@@ -784,42 +758,44 @@ export default function ClubsPage() {
 
                 <label className="block">
                   <span className={labelClass}>Анги</span>
-                  <select
+                  <Select
                     value={clubRequestForm.gradeRange}
-                    onChange={(event) =>
-                      updateClubRequestField('gradeRange', event.target.value)
+                    onValueChange={(value) =>
+                      updateClubRequestField('gradeRange', value)
                     }
-                    className={inputClass}
                   >
-                    {options.gradeRanges.length > 0 ? null : (
-                      <option value="">Сонголт ачаалагдаагүй</option>
-                    )}
-                    {options.gradeRanges.map((gradeRange) => (
-                      <option key={gradeRange} value={gradeRange}>
-                        {gradeRange}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Анги сонгох" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {options.gradeRanges.map((gradeRange) => (
+                        <SelectItem key={gradeRange} value={gradeRange}>
+                          {gradeRange}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </label>
 
                 <label className="block">
                   <span className={labelClass}>Өдөр</span>
-                  <select
+                  <Select
                     value={clubRequestForm.allowedDays}
-                    onChange={(event) =>
-                      updateClubRequestField('allowedDays', event.target.value)
+                    onValueChange={(value) =>
+                      updateClubRequestField('allowedDays', value)
                     }
-                    className={inputClass}
                   >
-                    {options.allowedDays.length > 0 ? null : (
-                      <option value="">Сонголт ачаалагдаагүй</option>
-                    )}
-                    {options.allowedDays.map((allowedDay) => (
-                      <option key={allowedDay} value={allowedDay}>
-                        {allowedDay}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Өдөр сонгох" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {options.allowedDays.map((allowedDay) => (
+                        <SelectItem key={allowedDay} value={allowedDay}>
+                          {allowedDay}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </label>
 
                 <label className="block">

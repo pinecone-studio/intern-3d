@@ -5,12 +5,12 @@ import type { Dispatch, SetStateAction } from 'react';
 import { useState } from 'react';
 
 import { useTomSession } from '@/app/_providers/tom-session-provider';
-import type { EventPost, EventPostComment } from '@/lib/tom-types';
+import type { ClubPost, ClubPostComment } from '@/lib/tom-types';
 
-type FeedPost = EventPost & { comments: EventPostComment[] };
+type FeedPost = ClubPost & { comments: ClubPostComment[] };
 
 type Props = {
-  eventId: string;
+  clubId: string;
   posts: FeedPost[];
   setPosts: Dispatch<SetStateAction<FeedPost[]>>;
   onError?: (message: string) => void;
@@ -44,8 +44,8 @@ function formatTimestamp(iso: string) {
   return iso ? iso.replace('T', ' ').slice(0, 16) : '';
 }
 
-export function EventPostsFeed({
-  eventId,
+export function ClubPostsFeed({
+  clubId,
   posts,
   setPosts,
   onError,
@@ -66,8 +66,8 @@ export function EventPostsFeed({
     onError?.('');
 
     try {
-      const data = await apiRequest<{ comment: EventPostComment }>(
-        `/api/events/${eventId}/posts/${postId}/comments`,
+      const data = await apiRequest<{ comment: ClubPostComment }>(
+        `/api/clubs/${clubId}/posts/${postId}/comments`,
         {
           method: 'POST',
           body: JSON.stringify({ body }),
@@ -99,7 +99,7 @@ export function EventPostsFeed({
 
     try {
       const data = await apiRequest<{ likeCount: number; likedByMe: boolean }>(
-        `/api/events/${eventId}/posts/${postId}/likes`,
+        `/api/clubs/${clubId}/posts/${postId}/likes`,
         { method: 'POST' }
       );
 
@@ -111,9 +111,7 @@ export function EventPostsFeed({
         )
       );
     } catch (error) {
-      onError?.(
-        error instanceof Error ? error.message : 'Like дарж чадсангүй.'
-      );
+      onError?.(error instanceof Error ? error.message : 'Like дарж чадсангүй.');
     } finally {
       setPendingLikePostId('');
     }
@@ -127,7 +125,7 @@ export function EventPostsFeed({
     onError?.('');
 
     try {
-      await apiRequest<{ ok: true }>(`/api/events/${eventId}/posts/${postId}`, {
+      await apiRequest<{ ok: true }>(`/api/clubs/${clubId}/posts/${postId}`, {
         method: 'DELETE',
       });
       setPosts((current) => current.filter((post) => post.id !== postId));
@@ -149,7 +147,7 @@ export function EventPostsFeed({
 
     try {
       await apiRequest<{ ok: true }>(
-        `/api/events/${eventId}/posts/${postId}/comments/${commentId}`,
+        `/api/clubs/${clubId}/posts/${postId}/comments/${commentId}`,
         { method: 'DELETE' }
       );
       setPosts((current) =>
@@ -176,7 +174,7 @@ export function EventPostsFeed({
   if (posts.length === 0) {
     return (
       <div className="rounded-2xl border border-[#e2eaf5] bg-white p-8 text-sm text-[#6f86a7]">
-        Одоогоор энэ event дээр post байхгүй байна.
+        Одоогоор энэ клуб дээр post байхгүй байна.
       </div>
     );
   }
@@ -291,9 +289,7 @@ export function EventPostsFeed({
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-[#6f86a7]">
-                  Эхний comment бичээрэй.
-                </p>
+                <p className="text-xs text-[#6f86a7]">Эхний comment бичээрэй.</p>
               )}
 
               <div className="flex items-end gap-2">

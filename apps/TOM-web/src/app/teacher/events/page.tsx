@@ -2,11 +2,17 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, MapPin, Plus, Search, Trash2 } from 'lucide-react';
+import { CalendarDays, MapPin, Plus, Trash2 } from 'lucide-react';
 
 import { StatusBadge } from '@/app/_components';
-import { useDebouncedValue } from '@/app/_hooks/useDebouncedValue';
 import { useTomSession } from '@/app/_providers/tom-session-provider';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { EventStatus, SchoolEvent, TomCurrentUser } from '@/lib/tom-types';
 
 const eventStatuses: EventStatus[] = [
@@ -75,37 +81,18 @@ export default function EventsPage() {
   const { user } = useTomSession();
   const [events, setEvents] = useState<SchoolEvent[]>([]);
   const [form, setForm] = useState<EventForm>(emptyForm);
-  const [statusFilter, setStatusFilter] = useState<'all' | EventStatus>('all');
-  const [searchTerm, setSearchTerm] = useState('');
   const [teacherScopeName, setTeacherScopeName] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [message, setMessage] = useState('Арга хэмжээний мэдээллийг ачааллаа.');
-  const debouncedSearchTerm = useDebouncedValue(searchTerm);
+  const [, setErrorMessage] = useState('');
 
-  const loadData = async (nextMessage?: string) => {
-    const query = new URLSearchParams();
-
-    if (statusFilter !== 'all') {
-      query.set('status', statusFilter);
-    }
-
-    if (debouncedSearchTerm.trim()) {
-      query.set('q', debouncedSearchTerm.trim());
-    }
-
-    const suffix = query.toString() ? `?${query.toString()}` : '';
+  const loadData = async () => {
     const eventData = await apiRequest<TeacherEventsResponse>(
-      `/api/teacher/events${suffix}`
+      '/api/teacher/events'
     );
 
     setEvents(eventData.events);
     setTeacherScopeName(eventData.teacherScopeName);
-    setMessage(
-      nextMessage ||
-        `${eventData.teacherScopeName} нэр дээрх арга хэмжээнүүдийг шинэчиллээ.`
-    );
   };
 
   useEffect(() => {
@@ -137,7 +124,7 @@ export default function EventsPage() {
     return () => {
       cancelled = true;
     };
-  }, [statusFilter, debouncedSearchTerm]);
+  }, []);
 
   const runAction = async (action: () => Promise<void>, fallback: string) => {
     setIsSaving(true);
@@ -159,7 +146,7 @@ export default function EventsPage() {
         body: JSON.stringify(form),
       });
       setForm(emptyForm);
-      await loadData(`${form.title} арга хэмжээ үүслээ.`);
+      await loadData();
     }, 'Арга хэмжээ үүсгэж чадсангүй.');
   };
 
@@ -169,9 +156,7 @@ export default function EventsPage() {
         method: 'PATCH',
         body: JSON.stringify({ status }),
       });
-      await loadData(
-        `${event.title} төлөв ${eventStatusLabel[status]} боллоо.`
-      );
+      await loadData();
     }, 'Арга хэмжээний төлөв шинэчилж чадсангүй.');
   };
 
@@ -180,7 +165,7 @@ export default function EventsPage() {
       await apiRequest(`/api/events/${event.id}`, {
         method: 'DELETE',
       });
-      await loadData(`${event.title} арга хэмжээ устлаа.`);
+      await loadData();
     }, 'Арга хэмжээ устгаж чадсангүй.');
   };
 
@@ -199,70 +184,6 @@ export default function EventsPage() {
 
   return (
     <div className="space-y-6">
-      <section
-        className={`rounded-[28px] border px-5 py-4 shadow-soft ${
-          errorMessage
-            ? 'border-[#ffd2d5] bg-[#fff7f8] text-[#b23a49]'
-            : 'border-[color:var(--border)] bg-white/90 text-[#56708f]'
-        }`}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em]">
-              {errorMessage
-                ? 'Синк алдаа'
-                : isLoading
-                ? 'Арга хэмжээнүүд ачаалж байна'
-                : isSaving
-                ? 'Өөрчлөлт хадгалж байна'
-                : 'Багшийн арга хэмжээнүүд'}
-            </p>
-            <p className="mt-1 text-sm">
-              {errorMessage ||
-                (isLoading
-                  ? 'Таны багшийн нэр дээрх арга хэмжээнүүдийг ачаалж байна.'
-                  : isSaving
-                  ? 'Арга хэмжээний өөрчлөлтийг хадгалж байна.'
-                  : message)}
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm font-semibold text-[#4a6080]">
-              {teacherScopeName ||
-                user?.teacherProfileName ||
-                user?.name ||
-                'Багш'}
-            </div>
-            <label className="rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm text-[#4a6080]">
-              <span className="mr-2 font-semibold">Төлөв</span>
-              <select
-                value={statusFilter}
-                onChange={(event) =>
-                  setStatusFilter(event.target.value as 'all' | EventStatus)
-                }
-                className="bg-transparent outline-none"
-              >
-                <option value="all">Бүгд</option>
-                {eventStatuses.map((status) => (
-                  <option key={status} value={status}>
-                    {eventStatusLabel[status]}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="flex items-center gap-2 rounded-full border border-[#d9e4f3] bg-white px-3 py-2 text-sm text-[#4a6080]">
-              <Search className="h-4 w-4" />
-              <input
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Арга хэмжээ хайх"
-                className="w-36 bg-transparent outline-none placeholder:text-[#8aa0be]"
-              />
-            </label>
-          </div>
-        </div>
-      </section>
-
       <section className="grid gap-4 md:grid-cols-4">
         {[
           { label: 'Нийт арга хэмжээ', value: summary.total },

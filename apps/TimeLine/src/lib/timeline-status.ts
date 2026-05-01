@@ -81,9 +81,10 @@ export function getCurrentEvent(events: ScheduleEvent[], now = new Date()): Sche
 
 function nextOccurrenceStart(event: ScheduleEvent, now: Date): Date | null {
   const nowTime = now.getTime()
+  const currentDate = toLocalDateString(now)
 
   if (event.isOverride) {
-    if (!event.date) return null
+    if (!event.date || event.date !== currentDate) return null
     const startsAt = new Date(`${event.date}T${event.startTime}:00`)
     return startsAt.getTime() > nowTime ? startsAt : null
   }
