@@ -40,7 +40,7 @@ export function RoomDetailContent({ roomId }: { roomId: string }) {
 
   const isAdmin = role === 'admin'
   const room = liveRoom
-  const regularEvents = (data.room.events ?? []).filter((event) => !event.isOverride)
+  const allEvents = data.room.events ?? []
 
   const handleSaveEvent = async (formData: EventFormData) => {
     try {
@@ -60,7 +60,7 @@ export function RoomDetailContent({ roomId }: { roomId: string }) {
     <div className="space-y-6">
       <RoomDetailHeader isAdmin={isAdmin} onCreateEvent={() => { setMutationError(null); setEditingEvent(null); setEditDialogOpen(true) }} room={room} />
       {mutationError && <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">{mutationError}</div>}
-      <Card><CardHeader><CardTitle>Долоо хоногийн хуваарь</CardTitle><CardDescription>Даваа - Баасан гариг</CardDescription></CardHeader><CardContent><RoomWeeklyScheduleGrid currentDay={clock.currentDay} currentTime={clock.currentTime} events={regularEvents} isAdmin={isAdmin} onEditEvent={(event) => { setMutationError(null); setEditingEvent(event); setEditDialogOpen(true) }} /></CardContent></Card>
+      <Card><CardHeader><CardTitle>Долоо хоногийн хуваарь</CardTitle><CardDescription>Даваа - Баасан гариг</CardDescription></CardHeader><CardContent><RoomWeeklyScheduleGrid currentDate={clock.now} currentDay={clock.currentDay} currentTime={clock.currentTime} events={allEvents} isAdmin={isAdmin} onEditEvent={(event) => { setMutationError(null); setEditingEvent(event); setEditDialogOpen(true) }} /></CardContent></Card>
       <RoomEventFormDialog event={editingEvent} onOpenChange={setEditDialogOpen} onSave={handleSaveEvent} open={editDialogOpen} saving={creatingEvent || updatingEvent} />
     </div>
   )
