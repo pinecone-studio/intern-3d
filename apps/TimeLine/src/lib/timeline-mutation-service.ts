@@ -19,6 +19,16 @@ function assertAllowedScheduleType(input: ScheduleEventInput) {
   }
 }
 
+function isLegacyScheduleBlockError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error)
+  return [
+    'no such table: schedule_blocks',
+    'no such column',
+    'has no column named',
+    'table schedule_blocks has no column',
+  ].some((entry) => message.toLowerCase().includes(entry))
+}
+
 export async function createScheduleEvent(input: ScheduleEventInput, actorUserId: string | null) {
   assertAllowedScheduleType(input)
 
@@ -30,7 +40,8 @@ export async function createScheduleEvent(input: ScheduleEventInput, actorUserId
   try {
     await db.insert(scheduleBlocksTable).values(toScheduleBlockInsert(input, id, now, createdBy))
     return getRoomDetail(input.roomId)
-  } catch {
+  } catch (error) {
+    if (!isLegacyScheduleBlockError(error)) throw error
     // Older local/D1 databases use schedules + overrides until migration 0004 is applied.
   }
 
@@ -59,7 +70,8 @@ export async function updateScheduleEvent(id: string, input: ScheduleEventInput,
         .where(eq(scheduleBlocksTable.id, id))
       return getRoomDetail(input.roomId)
     }
-  } catch {
+  } catch (error) {
+    if (!isLegacyScheduleBlockError(error)) throw error
     // Older local/D1 databases use schedules + overrides until migration 0004 is applied.
   }
 
@@ -88,7 +100,8 @@ export async function deleteScheduleEvent(id: string, actorUserId: string | null
 
   try {
     await db.delete(scheduleBlocksTable).where(eq(scheduleBlocksTable.id, id))
-  } catch {
+  } catch (error) {
+    if (!isLegacyScheduleBlockError(error)) throw error
     // Older local/D1 databases use schedules + overrides until migration 0004 is applied.
   }
 
