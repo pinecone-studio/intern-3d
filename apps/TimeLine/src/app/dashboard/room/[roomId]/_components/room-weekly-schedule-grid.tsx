@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { timeToMinutes } from '@/app/dashboard/room/[roomId]/_lib/room-detail-utils'
 
 type RoomWeeklyScheduleGridProps = {
+  currentDate: Date
   currentDay: number
   currentTime: string
   events: ScheduleEvent[]
@@ -18,7 +19,40 @@ const GRID_START_HOUR = 8
 const GRID_END_HOUR = 20
 const HOUR_HEIGHT = 48
 
+function toLocalDateString(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function toIsoDay(date: Date): number {
+  const day = date.getDay()
+  return day === 0 ? 7 : day
+}
+
+function getWeekStart(date: Date): Date {
+  const weekStart = new Date(date)
+  weekStart.setHours(0, 0, 0, 0)
+  const day = toIsoDay(weekStart)
+  weekStart.setDate(weekStart.getDate() - (day - 1))
+  return weekStart
+}
+
+function getDateForWeekDay(weekStart: Date, day: number): Date {
+  const date = new Date(weekStart)
+  date.setDate(weekStart.getDate() + day - 1)
+  return date
+}
+
+function isRecurringEventValidOnDate(event: ScheduleEvent, dateIso: string): boolean {
+  if (event.validFrom && dateIso < event.validFrom) return false
+  if (event.validUntil && dateIso > event.validUntil) return false
+  return true
+}
+
 export function RoomWeeklyScheduleGrid({
+  currentDate,
   currentDay,
   currentTime,
   events,
@@ -27,7 +61,22 @@ export function RoomWeeklyScheduleGrid({
 }: RoomWeeklyScheduleGridProps) {
   const days = DAYS_OF_WEEK.filter((day) => day.value >= 1 && day.value <= 5)
   const hours = Array.from({ length: GRID_END_HOUR - GRID_START_HOUR }, (_, index) => GRID_START_HOUR + index)
-  const expandedEvents = events.flatMap((event) => event.daysOfWeek.filter((day) => day >= 1 && day <= 5).map((displayDay) => ({ ...event, displayDay })))
+  const weekStart = getWeekStart(currentDate)
+  const expandedEvents = events.flatMap((event) => {
+    if (event.isOverride) {
+      if (!event.date) return []
+      const eventDate = new Date(`${event.date}T00:00:00`)
+      const displayDay = toIsoDay(eventDate)
+      if (displayDay < 1 || displayDay > 5) return []
+      const weekDateIso = toLocalDateString(getDateForWeekDay(weekStart, displayDay))
+      return weekDateIso === event.date ? [{ ...event, displayDay }] : []
+    }
+
+    return event.daysOfWeek
+      .filter((displayDay) => displayDay >= 1 && displayDay <= 5)
+      .filter((displayDay) => isRecurringEventValidOnDate(event, toLocalDateString(getDateForWeekDay(weekStart, displayDay))))
+      .map((displayDay) => ({ ...event, displayDay }))
+  })
   const currentMinutes = timeToMinutes(currentTime)
   const dayIndex = days.findIndex((day) => day.value === currentDay)
   const indicatorOffset = ((currentMinutes - GRID_START_HOUR * 60) / 60) * HOUR_HEIGHT
