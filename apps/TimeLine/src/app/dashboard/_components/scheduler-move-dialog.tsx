@@ -26,7 +26,7 @@ export function SchedulerMoveDialog({ canMoveGroup, conflictPreview, onApply, on
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Хуваарь зөөх</DialogTitle>
-          <DialogDescription>{pendingMove?.event.title} хуваарийг яаж зөөхөө сонгоно уу.</DialogDescription>
+          <DialogDescription>{pendingMove?.event.title} хуваарийг яаж зөөхөө сонгоно уу.{canMoveGroup ? ' Энэ хуваарь сонговол хамт үүсгэсэн хуваариуд цуг зөөгдөнө.' : ''}</DialogDescription>
         </DialogHeader>
         {conflictPreview ? (
           <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm">
@@ -41,8 +41,7 @@ export function SchedulerMoveDialog({ canMoveGroup, conflictPreview, onApply, on
           ) : (
             <div className="flex flex-wrap gap-2">
               <Button type="button" variant="outline" onClick={() => onApply('occurrence')}>Зөвхөн энэ удаа</Button>
-              <Button type="button" variant="outline" onClick={() => onApply('series')}>Энэ хуваарь</Button>
-              {canMoveGroup ? <Button type="button" className="bg-[#6264a7] hover:bg-[#5558a7]" onClick={() => onApply('group')}>Хамт үүсгэсэн бүгд</Button> : null}
+              <Button type="button" className={canMoveGroup ? 'bg-[#6264a7] hover:bg-[#5558a7]' : undefined} variant={canMoveGroup ? 'default' : 'outline'} onClick={() => onApply('series')}>{canMoveGroup ? 'Энэ хуваарь бүгд' : 'Энэ хуваарь'}</Button>
             </div>
           )}
         </DialogFooter>
