@@ -166,6 +166,27 @@ export type EventPostComment = {
   updatedAt: string
 }
 
+export type ClubPost = {
+  id: string
+  clubId: string
+  title: string
+  body: string
+  author: PublicUser
+  likeCount: number
+  likedByMe: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export type ClubPostComment = {
+  id: string
+  postId: string
+  body: string
+  author: PublicUser
+  createdAt: string
+  updatedAt: string
+}
+
 export type ClubInput = Partial<Omit<Club, 'id' | 'createdAt' | 'updatedAt'>> & {
   name: string
 }

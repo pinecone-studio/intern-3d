@@ -557,7 +557,12 @@ export default function ClubsPage() {
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="truncate text-base font-semibold text-[#17304f]">
-                        {club.name}
+                        <Link
+                          href={`/teacher/clubs/${club.id}`}
+                          className="transition hover:underline"
+                        >
+                          {club.name}
+                        </Link>
                       </h3>
                       <StatusBadge
                         type={club.status}

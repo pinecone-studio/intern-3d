@@ -21,6 +21,11 @@ const navItems = [
   { href: '/admin/teacher', label: 'Багш', icon: CalendarDays },
 ] as const;
 
+const hiddenNavItemHrefs = ['/admin/teacher'];
+const visibleNavItems = navItems.filter(
+  ({ href }) => !hiddenNavItemHrefs.includes(href)
+);
+
 function normalizePathname(pathname: string) {
   return pathname !== '/' && pathname.endsWith('/')
     ? pathname.slice(0, -1)
@@ -33,8 +38,8 @@ export default function AdminHeader() {
   const { user, logout, isAuthenticating } = useTomSession();
   const normalizedPathname = normalizePathname(pathname);
   const activeHref =
-    navItems.find(({ href }) => normalizedPathname === href)?.href ??
-    navItems
+    visibleNavItems.find(({ href }) => normalizedPathname === href)?.href ??
+    visibleNavItems
       .filter(
         ({ href }) =>
           href !== '/admin' && normalizedPathname.startsWith(`${href}/`)
@@ -68,7 +73,7 @@ export default function AdminHeader() {
         </Link>
 
         <nav className="ml-auto flex flex-none items-center gap-2">
-          {navItems.map(({ href, label, icon: Icon }) => {
+          {visibleNavItems.map(({ href, label, icon: Icon }) => {
             const isActive = activeHref === href;
             return (
               <Link

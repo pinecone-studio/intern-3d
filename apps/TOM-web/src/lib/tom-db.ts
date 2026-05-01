@@ -14,6 +14,8 @@ import type {
   EventPost,
   EventPostComment,
   EventStatus,
+  ClubPost,
+  ClubPostComment,
   ManagedUser,
   PublicUser,
   RequestStatus,
@@ -1324,6 +1326,47 @@ export async function createEventPostComment(params: {
   return row ? mapEventPostCommentRow(row) : null
 }
 
+export async function getEventPostComment(commentId: string): Promise<EventPostComment | null> {
+  const db = getTomDb()
+
+  const row = await db
+    .prepare(
+      `SELECT
+         c.id,
+         c.post_id,
+         c.body,
+         c.author_id,
+         u.full_name AS author_name,
+         u.role AS author_role,
+         c.created_at,
+         c.updated_at
+       FROM event_post_comments c
+       JOIN users u ON u.id = c.author_id
+       WHERE c.id = ?
+       LIMIT 1`
+    )
+    .bind(commentId)
+    .first<EventPostCommentRow>()
+
+  return row ? mapEventPostCommentRow(row) : null
+}
+
+export async function deleteEventPostComment(commentId: string): Promise<boolean> {
+  const db = getTomDb()
+  await db.prepare('DELETE FROM event_post_comments WHERE id = ?').bind(commentId).run()
+  return true
+}
+
+export async function deleteEventPost(postId: string): Promise<boolean> {
+  const db = getTomDb()
+
+  await db.prepare('DELETE FROM event_post_comments WHERE post_id = ?').bind(postId).run()
+  await db.prepare('DELETE FROM event_post_likes WHERE post_id = ?').bind(postId).run()
+  await db.prepare('DELETE FROM event_posts WHERE id = ?').bind(postId).run()
+
+  return true
+}
+
 export async function toggleEventPostLike(params: {
   postId: string
   userId: string
@@ -1369,6 +1412,333 @@ export async function toggleEventPostLike(params: {
     .prepare(
       `SELECT COUNT(*) as count
        FROM event_post_likes
+       WHERE post_id = ?`
+    )
+    .bind(params.postId)
+    .first<{ count: number }>()
+
+  return { likeCount: countRow?.count ?? 0, likedByMe: true }
+}
+
+type ClubPostRow = {
+  id: string
+  club_id: string
+  title: string
+  body: string
+  author_id: string
+  author_name: string
+  author_role: UserRole
+  created_at: string
+  updated_at: string
+  like_count: number
+  liked_by_me: number
+}
+
+type ClubPostCommentRow = {
+  id: string
+  post_id: string
+  body: string
+  author_id: string
+  author_name: string
+  author_role: UserRole
+  created_at: string
+  updated_at: string
+}
+
+function mapClubPostRow(row: ClubPostRow): ClubPost {
+  return {
+    id: row.id,
+    clubId: row.club_id,
+    title: row.title,
+    body: row.body,
+    author: mapPublicUser({
+      id: row.author_id,
+      name: row.author_name,
+      role: row.author_role,
+    }),
+    likeCount: row.like_count ?? 0,
+    likedByMe: Boolean(row.liked_by_me),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+function mapClubPostCommentRow(row: ClubPostCommentRow): ClubPostComment {
+  return {
+    id: row.id,
+    postId: row.post_id,
+    body: row.body,
+    author: mapPublicUser({
+      id: row.author_id,
+      name: row.author_name,
+      role: row.author_role,
+    }),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+export async function listClubPosts(
+  clubId: string,
+  currentUserId?: string | null
+): Promise<ClubPost[]> {
+  const db = getTomDb()
+  const viewerId = currentUserId ?? ''
+
+  const result = await db
+    .prepare(
+      `SELECT
+         p.id,
+         p.club_id,
+         p.title,
+         p.body,
+         p.author_id,
+         u.full_name AS author_name,
+         u.role AS author_role,
+         p.created_at,
+         p.updated_at,
+         COUNT(l.id) AS like_count,
+         MAX(CASE WHEN l.user_id = ? THEN 1 ELSE 0 END) AS liked_by_me
+       FROM club_posts p
+       JOIN users u ON u.id = p.author_id
+       LEFT JOIN club_post_likes l ON l.post_id = p.id
+       WHERE p.club_id = ?
+       GROUP BY p.id
+       ORDER BY p.created_at DESC`
+    )
+    .bind(viewerId, clubId)
+    .all<ClubPostRow>()
+
+  return result.results.map(mapClubPostRow)
+}
+
+export async function getClubPost(postId: string): Promise<ClubPost | null> {
+  const db = getTomDb()
+
+  const row = await db
+    .prepare(
+      `SELECT
+         p.id,
+         p.club_id,
+         p.title,
+         p.body,
+         p.author_id,
+         u.full_name AS author_name,
+         u.role AS author_role,
+         p.created_at,
+         p.updated_at,
+         COUNT(l.id) AS like_count,
+         0 AS liked_by_me
+       FROM club_posts p
+       JOIN users u ON u.id = p.author_id
+       LEFT JOIN club_post_likes l ON l.post_id = p.id
+       WHERE p.id = ?
+       GROUP BY p.id
+       LIMIT 1`
+    )
+    .bind(postId)
+    .first<ClubPostRow>()
+
+  return row ? mapClubPostRow(row) : null
+}
+
+export async function createClubPost(params: {
+  clubId: string
+  authorId: string
+  title?: string | null
+  body: string
+}): Promise<ClubPost | null> {
+  const db = getTomDb()
+  const now = nowIso()
+  const id = crypto.randomUUID()
+
+  await db
+    .prepare(
+      `INSERT INTO club_posts (id, club_id, author_id, title, body, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
+    )
+    .bind(id, params.clubId, params.authorId, params.title ?? '', params.body, now, now)
+    .run()
+
+  const row = await db
+    .prepare(
+      `SELECT
+         p.id,
+         p.club_id,
+         p.title,
+         p.body,
+         p.author_id,
+         u.full_name AS author_name,
+         u.role AS author_role,
+         p.created_at,
+         p.updated_at,
+         0 AS like_count,
+         0 AS liked_by_me
+       FROM club_posts p
+       JOIN users u ON u.id = p.author_id
+       WHERE p.id = ?
+       LIMIT 1`
+    )
+    .bind(id)
+    .first<ClubPostRow>()
+
+  return row ? mapClubPostRow(row) : null
+}
+
+export async function listClubPostCommentsByPostIds(
+  postIds: string[]
+): Promise<ClubPostComment[]> {
+  const db = getTomDb()
+  if (postIds.length === 0) return []
+
+  const placeholders = postIds.map(() => '?').join(', ')
+  const result = await db
+    .prepare(
+      `SELECT
+         c.id,
+         c.post_id,
+         c.body,
+         c.author_id,
+         u.full_name AS author_name,
+         u.role AS author_role,
+         c.created_at,
+         c.updated_at
+       FROM club_post_comments c
+       JOIN users u ON u.id = c.author_id
+       WHERE c.post_id IN (${placeholders})
+       ORDER BY c.created_at ASC`
+    )
+    .bind(...postIds)
+    .all<ClubPostCommentRow>()
+
+  return result.results.map(mapClubPostCommentRow)
+}
+
+export async function createClubPostComment(params: {
+  postId: string
+  authorId: string
+  body: string
+}): Promise<ClubPostComment | null> {
+  const db = getTomDb()
+  const now = nowIso()
+  const id = crypto.randomUUID()
+
+  await db
+    .prepare(
+      `INSERT INTO club_post_comments (id, post_id, author_id, body, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    )
+    .bind(id, params.postId, params.authorId, params.body, now, now)
+    .run()
+
+  const row = await db
+    .prepare(
+      `SELECT
+         c.id,
+         c.post_id,
+         c.body,
+         c.author_id,
+         u.full_name AS author_name,
+         u.role AS author_role,
+         c.created_at,
+         c.updated_at
+       FROM club_post_comments c
+       JOIN users u ON u.id = c.author_id
+       WHERE c.id = ?
+       LIMIT 1`
+    )
+    .bind(id)
+    .first<ClubPostCommentRow>()
+
+  return row ? mapClubPostCommentRow(row) : null
+}
+
+export async function getClubPostComment(commentId: string): Promise<ClubPostComment | null> {
+  const db = getTomDb()
+
+  const row = await db
+    .prepare(
+      `SELECT
+         c.id,
+         c.post_id,
+         c.body,
+         c.author_id,
+         u.full_name AS author_name,
+         u.role AS author_role,
+         c.created_at,
+         c.updated_at
+       FROM club_post_comments c
+       JOIN users u ON u.id = c.author_id
+       WHERE c.id = ?
+       LIMIT 1`
+    )
+    .bind(commentId)
+    .first<ClubPostCommentRow>()
+
+  return row ? mapClubPostCommentRow(row) : null
+}
+
+export async function deleteClubPostComment(commentId: string): Promise<boolean> {
+  const db = getTomDb()
+  await db.prepare('DELETE FROM club_post_comments WHERE id = ?').bind(commentId).run()
+  return true
+}
+
+export async function deleteClubPost(postId: string): Promise<boolean> {
+  const db = getTomDb()
+
+  await db.prepare('DELETE FROM club_post_comments WHERE post_id = ?').bind(postId).run()
+  await db.prepare('DELETE FROM club_post_likes WHERE post_id = ?').bind(postId).run()
+  await db.prepare('DELETE FROM club_posts WHERE id = ?').bind(postId).run()
+
+  return true
+}
+
+export async function toggleClubPostLike(params: {
+  postId: string
+  userId: string
+}): Promise<{ likeCount: number; likedByMe: boolean } | null> {
+  const db = getTomDb()
+  const now = nowIso()
+
+  const existing = await db
+    .prepare(
+      `SELECT id
+       FROM club_post_likes
+       WHERE post_id = ?
+         AND user_id = ?
+       LIMIT 1`
+    )
+    .bind(params.postId, params.userId)
+    .first<{ id: string }>()
+
+  if (existing?.id) {
+    await db.prepare('DELETE FROM club_post_likes WHERE id = ?').bind(existing.id).run()
+
+    const countRow = await db
+      .prepare(
+        `SELECT COUNT(*) as count
+         FROM club_post_likes
+         WHERE post_id = ?`
+      )
+      .bind(params.postId)
+      .first<{ count: number }>()
+
+    return { likeCount: countRow?.count ?? 0, likedByMe: false }
+  }
+
+  await db
+    .prepare(
+      `INSERT INTO club_post_likes (id, post_id, user_id, created_at)
+       VALUES (?, ?, ?, ?)`
+    )
+    .bind(crypto.randomUUID(), params.postId, params.userId, now)
+    .run()
+
+  const countRow = await db
+    .prepare(
+      `SELECT COUNT(*) as count
+       FROM club_post_likes
        WHERE post_id = ?`
     )
     .bind(params.postId)

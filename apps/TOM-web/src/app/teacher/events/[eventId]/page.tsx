@@ -51,6 +51,17 @@ export default function TeacherEventDetailPage() {
     [event]
   );
 
+  const canModerate = useMemo(() => {
+    if (!user) return false;
+    if (user.role === 'admin') return true;
+    if (user.role !== 'teacher') return false;
+
+    const scopeName = (user.teacherProfileName || user.name || '').trim().toLowerCase();
+    const ownerName = (event?.createdBy || '').trim().toLowerCase();
+
+    return Boolean(scopeName && ownerName && scopeName === ownerName);
+  }, [event?.createdBy, user]);
+
   useEffect(() => {
     let cancelled = false;
     if (!eventId) return;
@@ -208,6 +219,7 @@ export default function TeacherEventDetailPage() {
           posts={posts}
           setPosts={setPosts}
           onError={setErrorMessage}
+          canModerate={canModerate}
         />
       )}
     </div>

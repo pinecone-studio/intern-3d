@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { Plus, X } from 'lucide-react';
 
@@ -347,7 +348,12 @@ export default function ClubsPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h3 className="text-base font-bold text-[#0f1f3d]">
-                      {club.name}
+                      <Link
+                        href={`/students/clubs/${club.id}`}
+                        className="transition hover:underline"
+                      >
+                        {club.name}
+                      </Link>
                     </h3>
                     <p className="mt-1.5 text-sm text-[#6b7fa3]">
                       {club.teacherName || 'Тодорхойгүй багш'}

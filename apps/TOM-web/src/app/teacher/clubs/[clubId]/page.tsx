@@ -3,14 +3,20 @@
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, ChevronLeft, MapPin, Plus, Users } from 'lucide-react';
+import {
+  CalendarDays,
+  ChevronLeft,
+  Plus,
+  ShieldCheck,
+  Users,
+} from 'lucide-react';
 
-import { EventPostsFeed } from '@/app/_components/EventPostsFeed';
+import { ClubPostsFeed } from '@/app/_components/ClubPostsFeed';
 import { useTomSession } from '@/app/_providers/tom-session-provider';
-import type { EventPost, EventPostComment, SchoolEvent } from '@/lib/tom-types';
+import type { Club, ClubPost, ClubPostComment } from '@/lib/tom-types';
 
-type FeedPost = EventPost & { comments: EventPostComment[] };
-type FeedResponse = { event: SchoolEvent; posts: FeedPost[] };
+type FeedPost = ClubPost & { comments: ClubPostComment[] };
+type FeedResponse = { club: Club; posts: FeedPost[] };
 
 async function readJson<T>(response: Response) {
   const data = (await response.json().catch(() => null)) as
@@ -18,9 +24,7 @@ async function readJson<T>(response: Response) {
     | null;
 
   if (!response.ok) {
-    throw new Error(
-      data?.error || `Request failed with status ${response.status}.`
-    );
+    throw new Error(data?.error || `Request failed with status ${response.status}.`);
   }
 
   return data as T;
@@ -35,12 +39,12 @@ async function apiRequest<T>(input: string, init?: RequestInit) {
   return readJson<T>(response);
 }
 
-export default function AdminEventDetailPage() {
+export default function TeacherClubDetailPage() {
   const { user } = useTomSession();
-  const params = useParams<{ eventId: string }>();
-  const eventId = params.eventId;
+  const params = useParams<{ clubId: string }>();
+  const clubId = params.clubId;
 
-  const [event, setEvent] = useState<SchoolEvent | null>(null);
+  const [club, setClub] = useState<Club | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
@@ -48,26 +52,36 @@ export default function AdminEventDetailPage() {
   const [isPosting, setIsPosting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const pageTitle = useMemo(() => event?.title || 'Event дэлгэрэнгүй', [event]);
+  const pageTitle = useMemo(() => club?.name || 'Клуб дэлгэрэнгүй', [club]);
 
-  const load = async () => {
-    const data = await apiRequest<FeedResponse>(`/api/events/${eventId}/posts`);
-    setEvent(data.event);
-    setPosts(data.posts);
-  };
+  const canModerate = useMemo(() => {
+    if (!user) return false;
+    if (user.role === 'admin') return true;
+    if (user.role !== 'teacher') return false;
+
+    const scopeName = (user.teacherProfileName || user.name || '').trim().toLowerCase();
+    const ownerName = (club?.teacherName || '').trim().toLowerCase();
+
+    return Boolean(scopeName && ownerName && scopeName === ownerName);
+  }, [club?.teacherName, user]);
 
   useEffect(() => {
     let cancelled = false;
-    if (!eventId) return;
+    if (!clubId) return;
 
     setIsLoading(true);
     setErrorMessage('');
 
-    void load()
+    void apiRequest<FeedResponse>(`/api/clubs/${clubId}/posts`)
+      .then((data) => {
+        if (cancelled) return;
+        setClub(data.club);
+        setPosts(data.posts);
+      })
       .catch((error) => {
         if (cancelled) return;
         setErrorMessage(
-          error instanceof Error ? error.message : 'Event ачаалж чадсангүй.'
+          error instanceof Error ? error.message : 'Клуб ачаалж чадсангүй.'
         );
       })
       .finally(() => {
@@ -78,7 +92,7 @@ export default function AdminEventDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [eventId]);
+  }, [clubId]);
 
   const submitPost = async () => {
     const trimmed = body.trim();
@@ -88,13 +102,10 @@ export default function AdminEventDetailPage() {
     setErrorMessage('');
 
     try {
-      const data = await apiRequest<{ post: EventPost }>(
-        `/api/events/${eventId}/posts`,
-        {
-          method: 'POST',
-          body: JSON.stringify({ title: title.trim(), body: trimmed }),
-        }
-      );
+      const data = await apiRequest<{ post: ClubPost }>(`/api/clubs/${clubId}/posts`, {
+        method: 'POST',
+        body: JSON.stringify({ title: title.trim(), body: trimmed }),
+      });
 
       setPosts((current) => [{ ...data.post, comments: [] }, ...current]);
       setTitle('');
@@ -114,41 +125,42 @@ export default function AdminEventDetailPage() {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
             <Link
-              href="/admin/events"
+              href="/teacher/clubs"
               className="inline-flex items-center gap-1 rounded-full border border-[#d7e4f4] bg-white px-3 py-1 text-xs font-semibold text-[#4a6080] transition hover:bg-[#eef4ff]"
             >
               <ChevronLeft className="h-4 w-4" />
               Буцах
             </Link>
 
-            <h1 className="mt-3 truncate text-2xl font-bold text-[#0f1f3d]">
+            <h1 className="mt-3 truncate text-2xl font-bold text-[#183153]">
               {pageTitle}
             </h1>
-            {event?.description ? (
-              <p className="mt-2 text-sm text-[#6f86a7]">{event.description}</p>
+            {club?.description ? (
+              <p className="mt-2 text-sm text-[#6f86a7]">{club.description}</p>
             ) : null}
 
-            {event ? (
+            {club ? (
               <div className="mt-3 space-y-1 text-xs text-[#6f86a7]">
                 <p className="inline-flex items-center gap-1">
-                  <CalendarDays className="h-3.5 w-3.5" />
-                  {event.eventDate}
-                  {event.startTime ? ` · ${event.startTime}` : ''}
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  {club.teacherName}
                 </p>
                 <p className="inline-flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5" />
-                  {event.location || 'Байршилгүй'}
+                  <CalendarDays className="h-3.5 w-3.5" />
+                  {club.allowedDays}
+                  {club.gradeRange ? ` · ${club.gradeRange}` : ''}
                 </p>
                 <p className="inline-flex items-center gap-1">
                   <Users className="h-3.5 w-3.5" />
-                  {event.participantCount} оролцогч
+                  {club.memberCount} / {club.studentLimit} гишүүн ·{' '}
+                  {club.interestCount} сонирхол
                 </p>
               </div>
             ) : null}
           </div>
 
           <div className="rounded-2xl bg-[#eef4ff] px-4 py-3 text-xs font-semibold text-[#496da8]">
-            {user?.name || 'Admin'}
+            {user?.teacherProfileName || user?.name || 'Багш'}
           </div>
         </div>
 
@@ -165,7 +177,7 @@ export default function AdminEventDetailPage() {
               Post нэмэх
             </p>
             <span className="text-xs font-semibold text-[#6f86a7]">
-              Нэмсэн post-ууд сурагч/багш нарт харагдана.
+              Таны клуб дээрх post сурагчдад харагдана.
             </span>
           </div>
 
@@ -180,7 +192,7 @@ export default function AdminEventDetailPage() {
               rows={4}
               value={body}
               onChange={(e) => setBody(e.target.value)}
-              placeholder="Event-тэй холбоотой мэдээлэл, сануулга, шинэчлэлт..."
+              placeholder="Клубтэй холбоотой мэдээлэл, сануулга, шинэчлэлт..."
               className="w-full resize-none rounded-[18px] border border-[#d7e4f4] bg-white px-4 py-3 text-sm text-[#17365f] outline-none placeholder:text-[#93a6c0] focus:border-[#1a3560]"
             />
 
@@ -203,12 +215,12 @@ export default function AdminEventDetailPage() {
           Ачаалж байна...
         </div>
       ) : (
-        <EventPostsFeed
-          eventId={eventId}
+        <ClubPostsFeed
+          clubId={clubId}
           posts={posts}
           setPosts={setPosts}
           onError={setErrorMessage}
-          canModerate={user?.role === 'admin'}
+          canModerate={canModerate}
         />
       )}
     </div>
