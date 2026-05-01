@@ -74,14 +74,14 @@ export default function GamificationPage() {
             <Sparkles className="h-5 w-5 text-[color:var(--primary)]" />
             <h2 className="text-lg font-semibold">Нийт XP</h2>
           </div>
-          <p className="mt-4 text-4xl font-bold text-[#17304f]">{xpTotal}</p>
+          <p className="mt-4 text-2xl font-bold text-[#17304f]">{xpTotal}</p>
         </article>
         <article className="rounded-[28px] border border-[#dce7f8] bg-white p-5 shadow-soft">
           <div className="flex items-center gap-2 text-[#183153]">
             <Award className="h-5 w-5 text-[color:var(--primary)]" />
             <h2 className="text-lg font-semibold">Нээгдсэн badge</h2>
           </div>
-          <p className="mt-4 text-4xl font-bold text-[#17304f]">{badges.length}/{totalBadges}</p>
+          <p className="mt-4 text-2xl font-bold text-[#17304f]">{badges.length}/{totalBadges}</p>
         </article>
         <article className="rounded-[28px] border border-[#dce7f8] bg-white p-5 shadow-soft">
           <h2 className="text-lg font-semibold text-[#183153]">Сүүлийн XP</h2>

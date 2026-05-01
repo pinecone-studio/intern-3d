@@ -4,7 +4,15 @@ import { useEffect, useState } from 'react';
 
 import type { Club as ApiClub, ClubRequest as ApiClubRequest, TomFormOptions } from '@/lib/tom-types';
 
-import { initialForm, type ActiveClub, type ClubForm } from '../admin-data';
+import {
+  addDaysToIsoDate,
+  allGradeRangeOption,
+  getInitialClubDateRange,
+  getTodayIsoDate,
+  initialForm,
+  type ActiveClub,
+  type ClubForm,
+} from '../admin-data';
 
 function getErrorMessage(error: unknown, fallback: string) {
   if (error instanceof Error && error.message) return error.message;
@@ -52,11 +60,14 @@ function mapClub(club: ApiClub): ActiveClub {
 }
 
 function createInitialForm(options: TomFormOptions): ClubForm {
+  const dateRange = getInitialClubDateRange();
+
   return {
     ...initialForm,
+    ...dateRange,
     teacherId: options.teacherOptions[0]?.id ?? '',
     allowedDays: options.allowedDays[0] ?? '',
-    gradeRange: options.gradeRanges[0] ?? '',
+    gradeRange: allGradeRangeOption,
   };
 }
 
@@ -67,6 +78,7 @@ export function useClubsPage(options: TomFormOptions) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [formError, setFormError] = useState('');
   const [banner, setBanner] = useState('');
 
   useEffect(() => {
@@ -75,9 +87,9 @@ export function useClubsPage(options: TomFormOptions) {
       teacherId:
         current.teacherId || options.teacherOptions[0]?.id || current.teacherId,
       allowedDays: current.allowedDays || options.allowedDays[0] || current.allowedDays,
-      gradeRange: current.gradeRange || options.gradeRanges[0] || current.gradeRange,
+      gradeRange: current.gradeRange || allGradeRangeOption,
     }));
-  }, [options.teacherOptions, options.allowedDays, options.gradeRanges]);
+  }, [options.teacherOptions, options.allowedDays]);
 
   const loadClubs = async () => {
     const data = await apiRequest<{ clubs: ApiClub[] }>('/api/clubs');
@@ -118,6 +130,19 @@ export function useClubsPage(options: TomFormOptions) {
 
   const handleCreate = async () => {
     const clubName = form.clubName.trim() || 'Нэргүй клуб';
+    const today = getTodayIsoDate();
+    const startDate = form.startDate || today;
+    const endDate = form.endDate || addDaysToIsoDate(startDate, 1);
+
+    if (startDate < today) {
+      setFormError('Эхлэх огноо өнөөдрөөс өмнө байж болохгүй.');
+      return;
+    }
+
+    if (endDate <= startDate) {
+      setFormError('Дуусах огноо эхлэх огнооноос хойш байх ёстой.');
+      return;
+    }
 
     await runMutation(async () => {
       await apiRequest<{ request: ApiClubRequest }>('/api/club-requests', {
@@ -125,8 +150,8 @@ export function useClubsPage(options: TomFormOptions) {
         body: JSON.stringify({
           clubName,
           teacherId: form.teacherId,
-          startDate: form.startDate,
-          endDate: form.endDate,
+          startDate,
+          endDate,
           allowedDays: form.allowedDays,
           gradeRange: form.gradeRange,
           studentLimit: Number(form.studentLimit) || 12,
@@ -136,6 +161,7 @@ export function useClubsPage(options: TomFormOptions) {
       });
 
       setForm(createInitialForm(options));
+      setFormError('');
       setIsDialogOpen(false);
       const loaded = await loadClubs();
       setClubs(loaded);
@@ -182,7 +208,32 @@ export function useClubsPage(options: TomFormOptions) {
   };
 
   const updateField = (field: keyof ClubForm, value: string) => {
-    setForm((current) => ({ ...current, [field]: value }));
+    setFormError('');
+    setForm((current) => {
+      if (field === 'startDate') {
+        const today = getTodayIsoDate();
+        const startDate = value < today ? today : value;
+        const minEndDate = addDaysToIsoDate(startDate, 1);
+        const endDate =
+          current.endDate && current.endDate >= minEndDate
+            ? current.endDate
+            : minEndDate;
+
+        return { ...current, startDate, endDate };
+      }
+
+      if (field === 'endDate') {
+        const startDate = current.startDate || getTodayIsoDate();
+        const minEndDate = addDaysToIsoDate(startDate, 1);
+
+        return {
+          ...current,
+          endDate: value < minEndDate ? minEndDate : value,
+        };
+      }
+
+      return { ...current, [field]: value };
+    });
   };
 
   const openDialog = () => {
@@ -193,7 +244,15 @@ export function useClubsPage(options: TomFormOptions) {
   const closeDialog = () => {
     setIsDialogOpen(false);
     setErrorMessage('');
+    setFormError('');
   };
+
+  const todayIso = getTodayIsoDate();
+  const minEndDate = addDaysToIsoDate(form.startDate || todayIso, 1);
+  const gradeRangeOptions = [
+    allGradeRangeOption,
+    ...options.gradeRanges.filter((grade) => grade !== allGradeRangeOption),
+  ];
 
   return {
     clubs,
@@ -202,7 +261,11 @@ export function useClubsPage(options: TomFormOptions) {
     isLoading,
     isSaving,
     errorMessage,
+    formError,
     banner,
+    todayIso,
+    minEndDate,
+    gradeRangeOptions,
     openDialog,
     closeDialog,
     updateField,

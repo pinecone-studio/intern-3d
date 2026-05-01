@@ -5,6 +5,17 @@ import { badRequest, forbidden, ok, serverError } from '@/lib/tom-http'
 import { getUser, listClubRequests, upsertClubRequest } from '@/lib/tom-db'
 import { parseClubRequestInput } from '@/lib/tom-validators'
 
+function formatLocalIsoDate(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+function isIsoDate(value: string | undefined): value is string {
+  return Boolean(value && /^\d{4}-\d{2}-\d{2}$/.test(value))
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -38,6 +49,16 @@ export async function POST(request: NextRequest) {
     if (clubName.length < 3) return badRequest('Club name must be at least 3 characters.')
     if (clubName.length > 100) return badRequest('Club name must be at most 100 characters.')
 
+    const startDate = input.startDate
+    const endDate = input.endDate
+    const today = formatLocalIsoDate(new Date())
+
+    if (!isIsoDate(startDate) || !isIsoDate(endDate)) {
+      return badRequest('Start date and end date are required.')
+    }
+    if (startDate < today) return badRequest('Start date cannot be in the past.')
+    if (endDate <= startDate) return badRequest('End date must be after start date.')
+
     const existingRequests = await listClubRequests({ q: clubName })
     const duplicate = existingRequests.find(
       (r) => r.clubName.trim().toLowerCase() === clubName.toLowerCase()
@@ -63,8 +84,8 @@ export async function POST(request: NextRequest) {
       studentLimit: input.studentLimit,
       gradeRange: input.gradeRange,
       allowedDays: input.allowedDays,
-      startDate: input.startDate,
-      endDate: input.endDate,
+      startDate,
+      endDate,
       note: input.note,
       requestStatus: 'pending',
       clubStatus: 'pending',

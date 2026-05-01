@@ -30,7 +30,11 @@ export default function ClubsPage() {
     isLoading,
     isSaving,
     errorMessage,
+    formError,
     banner,
+    todayIso,
+    minEndDate,
+    gradeRangeOptions,
     openDialog,
     closeDialog,
     updateField,
@@ -227,6 +231,8 @@ export default function ClubsPage() {
                   <span className={inputLabelClass}>Эхлэх огноо</span>
                   <input
                     type="date"
+                    required
+                    min={todayIso}
                     value={form.startDate}
                     onChange={(e) => updateField('startDate', e.target.value)}
                     className={fieldClass}
@@ -237,6 +243,8 @@ export default function ClubsPage() {
                   <span className={inputLabelClass}>Дуусах огноо</span>
                   <input
                     type="date"
+                    required
+                    min={minEndDate}
                     value={form.endDate}
                     onChange={(e) => updateField('endDate', e.target.value)}
                     className={fieldClass}
@@ -272,7 +280,7 @@ export default function ClubsPage() {
                       <SelectValue placeholder="Анги сонгох" />
                     </SelectTrigger>
                     <SelectContent>
-                      {options.gradeRanges.map((grade) => (
+                      {gradeRangeOptions.map((grade) => (
                         <SelectItem key={grade} value={grade}>
                           {grade}
                         </SelectItem>
@@ -296,7 +304,7 @@ export default function ClubsPage() {
                 </label>
 
                 <label className="block">
-                  <span className={inputLabelClass}>Одоогийн сонирхол</span>
+                  <span className={inputLabelClass}>Сонирхлын хувь</span>
                   <input
                     type="number"
                     min="0"
@@ -320,6 +328,12 @@ export default function ClubsPage() {
                   className={fieldClass}
                 />
               </label>
+
+              {formError ? (
+                <div className="rounded-[18px] border border-[#ffd2d5] bg-[#fff7f8] px-4 py-3 text-sm font-semibold text-[#b23a49]">
+                  {formError}
+                </div>
+              ) : null}
 
               <div className="flex flex-wrap items-center gap-3">
                 <button

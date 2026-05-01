@@ -11,7 +11,9 @@ import type {
 } from '@/lib/tom-types';
 
 import {
+  allGradeRangeOption,
   formatThresholdLabel,
+  getInitialClubDateRange,
   initialForm,
   initialUserForm,
   thresholdGoal,
@@ -189,11 +191,14 @@ const initialEventForm: EventForm = {
 };
 
 function createInitialClubForm(options: TomFormOptions): ClubForm {
+  const dateRange = getInitialClubDateRange();
+
   return {
     ...initialForm,
+    ...dateRange,
     teacherId: options.teacherOptions[0]?.id ?? '',
     allowedDays: options.allowedDays[0] ?? '',
-    gradeRange: options.gradeRanges[0] ?? '',
+    gradeRange: allGradeRangeOption,
   };
 }
 
@@ -242,10 +247,9 @@ export function useAdminDashboard(options: TomFormOptions) {
         current.teacherId || options.teacherOptions[0]?.id || current.teacherId,
       allowedDays:
         current.allowedDays || options.allowedDays[0] || current.allowedDays,
-      gradeRange:
-        current.gradeRange || options.gradeRanges[0] || current.gradeRange,
+      gradeRange: current.gradeRange || allGradeRangeOption,
     }));
-  }, [options.allowedDays, options.gradeRanges, options.teacherOptions]);
+  }, [options.allowedDays, options.teacherOptions]);
 
   const loadDashboardSnapshot = async (): Promise<DashboardSnapshot> => {
     const [summaryData, requestData, clubData, userData, eventData, leaderboardData] =
