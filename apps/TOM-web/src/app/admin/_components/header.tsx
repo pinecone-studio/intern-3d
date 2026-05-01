@@ -54,7 +54,6 @@ export default function AdminHeader() {
       router.push('/');
     }
   }
-
   return (
     <header className="rounded-[28px] border border-[#dce7f8] bg-white/95 px-5 py-4 shadow-soft">
       <div className="flex flex-nowrap items-center gap-3 overflow-x-auto">
