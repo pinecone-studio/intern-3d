@@ -138,11 +138,12 @@ export function SchedulerWeekView({ errorMessage, events, loading, onContextMenu
                         key={`${event.id}-${day.value}-${dayDate}`}
                         type="button"
                         draggable
-                        className={cn('absolute bottom-1.5 top-1.5 z-[3] cursor-move overflow-hidden rounded-md border border-[#d1d1d1] border-l-4 px-2 py-1 text-left text-xs shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md', getEventTone(event.type))}
-                        style={{ left: `${position.left}%`, width: `${position.width}%` }}
-                        onClick={() => onEditEvent(event, room.id, day.value)}
-                        onDragStart={(dragEvent) => {
-                          dragEvent.dataTransfer.setData('text/plain', event.id)
+                      className={cn('absolute bottom-1.5 top-1.5 z-[3] cursor-move overflow-hidden rounded-md border border-[#d1d1d1] border-l-4 px-2 py-1 text-left text-xs shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md', getEventTone(event.type))}
+                      style={{ left: `${position.left}%`, width: `${position.width}%` }}
+                      title={`${event.title} ${event.startTime}-${event.endTime} ${getEventLabel(event.type)}`}
+                      onClick={() => onEditEvent(event, room.id, day.value)}
+                      onDragStart={(dragEvent) => {
+                        dragEvent.dataTransfer.setData('text/plain', event.id)
                           dragEvent.dataTransfer.setData('application/json', JSON.stringify({ eventId: event.id, sourceDateIso: dayDate, sourceDayOfWeek: day.value }))
                           dragEvent.dataTransfer.effectAllowed = 'move'
                         }}

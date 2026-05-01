@@ -22,14 +22,15 @@ type SchedulerCalendarSidebarProps = {
 }
 
 export function SchedulerCalendarSidebar({ calendarMonth, focusedDate, isCalendarOpen, monthDays, onSelectDay, onToday, setCalendarMonth, summaryContent, viewMode, weekStart }: SchedulerCalendarSidebarProps) {
-  const helperText = viewMode === 'day' ? 'Өдөр сонгоод баруун талын timeline-г шинэчилнэ' : viewMode === 'month' ? 'Өдөр дарвал өдрийн харагдац руу орно' : viewMode === 'year' ? 'Сар сонгоод жилийн тоймыг шинэчилнэ' : null
-  const monthStep = viewMode === 'year' ? 12 : 1
-  const yearMonths = viewMode === 'year' ? getYearMonths(calendarMonth) : []
+  const helperText = viewMode === 'day' ? 'Өдөр сонгоод баруун талын timeline-г шинэчилнэ' : viewMode === 'month' ? 'Сар сонгоод сарын matrix-г шинэчилнэ' : viewMode === 'year' ? 'Сар сонгоод жилийн тоймыг шинэчилнэ' : null
+  const monthStep = viewMode === 'year' || viewMode === 'month' ? 12 : 1
+  const yearMonths = viewMode === 'year' || viewMode === 'month' ? getYearMonths(calendarMonth) : []
+  const sidebarTitle = viewMode === 'year' || viewMode === 'month' ? `${calendarMonth.getFullYear()} он` : formatMonthLabel(calendarMonth)
 
   return (
     <aside className={cn(isCalendarOpen ? 'block' : 'hidden', 'self-stretch rounded-2xl border border-[#e5e7f3] bg-[#fbfbfe] p-3 shadow-sm dark:border-[#2c3149] dark:bg-[#171b27] xl:block')}>
-      <div className="mb-3 flex items-center justify-between"><div><p className="text-sm font-semibold text-foreground">{viewMode === 'year' ? `${calendarMonth.getFullYear()} он` : formatMonthLabel(calendarMonth)}</p>{helperText ? <p className="text-xs text-muted-foreground">{helperText}</p> : null}</div><div className="flex items-center gap-1"><Button type="button" variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={() => setCalendarMonth((current) => addMonths(current, -monthStep))} aria-label="Өмнөх сар"><ChevronLeft className="h-4 w-4" /></Button><Button type="button" variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={() => setCalendarMonth((current) => addMonths(current, monthStep))} aria-label="Дараагийн сар"><ChevronRight className="h-4 w-4" /></Button></div></div>
-      {viewMode === 'year' ? (
+      <div className="mb-3 flex items-center justify-between"><div><p className="text-sm font-semibold text-foreground">{sidebarTitle}</p>{helperText ? <p className="text-xs text-muted-foreground">{helperText}</p> : null}</div><div className="flex items-center gap-1"><Button type="button" variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={() => setCalendarMonth((current) => addMonths(current, -monthStep))} aria-label="Өмнөх сар"><ChevronLeft className="h-4 w-4" /></Button><Button type="button" variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={() => setCalendarMonth((current) => addMonths(current, monthStep))} aria-label="Дараагийн сар"><ChevronRight className="h-4 w-4" /></Button></div></div>
+      {viewMode === 'year' || viewMode === 'month' ? (
         <div className="grid grid-cols-3 gap-1.5">
           {yearMonths.map((month) => (
             <button
