@@ -41,8 +41,8 @@ jobs:
       - name: Create artifact bundles
         run: |
           mkdir -p artifacts
-          tar -czf artifacts/api-dist.tar.gz -C apps/api dist
-          tar -czf artifacts/web-next.tar.gz -C apps/web .next public package.json next.config.js
+          tar -czf artifacts/api-dist.tar.gz -C apps/TOM-api dist
+          tar -czf artifacts/web-next.tar.gz -C apps/TOM-web .next public package.json next.config.js
 
       - name: Upload API artifact
         uses: actions/upload-artifact@v4
