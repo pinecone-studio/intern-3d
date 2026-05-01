@@ -33,13 +33,19 @@ const isValidDateRange = (validFrom: string, validUntil: string | null) => !vali
 const minutesToTime = (minutes: number) => `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`
 const shiftDate = (dateIso: string, deltaDays: number) => toIsoDate(addDays(dateFromIso(dateIso), deltaDays))
 const moveDay = (day: number, delta: number) => ((day - 1 + delta) % 7 + 7) % 7 + 1
+const getImplicitGroupKey = (event: ScheduleEvent) => JSON.stringify([event.title.trim().toLowerCase(), event.type, event.isOverride ? event.date ?? '' : event.validFrom ?? '', event.isOverride ? event.date ?? '' : event.validUntil ?? '', event.notes ?? ''])
 
 export function useSchedulerMoveController({ createScheduleEvent, deleteScheduleEvent, events, refetch, resetComposerState, rooms, setLocalEvents, setMutationError, updateScheduleEvent }: ControllerProps) {
   const [pendingMove, setPendingMove] = useState<PendingEventMove | null>(null)
   const [conflictPreview, setConflictPreview] = useState<MoveConflictPreview | null>(null)
   const [moveDrafts, setMoveDrafts] = useState<MoveDraft[]>([])
-  const groupEventsFor = (event: ScheduleEvent) => event.groupId ? events.filter(candidate => candidate.groupId === event.groupId) : [event]
-  const canMoveGroup = Boolean(pendingMove?.event.groupId && groupEventsFor(pendingMove.event).length > 1)
+  const groupEventsFor = (event: ScheduleEvent) => {
+    if (event.groupId) return events.filter(candidate => candidate.groupId === event.groupId)
+    const groupKey = getImplicitGroupKey(event)
+    const implicitGroup = events.filter(candidate => !candidate.groupId && getImplicitGroupKey(candidate) === groupKey)
+    return implicitGroup.length > 1 ? implicitGroup : [event]
+  }
+  const canMoveGroup = Boolean(pendingMove && groupEventsFor(pendingMove.event).length > 1)
   const buildMoveSelection = (event: ScheduleEvent, roomId: string, dayOfWeek: number, startSlot: number, slotMinutes: number): Selection => {
     const slotCount = slotMinutes === DAY_VIEW_SLOT_MINUTES ? DAY_VIEW_SLOT_COUNT : SLOT_COUNT
     const durationSlots = Math.max(1, Math.ceil((timeToMinutes(event.endTime) - timeToMinutes(event.startTime)) / slotMinutes))
@@ -57,7 +63,7 @@ export function useSchedulerMoveController({ createScheduleEvent, deleteSchedule
     const input = buildMovedInput({ ...pending, event }, scope)
     const sourceOccurrence = scope === 'occurrence' ? { dateIso: pending.sourceDateIso, event } : undefined
     const items = [{ event, input }]
-    return { items, conflicts: conflictsFor(items, [event.id], sourceOccurrence) }
+    return { items, conflicts: conflictsFor(items, scope === 'occurrence' ? [] : [event.id], sourceOccurrence) }
   }
   const buildGroupPlan = (pending: PendingEventMove): MovePlan => {
     const groupEvents = groupEventsFor(pending.event)
@@ -75,7 +81,7 @@ export function useSchedulerMoveController({ createScheduleEvent, deleteSchedule
     })
     return { items, conflicts: [...invalids, ...conflictsFor(items, groupEvents.map(event => event.id))] }
   }
-  const buildPlan = (scope: MoveScope, pending: PendingEventMove): MovePlan => scope === 'group' && pending.event.groupId ? buildGroupPlan(pending) : buildSinglePlan(pending, scope)
+  const buildPlan = (scope: MoveScope, pending: PendingEventMove): MovePlan => (scope === 'group' || scope === 'series') && groupEventsFor(pending.event).length > 1 ? buildGroupPlan(pending) : buildSinglePlan(pending, scope)
   const moveLocalEvents = (items: MovePlanItem[]) => setLocalEvents(current => current.map((event) => {
     const moveItem = items.find(item => item.event.id === event.id)
     if (!moveItem) return event
@@ -113,9 +119,11 @@ export function useSchedulerMoveController({ createScheduleEvent, deleteSchedule
     await createScheduleEvent({ variables: { input: buildMovedInput(pending, 'occurrence') } })
   }
   const applyPlan = async (plan: MovePlan, scope: MoveScope, pending: PendingEventMove) => {
-    if (plan.items.some(item => item.event.id.startsWith('local-'))) moveLocalEvents(plan.items)
-    else if (scope === 'occurrence' && !pending.event.isOverride) await applyRecurringOccurrenceMove(pending)
-    else for (const item of plan.items) await updateScheduleEvent({ variables: { id: item.event.id, input: item.input } })
+    const localItems = plan.items.filter(item => item.event.id.startsWith('local-'))
+    const remoteItems = plan.items.filter(item => !item.event.id.startsWith('local-'))
+    if (localItems.length > 0) moveLocalEvents(localItems)
+    if (scope === 'occurrence' && !pending.event.isOverride) await applyRecurringOccurrenceMove(pending)
+    else for (const item of remoteItems) await updateScheduleEvent({ variables: { id: item.event.id, input: item.input } })
     await refetch(); resetComposerState(); setPendingMove(null); setConflictPreview(null)
   }
   const applyMove = async (scope: MoveScope) => {

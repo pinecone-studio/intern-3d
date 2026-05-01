@@ -1,6 +1,7 @@
 'use client'
 
-import { DAYS_OF_WEEK, EVENT_TYPE_CONFIG } from '@/lib/constants'
+import { getEventLabel, getEventTone } from '@/app/dashboard/_lib/scheduler-event-utils'
+import { DAYS_OF_WEEK } from '@/lib/constants'
 import type { ScheduleEvent } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { timeToMinutes } from '@/app/dashboard/room/[roomId]/_lib/room-detail-utils'
@@ -52,12 +53,12 @@ export function RoomWeeklyScheduleGrid({
             return (
               <div
                 key={`${event.id}-${event.displayDay}-${index}`}
-                className={cn('absolute cursor-pointer overflow-hidden rounded-md p-1.5 text-xs text-white transition-opacity hover:opacity-90', EVENT_TYPE_CONFIG[event.type].bgColor)}
+                className={cn('absolute flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-md border border-[#d1d1d1] border-l-4 px-2 py-1 text-center text-xs shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md', getEventTone(event.type))}
                 style={{ top: `${((clippedStart - GRID_START_HOUR * 60) / 60) * HOUR_HEIGHT}px`, height: `${((clippedEnd - clippedStart) / 60) * HOUR_HEIGHT}px`, left: `calc(60px + ${eventDayIndex} * ((100% - 60px) / 5) + 2px)`, width: 'calc((100% - 60px) / 5 - 4px)' }}
                 onClick={() => isAdmin && onEditEvent(event)}
               >
-                <div className="truncate font-medium">{event.title}</div>
-                <div className="truncate opacity-80">{event.startTime} - {event.endTime}</div>
+                <div className="w-full truncate font-semibold">{event.title}</div>
+                <div className="w-full truncate opacity-80">{event.startTime}-{event.endTime} · {getEventLabel(event.type)}</div>
               </div>
             )
           })}
