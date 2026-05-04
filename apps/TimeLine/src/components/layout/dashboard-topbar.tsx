@@ -42,17 +42,17 @@ export function DashboardTopbar() {
   }, [])
 
   useEffect(() => {
-    let active = true
+    let isMounted = true
 
     const loadUsers = async () => {
       setLoadingUsers(true)
       try {
         const response = await fetch('/api/users', { cache: 'no-store' })
         const data = (await response.json().catch(() => ({ users: [] }))) as UsersResponse
-        if (!active) return
+        if (!isMounted) return
         setUsers(response.ok ? (data.users ?? []) : [])
       } finally {
-        if (active) {
+        if (isMounted) {
           setLoadingUsers(false)
         }
       }
@@ -60,7 +60,7 @@ export function DashboardTopbar() {
 
     void loadUsers()
     return () => {
-      active = false
+      isMounted = false
     }
   }, [])
 
