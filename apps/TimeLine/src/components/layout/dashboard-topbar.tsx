@@ -77,10 +77,12 @@ export function DashboardTopbar() {
     }
   }
 
-  const userOptions = useMemo(
-    () => users.map((entry) => ({ id: entry.id, label: `${entry.name} (${entry.role === 'admin' ? 'Админ' : 'Сурагч'})` })),
-    [users],
-  )
+  const userOptions = useMemo(() => {
+    return users.map((entry) => ({
+      id: entry.id,
+      label: `${entry.name} (${entry.role === 'admin' ? 'Админ' : 'Сурагч'})`,
+    }))
+  }, [users])
 
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-background">
