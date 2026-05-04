@@ -37,9 +37,9 @@ These targets are either [inferred automatically](https://nx.dev/concepts/inferr
 
 ## Versioning and releasing
 
-To version and release the library use
+To version and release the library, run:
 
-```
+```sh
 npx nx release
 ```
 
