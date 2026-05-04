@@ -19,7 +19,7 @@ npx nx g @nx/js:lib packages/pkg1 --publishable --importPath=@my-org/pkg1
 
 ## Run tasks
 
-To build the library use:
+To build the library, run:
 
 ```sh
 npx nx build pkg1
