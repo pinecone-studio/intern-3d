@@ -61,6 +61,7 @@ export default function StudentHeader() {
   const pathname = usePathname();
   const { user, logout, isAuthenticating } = useTomSession();
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [hasSeenNotifications, setHasSeenNotifications] = useState(false);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
   const [notificationsError, setNotificationsError] = useState('');
   const [notificationData, setNotificationData] =
@@ -238,7 +239,10 @@ export default function StudentHeader() {
         <div className="relative">
           <button
             type="button"
-            onClick={() => setIsNotificationsOpen((current) => !current)}
+            onClick={() => {
+              setIsNotificationsOpen((current) => !current);
+              setHasSeenNotifications(true);
+            }}
             className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#dce7f8] bg-white text-[color:var(--primary)] transition hover:bg-[#eef4ff]"
             aria-label="Мэдэгдэл харах"
             aria-expanded={isNotificationsOpen}
@@ -246,7 +250,7 @@ export default function StudentHeader() {
             <Bell className="h-5 w-5" />
           </button>
 
-          {notifications.length > 0 ? (
+          {notifications.length > 0 && !hasSeenNotifications ? (
             <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#49a0e3] px-1 text-[10px] font-semibold text-white">
               {notifications.length}
             </span>
